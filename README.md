@@ -194,22 +194,25 @@ npx --version
 
 **Windows — PowerShell**
 
-```powershell
-winget install --id astral-sh.uv -e
-```
+1. Ejecuta en la terminal:
 
-**macOS, Linux o WSL — Bash/Zsh**
+   ```console
+   powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+   ```
 
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
+2. Añade temporalmente `uv` y `uvx` al `PATH` de la sesión actual:
 
-Reinicia la terminal y valida en cualquier sistema:
+   ```console
+   $env:Path = "$HOME\.local\bin;$env:Path"
+   ```
 
-```bash
-uv --version
-uvx --version
-```
+3. Comprueba que `uvx` está disponible:
+
+   ```console
+   uvx mcp-atlassian --help
+   ```
+
+4. Cierra y vuelve a abrir Visual Studio Code para aplicar la instalación en una nueva sesión.
 
 ### 0.8 Instalar las extensiones de VS Code
 

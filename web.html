@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard de Ventas</title>
+  <style>
+    :root {
+      --bg: #07111f;
+      --panel: rgba(13, 20, 34, 0.88);
+      --panel-soft: rgba(20, 29, 48, 0.72);
+      --text: #eef4ff;
+      --muted: #9badc8;
+      --accent: #46d7b2;
+      --accent-2: #76a7ff;
+      --accent-3: #ffb25e;
+      --danger: #ff6b8a;
+      --line: rgba(159, 175, 206, 0.16);
+      --shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(70, 215, 178, 0.18), transparent 24%),
+        radial-gradient(circle at top right, rgba(118, 167, 255, 0.15), transparent 22%),
+        radial-gradient(circle at bottom left, rgba(255, 178, 94, 0.12), transparent 25%),
+        linear-gradient(160deg, #06101c 0%, #091422 48%, #070d16 100%);
+    }
+
+    .wrap {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.7fr 1fr;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(13, 20, 34, 0.96), rgba(13, 20, 34, 0.74));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .hero-main,
+    .hero-side,
+    .panel {
+      padding: 20px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 5px rgba(70, 215, 178, 0.09);
+    }
+
+    h1, h2, p { margin: 0; }
+
+    h1 {
+      font-size: clamp(1.8rem, 2.9vw, 3rem);
+      letter-spacing: -0.05em;
+      line-height: 1.02;
+      margin-bottom: 12px;
+      max-width: 14ch;
+    }
+
+    .hero-copy {
+      color: var(--muted);
+      line-height: 1.55;
+      max-width: 64ch;
+    }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .chip,
+    select {
+      border: 1px solid var(--line);
+      background: rgba(15, 23, 42, 0.7);
+      color: var(--text);
+      padding: 11px 14px;
+      border-radius: 999px;
+      outline: none;
+      font-size: 0.92rem;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-side {
+      display: grid;
+      gap: 14px;
+    }
+
+    .hero-stat {
+      padding: 16px;
+      background: linear-gradient(180deg, rgba(20, 29, 48, 0.78), rgba(20, 29, 48, 0.5));
+      border: 1px solid var(--line);
+      border-radius: 18px;
+    }
+
+    .hero-stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-bottom: 8px;
+    }
+
+    .hero-stat strong {
+      display: block;
+      font-size: 1.55rem;
+      letter-spacing: -0.04em;
+    }
+
+    .grid-kpis {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .kpi {
+      padding: 18px;
+      min-height: 148px;
+      position: relative;
+    }
+
+    .kpi::after {
+      content: "";
+      position: absolute;
+      inset: auto -18% -42% auto;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      pointer-events: none;
+      background: radial-gradient(circle, rgba(70, 215, 178, 0.16), transparent 64%);
+    }
+
+    .kpi:nth-child(2)::after { background: radial-gradient(circle, rgba(118, 167, 255, 0.16), transparent 64%); }
+    .kpi:nth-child(3)::after { background: radial-gradient(circle, rgba(255, 178, 94, 0.16), transparent 64%); }
+    .kpi:nth-child(4)::after { background: radial-gradient(circle, rgba(255, 107, 138, 0.14), transparent 64%); }
+    .kpi:nth-child(5)::after { background: radial-gradient(circle, rgba(167, 139, 250, 0.14), transparent 64%); }
+
+    .kpi .label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-bottom: 12px;
+    }
+
+    .value {
+      font-size: clamp(1.7rem, 3vw, 2.45rem);
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      line-height: 1;
+    }
+
+    .delta {
+      display: inline-flex;
+      margin-top: 12px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(70, 215, 178, 0.11);
+      color: #8df1d5;
+      font-size: 0.85rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.55fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .panel-title {
+      font-size: 1.03rem;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .panel-subtitle {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .chart-box {
+      min-height: 340px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(20, 29, 48, 0.7), rgba(13, 20, 34, 0.55));
+      padding: 16px;
+    }
+
+    .chart-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 12px;
+      align-items: end;
+      height: 100%;
+      min-height: 300px;
+    }
+
+    .bar-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: end;
+      gap: 10px;
+      height: 100%;
+    }
+
+    .bars {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: end;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 4px;
+    }
+
+    .bar {
+      width: 40%;
+      min-height: 12px;
+      border-radius: 12px 12px 6px 6px;
+      background: linear-gradient(180deg, rgba(118, 167, 255, 1), rgba(70, 215, 178, 0.9));
+      box-shadow: 0 12px 28px rgba(70, 215, 178, 0.12);
+      transition: transform 180ms ease;
+    }
+
+    .bar.secondary {
+      background: linear-gradient(180deg, rgba(255, 178, 94, 1), rgba(255, 107, 138, 0.92));
+    }
+
+    .bar:hover { transform: translateY(-3px); }
+
+    .day {
+      font-size: 0.84rem;
+      color: var(--muted);
+    }
+
+    .side-stats {
+      display: grid;
+      gap: 16px;
+    }
+
+    .mini {
+      padding: 18px;
+    }
+
+    .list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .list-item {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(13, 20, 34, 0.42);
+      padding: 12px 14px;
+    }
+
+    .list-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .list-head strong {
+      font-size: 0.97rem;
+    }
+
+    .list-head span {
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .track {
+      width: 100%;
+      height: 9px;
+      border-radius: 999px;
+      background: rgba(159, 175, 206, 0.12);
+      overflow: hidden;
+    }
+
+    .track > div {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent-2), var(--accent));
+    }
+
+    .section-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .source-map {
+      display: grid;
+      gap: 10px;
+    }
+
+    .source-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 11px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(13, 20, 34, 0.42);
+      font-size: 0.9rem;
+    }
+
+    .source-row b { font-weight: 600; }
+    .source-row span { color: var(--muted); }
+
+    .insight-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .insight {
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(13, 20, 34, 0.42);
+      line-height: 1.45;
+      color: var(--text);
+    }
+
+    .table-panel { padding: 0; }
+
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 980px;
+    }
+
+    th, td {
+      padding: 15px 18px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      font-size: 0.92rem;
+      white-space: nowrap;
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      background: rgba(13, 20, 34, 0.54);
+    }
+
+    tbody tr:hover { background: rgba(255, 255, 255, 0.02); }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 0.84rem;
+      font-weight: 600;
+    }
+
+    .ok { background: rgba(70, 215, 178, 0.12); color: #8df1d5; }
+    .wait { background: rgba(255, 178, 94, 0.12); color: #ffd38b; }
+    .bad { background: rgba(255, 107, 138, 0.12); color: #ffb0c0; }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-top: 12px;
+      line-height: 1.45;
+    }
+
+    .error-box {
+      padding: 22px;
+      margin: 28px auto;
+      max-width: 860px;
+      border: 1px solid rgba(255, 107, 138, 0.25);
+      border-radius: 20px;
+      background: rgba(41, 15, 24, 0.75);
+      color: #ffd6df;
+    }
+
+    .error-box code {
+      display: block;
+      margin-top: 12px;
+      white-space: pre-wrap;
+      color: #fff;
+    }
+
+    @media (max-width: 1180px) {
+      .hero,
+      .grid-kpis,
+      .layout,
+      .section-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .wrap { padding: 16px; }
+      .hero,
+      .grid-kpis,
+      .layout,
+      .section-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-grid {
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+      }
+
+      th, td {
+        padding: 13px 12px;
+        font-size: 0.88rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="card hero-main">
+        <div class="eyebrow"><span class="dot"></span> Dashboard comercial con CSV locales</div>
+        <h1>Ventas, margen y canales en una sola vista operativa</h1>
+        <p class="hero-copy">
+          Este panel analiza <strong>fact_ventas.csv</strong> junto con las dimensiones de artículo, canal, fecha, usuarios y promociones.
+          Está pensado para negocio: métricas claras, lectura rápida y validación de calidad de datos antes de sacar conclusiones.
+        </p>
+        <div class="meta-row">
+          <select id="yearFilter" aria-label="Filtrar por año">
+            <option value="all">Todo el período</option>
+          </select>
+          <select id="channelFilter" aria-label="Filtrar por canal">
+            <option value="all">Todos los canales</option>
+          </select>
+          <div class="chip" id="loadState">Cargando CSV...</div>
+        </div>
+      </div>
+
+      <div class="card hero-side">
+        <div class="hero-stat">
+          <span>Fuente principal</span>
+          <strong>fact_ventas + dimensiones</strong>
+        </div>
+        <div class="hero-stat">
+          <span>Validación</span>
+          <strong id="qualityState">Revisando integridad</strong>
+        </div>
+        <div class="hero-stat">
+          <span>Enfoque</span>
+          <strong>KPIs de negocio</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid-kpis">
+      <div class="card kpi">
+        <div class="label"><span class="dot"></span>Ventas netas</div>
+        <div class="value" id="kpiSales">-</div>
+        <div class="delta" id="kpiSalesDelta">Cargando datos</div>
+      </div>
+      <div class="card kpi">
+        <div class="label"><span class="dot" style="background: var(--accent-2);"></span>Pedidos</div>
+        <div class="value" id="kpiOrders">-</div>
+        <div class="delta" id="kpiOrdersDelta">Cargando datos</div>
+      </div>
+      <div class="card kpi">
+        <div class="label"><span class="dot" style="background: var(--accent-3);"></span>Ticket medio</div>
+        <div class="value" id="kpiAov">-</div>
+        <div class="delta" id="kpiAovDelta">Cargando datos</div>
+      </div>
+      <div class="card kpi">
+        <div class="label"><span class="dot" style="background: var(--danger);"></span>Margen bruto</div>
+        <div class="value" id="kpiMargin">-</div>
+        <div class="delta" id="kpiMarginDelta">Cargando datos</div>
+      </div>
+      <div class="card kpi">
+        <div class="label"><span class="dot" style="background: #a78bfa;"></span>Unidades</div>
+        <div class="value" id="kpiUnits">-</div>
+        <div class="delta" id="kpiUnitsDelta">Cargando datos</div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <div class="card panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Ventas semanales</div>
+            <div class="panel-subtitle">Importe neto distribuido por día de la semana</div>
+          </div>
+          <div class="chip" id="weeklySummary">Sin datos</div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-grid" id="weeklyChart"></div>
+        </div>
+      </div>
+
+      <aside class="side-stats">
+        <div class="card mini">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Canales top</div>
+              <div class="panel-subtitle">Participación sobre ventas netas</div>
+            </div>
+          </div>
+          <div class="list" id="channelList"></div>
+        </div>
+
+        <div class="card mini">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Calidad de datos</div>
+              <div class="panel-subtitle">Problemas detectados al cruzar las dimensiones</div>
+            </div>
+          </div>
+          <div class="list" id="qualityList"></div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section-grid">
+      <div class="card panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Categorías y marcas</div>
+            <div class="panel-subtitle">Cruce con dim_articulos</div>
+          </div>
+        </div>
+        <div class="list" id="categoryList"></div>
+      </div>
+
+      <div class="card panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Promociones y segmentos</div>
+            <div class="panel-subtitle">Ventas netas por promoción y segmento de cliente</div>
+          </div>
+        </div>
+        <div class="list" id="promoList"></div>
+        <div style="height:12px"></div>
+        <div class="list" id="segmentList"></div>
+      </div>
+    </section>
+
+    <section class="section-grid">
+      <div class="card panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Lecturas de negocio</div>
+            <div class="panel-subtitle">Resumen narrativo generado a partir de los datos filtrados</div>
+          </div>
+        </div>
+        <div class="insight-list" id="insightList"></div>
+      </div>
+
+      <div class="card panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Mapa de fuentes</div>
+            <div class="panel-subtitle">Qué CSV alimenta cada KPI</div>
+          </div>
+        </div>
+        <div class="source-map">
+          <div class="source-row"><b>Ventas netas</b><span>fact_ventas.importe_neto</span></div>
+          <div class="source-row"><b>Pedidos</b><span>fact_ventas.id_venta</span></div>
+          <div class="source-row"><b>Ticket medio</b><span>importe_neto / pedidos</span></div>
+          <div class="source-row"><b>Margen bruto</b><span>fact_ventas.margen_bruto</span></div>
+          <div class="source-row"><b>Canales</b><span>dim_canal + fact_ventas.id_canal</span></div>
+          <div class="source-row"><b>Tiempo</b><span>dim_fecha + fact_ventas.id_fecha</span></div>
+          <div class="source-row"><b>Producto</b><span>dim_articulos + fact_ventas.id_articulo</span></div>
+          <div class="source-row"><b>Promociones</b><span>dim_promociones + fact_ventas.id_promocion</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card table-panel">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Últimas ventas</div>
+            <div class="panel-subtitle">Registro reciente sin exponer datos personales</div>
+          </div>
+          <div class="chip" id="tableSummary">0 registros</div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Venta</th>
+              <th>Fecha</th>
+              <th>Canal</th>
+              <th>Artículo</th>
+              <th>Categoría</th>
+              <th>Promoción</th>
+              <th>Importe neto</th>
+              <th>Margen</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="salesTable"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const state = {
+      sales: [],
+      articles: [],
+      channels: [],
+      dates: [],
+      promotions: [],
+      users: [],
+      promoArticles: [],
+      year: "all",
+      channel: "all"
+    };
+
+    const money = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
+    const number = new Intl.NumberFormat("es-ES");
+
+    function parseCSV(text) {
+      const firstLine = text.split(/\r?\n/).find(line => line.trim().length > 0) || "";
+      const commaCount = (firstLine.match(/,/g) || []).length;
+      const semicolonCount = (firstLine.match(/;/g) || []).length;
+      const delimiter = semicolonCount > commaCount ? ";" : ",";
+      const rows = [];
+      let current = [];
+      let value = "";
+      let inQuotes = false;
+
+      for (let i = 0; i < text.length; i += 1) {
+        const char = text[i];
+        const next = text[i + 1];
+
+        if (inQuotes) {
+          if (char === '"' && next === '"') {
+            value += '"';
+            i += 1;
+          } else if (char === '"') {
+            inQuotes = false;
+          } else {
+            value += char;
+          }
+          continue;
+        }
+
+        if (char === '"') {
+          inQuotes = true;
+          continue;
+        }
+
+        if (char === delimiter) {
+          current.push(value);
+          value = "";
+          continue;
+        }
+
+        if (char === "\n") {
+          current.push(value);
+          rows.push(current);
+          current = [];
+          value = "";
+          continue;
+        }
+
+        if (char !== "\r") {
+          value += char;
+        }
+      }
+
+      if (value.length || current.length) {
+        current.push(value);
+        rows.push(current);
+      }
+
+      const headers = rows.shift().map(header => header.trim());
+      return rows
+        .filter(row => row.some(cell => String(cell).trim() !== ""))
+        .map(row => Object.fromEntries(headers.map((header, index) => [header, (row[index] ?? "").trim()])));
+    }
+
+    async function loadCSV(path) {
+      const response = await fetch(path);
+      if (!response.ok) {
+        throw new Error(`No se pudo cargar ${path}: ${response.status}`);
+      }
+      return parseCSV(await response.text());
+    }
+
+    function sum(list, selector) {
+      return list.reduce((acc, item) => acc + selector(item), 0);
+    }
+
+    function groupBy(list, keyFn, valueFn) {
+      const map = new Map();
+      for (const item of list) {
+        const key = keyFn(item);
+        map.set(key, (map.get(key) || 0) + valueFn(item));
+      }
+      return [...map.entries()].map(([key, value]) => ({ key, value }));
+    }
+
+    function compactDate(raw) {
+      if (!raw) return "-";
+      const date = new Date(raw);
+      if (Number.isNaN(date.getTime())) return raw;
+      return date.toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" });
+    }
+
+    function getMap(rows, key) {
+      return new Map(rows.map(row => [row[key], row]));
+    }
+
+    function enrichSales() {
+      const articles = getMap(state.articles, "id_articulo");
+      const channels = getMap(state.channels, "id_canal");
+      const dates = getMap(state.dates, "id_fecha");
+      const promotions = getMap(state.promotions, "id_promocion");
+      const users = getMap(state.users, "id_usuario");
+
+      return state.sales.map(sale => {
+        const article = articles.get(sale.id_articulo) || {};
+        const channel = channels.get(sale.id_canal) || {};
+        const date = dates.get(sale.id_fecha) || {};
+        const promo = promotions.get(sale.id_promocion) || {};
+        const user = users.get(sale.id_usuario) || {};
+        const amount = Number(sale.importe_neto || 0);
+        const margin = Number(sale.margen_bruto || 0);
+        const qty = Number(sale.unidades || 0);
+        const orderDate = sale.fecha_venta ? new Date(sale.fecha_venta) : null;
+
+        return {
+          ...sale,
+          _amount: Number.isFinite(amount) ? amount : 0,
+          _margin: Number.isFinite(margin) ? margin : 0,
+          _qty: Number.isFinite(qty) ? qty : 0,
+          _year: Number(date.anio || (orderDate ? orderDate.getFullYear() : 0)),
+          _weekday: orderDate ? orderDate.toLocaleDateString("es-ES", { weekday: "short" }) : "",
+          articleName: article.nombre_articulo || sale.id_articulo,
+          articleCategory: article.categoria || "Sin categoría",
+          articleBrand: article.marca || "Sin marca",
+          channelName: channel.canal || sale.id_canal,
+          channelType: channel.tipo_canal || "",
+          channelZone: channel.zona_venta || "",
+          promoName: promo.nombre_promocion || sale.id_promocion,
+          promoType: promo.tipo_promocion || "",
+          userSegment: user.segmento_cliente || "Sin segmento",
+          userCity: user.ciudad || ""
+        };
+      });
+    }
+
+    function applyFilters(rows) {
+      return rows.filter(row => {
+        const yearOk = state.year === "all" || String(row._year) === state.year;
+        const channelOk = state.channel === "all" || row.channelName === state.channel;
+        return yearOk && channelOk;
+      });
+    }
+
+    function renderOptions() {
+      const years = [...new Set(state.sales.map(sale => {
+        const row = state.dates.find(date => date.id_fecha === sale.id_fecha);
+        return row ? row.anio : null;
+      }).filter(Boolean))].sort();
+
+      const channels = [...new Set(state.channels.map(channel => channel.canal).filter(Boolean))].sort();
+      const yearFilter = document.getElementById("yearFilter");
+      const channelFilter = document.getElementById("channelFilter");
+
+      yearFilter.innerHTML = `<option value="all">Todo el período</option>${years.map(year => `<option value="${year}">${year}</option>`).join("")}`;
+      channelFilter.innerHTML = `<option value="all">Todos los canales</option>${channels.map(channel => `<option value="${channel}">${channel}</option>`).join("")}`;
+    }
+
+    function renderKPIs(filtered) {
+      const totalSales = sum(filtered, sale => sale._amount);
+      const totalOrders = filtered.length;
+      const totalUnits = sum(filtered, sale => sale._qty);
+      const totalMargin = sum(filtered, sale => sale._margin);
+      const aov = totalOrders ? totalSales / totalOrders : 0;
+      const marginPct = totalSales ? (totalMargin / totalSales) * 100 : 0;
+
+      document.getElementById("kpiSales").textContent = money.format(totalSales);
+      document.getElementById("kpiOrders").textContent = number.format(totalOrders);
+      document.getElementById("kpiAov").textContent = money.format(aov);
+      document.getElementById("kpiMargin").textContent = `${marginPct.toFixed(1)}%`;
+      document.getElementById("kpiUnits").textContent = number.format(totalUnits);
+
+      document.getElementById("kpiSalesDelta").textContent = `${money.format(totalMargin)} de margen bruto`;
+      document.getElementById("kpiOrdersDelta").textContent = `${number.format(filtered.length)} pedidos visibles`;
+      document.getElementById("kpiAovDelta").textContent = `${money.format(aov)} por pedido`;
+      document.getElementById("kpiMarginDelta").textContent = `${money.format(totalMargin)} acumulados`;
+      document.getElementById("kpiUnitsDelta").textContent = `${number.format(totalUnits)} unidades vendidas`;
+    }
+
+    function renderWeeklyChart(filtered) {
+      const order = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"];
+      const weekly = order.map(day => ({
+        day,
+        value: sum(filtered.filter(sale => sale._weekday.toLowerCase().startsWith(day.slice(0, 2))), sale => sale._amount)
+      }));
+      const max = Math.max(...weekly.map(item => item.value), 1);
+
+      document.getElementById("weeklyChart").innerHTML = weekly.map(item => {
+        const primary = Math.max(12, (item.value / max) * 100);
+        const secondary = Math.max(10, primary * 0.72);
+        return `
+          <div class="bar-group">
+            <div class="bars">
+              <div class="bar" style="height:${primary}%"></div>
+              <div class="bar secondary" style="height:${secondary}%"></div>
+            </div>
+            <div class="day">${item.day}</div>
+          </div>
+        `;
+      }).join("");
+
+      const topDay = weekly.reduce((best, item) => item.value > best.value ? item : best, weekly[0]);
+      document.getElementById("weeklySummary").textContent = topDay.value ? `${topDay.day.toUpperCase()} lidera con ${money.format(topDay.value)}` : "Sin ventas";
+    }
+
+    function renderList(targetId, items, total, options = {}) {
+      const target = document.getElementById(targetId);
+      target.innerHTML = items.map(item => {
+        const pct = total ? (item.value / total) * 100 : 0;
+        const color = options.color || "linear-gradient(90deg, var(--accent-2), var(--accent))";
+        return `
+          <div class="list-item">
+            <div class="list-head">
+              <strong>${item.key}</strong>
+              <span>${options.right ? options.right(item) : money.format(item.value)}</span>
+            </div>
+            <div class="track"><div style="width:${Math.min(100, pct)}%; background:${color};"></div></div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderChannelList(filtered) {
+      const grouped = groupBy(filtered, sale => sale.channelName, sale => sale._amount)
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 5);
+      const total = sum(filtered, sale => sale._amount) || 1;
+      renderList("channelList", grouped, total, { color: "linear-gradient(90deg, #76a7ff, #46d7b2)" });
+    }
+
+    function renderCategoryList(filtered) {
+      const grouped = groupBy(filtered, sale => `${sale.articleCategory} · ${sale.articleBrand}`, sale => sale._amount)
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 6);
+      const total = sum(filtered, sale => sale._amount) || 1;
+      renderList("categoryList", grouped, total, { color: "linear-gradient(90deg, #ffb25e, #76a7ff)" });
+    }
+
+    function renderPromoList(filtered) {
+      const grouped = groupBy(filtered, sale => sale.promoName, sale => sale._amount)
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 5);
+      const total = sum(filtered, sale => sale._amount) || 1;
+      renderList("promoList", grouped, total, { color: "linear-gradient(90deg, #a78bfa, #76a7ff)" });
+    }
+
+    function renderSegmentList(filtered) {
+      const grouped = groupBy(filtered, sale => sale.userSegment, sale => sale._amount)
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 5);
+      const total = sum(filtered, sale => sale._amount) || 1;
+      renderList("segmentList", grouped, total, { color: "linear-gradient(90deg, #46d7b2, #8df1d5)" });
+    }
+
+    function renderQuality(filtered) {
+      const articleSet = new Set(state.articles.map(article => article.id_articulo));
+      const channelSet = new Set(state.channels.map(channel => channel.id_canal));
+      const dateSet = new Set(state.dates.map(date => date.id_fecha));
+      const promoSet = new Set(state.promotions.map(promo => promo.id_promocion));
+
+      const missingArticles = filtered.filter(sale => !articleSet.has(sale.id_articulo)).length;
+      const missingChannels = filtered.filter(sale => !channelSet.has(sale.id_canal)).length;
+      const missingDates = filtered.filter(sale => !dateSet.has(sale.id_fecha)).length;
+      const missingPromos = filtered.filter(sale => !promoSet.has(sale.id_promocion)).length;
+      const parseIssues = filtered.filter(sale => !Number.isFinite(Number(sale.importe_neto)) || !Number.isFinite(Number(sale.margen_bruto))).length;
+      const totalIssues = missingArticles + missingChannels + missingDates + missingPromos + parseIssues;
+
+      const items = [
+        { label: "Artículos sin dimensión", value: missingArticles },
+        { label: "Canales sin dimensión", value: missingChannels },
+        { label: "Fechas sin dimensión", value: missingDates },
+        { label: "Promociones sin catálogo", value: missingPromos },
+        { label: "Valores numéricos dudosos", value: parseIssues }
+      ];
+
+      document.getElementById("qualityState").textContent = totalIssues ? `${totalIssues} incidencias` : "Sin incidencias";
+
+      document.getElementById("qualityList").innerHTML = items.map(item => `
+        <div class="list-item">
+          <div class="list-head">
+            <strong>${item.label}</strong>
+            <span>${number.format(item.value)}</span>
+          </div>
+          <div class="track"><div style="width:${Math.min(100, item.value * 20)}%; background: linear-gradient(90deg, var(--danger), var(--accent-3));"></div></div>
+        </div>
+      `).join("");
+
+      document.getElementById("loadState").textContent = totalIssues ? `Revisar ${number.format(totalIssues)} incidencias` : `Datos cargados correctamente`;
+    }
+
+    function renderInsights(filtered) {
+      const totalSales = sum(filtered, sale => sale._amount);
+      const totalOrders = filtered.length;
+      const topChannel = groupBy(filtered, sale => sale.channelName, sale => sale._amount).sort((a, b) => b.value - a.value)[0];
+      const topCategory = groupBy(filtered, sale => sale.articleCategory, sale => sale._amount).sort((a, b) => b.value - a.value)[0];
+      const topPromo = groupBy(filtered, sale => sale.promoName, sale => sale._amount).sort((a, b) => b.value - a.value)[0];
+      const marginPct = totalSales ? (sum(filtered, sale => sale._margin) / totalSales) * 100 : 0;
+      const topSegment = groupBy(filtered, sale => sale.userSegment, sale => sale._amount).sort((a, b) => b.value - a.value)[0];
+
+      const insights = [
+        totalOrders ? `Se analizaron ${number.format(totalOrders)} pedidos con unas ventas netas de ${money.format(totalSales)}.` : "No hay registros para los filtros activos.",
+        topChannel ? `El canal principal es ${topChannel.key} con ${money.format(topChannel.value)}.` : "No hay canal dominante en este corte.",
+        topCategory ? `La categoría líder es ${topCategory.key}, por delante del resto del mix.` : "No se detectó una categoría clara.",
+        topPromo ? `La promoción más relevante es ${topPromo.key}, concentrando más ventas que el resto.` : "No hay promociones destacadas en este corte.",
+        `El margen bruto medio del filtro actual es ${marginPct.toFixed(1)}%.`,
+        topSegment ? `El segmento con mayor peso es ${topSegment.key}.` : "No hay información suficiente de segmento."
+      ];
+
+      document.getElementById("insightList").innerHTML = insights.map(text => `<div class="insight">${text}</div>`).join("");
+    }
+
+    function renderTable(filtered) {
+      const recent = [...filtered]
+        .sort((a, b) => new Date(b.fecha_venta) - new Date(a.fecha_venta))
+        .slice(0, 10);
+
+      document.getElementById("tableSummary").textContent = `${number.format(recent.length)} registros`;
+      document.getElementById("salesTable").innerHTML = recent.map(sale => {
+        const statusClass = sale.estado_venta === "Completada" ? "ok" : sale.estado_venta === "Pendiente" ? "wait" : "bad";
+        return `
+          <tr>
+            <td>${sale.id_venta}</td>
+            <td>${compactDate(sale.fecha_venta)}</td>
+            <td>${sale.channelName}</td>
+            <td>${sale.articleName}</td>
+            <td>${sale.articleCategory}</td>
+            <td>${sale.promoName}</td>
+            <td>${money.format(sale._amount)}</td>
+            <td>${money.format(sale._margin)}</td>
+            <td><span class="status ${statusClass}">${sale.estado_venta}</span></td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function updateDashboard() {
+      const enriched = enrichSales();
+      const filtered = applyFilters(enriched);
+
+      renderKPIs(filtered);
+      renderWeeklyChart(filtered);
+      renderChannelList(filtered);
+      renderCategoryList(filtered);
+      renderPromoList(filtered);
+      renderSegmentList(filtered);
+      renderQuality(enriched);
+      renderInsights(filtered);
+      renderTable(filtered);
+
+      const channelsVisible = [...new Set(filtered.map(sale => sale.channelName).filter(Boolean))].length;
+      document.getElementById("loadState").textContent = `${number.format(filtered.length)} pedidos | ${number.format(channelsVisible)} canales visibles`;
+    }
+
+    async function init() {
+      try {
+        const base = "resources";
+        const [sales, articles, channels, dates, promotions, users, promoArticles] = await Promise.all([
+          loadCSV(`${base}/fact_ventas.csv`),
+          loadCSV(`${base}/dim_articulos.csv`),
+          loadCSV(`${base}/dim_canal.csv`),
+          loadCSV(`${base}/dim_fecha.csv`),
+          loadCSV(`${base}/dim_promociones.csv`),
+          loadCSV(`${base}/dim_usuarios.csv`),
+          loadCSV(`${base}/fact_promociones_articulos.csv`)
+        ]);
+
+        state.sales = sales;
+        state.articles = articles;
+        state.channels = channels;
+        state.dates = dates;
+        state.promotions = promotions;
+        state.users = users;
+        state.promoArticles = promoArticles;
+
+        renderOptions();
+
+        const yearFilter = document.getElementById("yearFilter");
+        const channelFilter = document.getElementById("channelFilter");
+
+        yearFilter.addEventListener("change", event => {
+          state.year = event.target.value;
+          updateDashboard();
+        });
+
+        channelFilter.addEventListener("change", event => {
+          state.channel = event.target.value;
+          updateDashboard();
+        });
+
+        updateDashboard();
+      } catch (error) {
+        console.error(error);
+        document.body.innerHTML = `
+          <div class="error-box">
+            <h1>No se pudieron cargar los CSV</h1>
+            <p>Este dashboard necesita ejecutarse mediante HTTP para poder leer la carpeta <strong>resources/</strong>.</p>
+            <p>Arráncalo con un servidor local y vuelve a abrir la página.</p>
+            <code>${String(error)}</code>
+          </div>
+        `;
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
