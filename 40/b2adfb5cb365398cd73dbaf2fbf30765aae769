@@ -1,0 +1,19 @@
+README.md
+  s_c05c655701b0ae::t_e94c92d01be548 1-788
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "40b2adfb5cb365398cd73dbaf2fbf30765aae769",
+  "prompts": {},
+  "sessions": {
+    "s_c05c655701b0ae": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f6493-30a4-79c0-97bd-ba41da4207de",
+        "model": "unknown"
+      },
+      "human_author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}
