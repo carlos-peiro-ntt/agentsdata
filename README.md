@@ -617,13 +617,28 @@ Generate an interactive HTML sales dashboard for the business, reading data from
 
 ## Exercise Deliverables
 
-- Update the current html
-- Create a confluence page documentation
+- Update the current HTML dashboard in `index.html`.
+- Create a Confluence page documenting the dashboard.
+
+## Required MCP Sources and Destinations
+
+- Use the configured **Supabase MCP** in read-only mode.
+- Read the required data from these tables in the `public` schema:
+  - `fact_ventas`
+  - `dim_articulos`
+  - `dim_canal`
+  - `dim_fecha`
+  - `dim_usuarios`
+  - `dim_promociones`
+  - `fact_promociones_articulos`
+- Inspect the table schemas and relationships before defining joins or calculating KPIs. Do not invent columns, relationships, or values.
+- Use the configured **Confluence MCP** to create the documentation as a **child page of the existing page with ID `1430576442`**. Do not create it at the Confluence root or under a different parent.
+- Title the new child page using exactly this pattern: `{creator name} - Informe venta`. If the creator name is not available from the repository or conversation, ask for it before implementation.
+- The Confluence page must document the data sources and joins, KPI definitions, filters, data-quality findings, assumptions, and known limitations.
 
 ## Dashboard Technical Requirements
 
-- Follow the skills
-- Use the Confluence and Supabase mcp
+- Follow the installed skills and the repository instructions in `AGENTS.md`.
 
 The output must be a **single self-contained HTML file**.
 
