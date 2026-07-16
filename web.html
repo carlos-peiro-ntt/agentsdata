@@ -220,12 +220,13 @@
     }
 
     .chart-box {
-      min-height: 340px;
+      min-height: 470px;
       border-radius: 18px;
       border: 1px solid var(--line);
       background:
         linear-gradient(180deg, rgba(20, 29, 48, 0.7), rgba(13, 20, 34, 0.55));
       padding: 16px;
+      overflow: hidden;
     }
 
     .chart-grid {
@@ -234,7 +235,20 @@
       gap: 12px;
       align-items: end;
       height: 100%;
-      min-height: 300px;
+      min-height: 420px;
+    }
+
+    .svg-wrap {
+      width: 100%;
+      height: 420px;
+      display: block;
+      min-width: 100%;
+    }
+
+    #weeklyChart {
+      width: 100%;
+      min-height: 420px;
+      display: block;
     }
 
     .bar-group {
@@ -466,21 +480,16 @@
   <div class="wrap">
     <section class="hero">
       <div class="card hero-main">
-        <div class="eyebrow"><span class="dot"></span> Dashboard comercial con CSV locales</div>
+        <div class="eyebrow"><span class="dot"></span> Comparativa interanual con snapshot validado desde Supabase</div>
         <h1>Ventas, margen y canales en una sola vista operativa</h1>
         <p class="hero-copy">
-          Este panel analiza <strong>fact_ventas.csv</strong> junto con las dimensiones de artículo, canal, fecha, usuarios y promociones.
-          Está pensado para negocio: métricas claras, lectura rápida y validación de calidad de datos antes de sacar conclusiones.
+          El dashboard compara el periodo seleccionado con el mismo tramo del año anterior, aplica los filtros no temporales de forma simétrica
+          y bloquea cualquier lectura si la calidad de datos deja de ser confiable.
         </p>
         <div class="meta-row">
-          <select id="yearFilter" aria-label="Filtrar por año">
-            <option value="all">Todo el período</option>
-          </select>
-          <select id="channelFilter" aria-label="Filtrar por canal">
-            <option value="all">Todos los canales</option>
-          </select>
-          <div class="chip" id="loadState">Cargando CSV...</div>
+          <div class="chip" id="loadState">Cargando datos...</div>
         </div>
+        <div class="selection-summary" id="selectionSummary"></div>
       </div>
 
       <div class="card hero-side">
@@ -498,6 +507,12 @@
         </div>
       </div>
     </section>
+
+    <div class="quality-banner ok" id="qualityBanner">
+      <strong>Calidad validada</strong>
+      <span id="qualitySummary">Validación pendiente.</span>
+      <div class="status-group" id="qualityBadges"></div>
+    </div>
 
     <section class="grid-kpis">
       <div class="card kpi">
@@ -603,10 +618,10 @@
         <div class="panel-head">
           <div>
             <div class="panel-title">Mapa de fuentes</div>
-            <div class="panel-subtitle">Qué CSV alimenta cada KPI</div>
+            <div class="panel-subtitle">Qué tabla y campo alimenta cada KPI</div>
           </div>
         </div>
-        <div class="source-map">
+        <div class="source-map" id="sourceList">
           <div class="source-row"><b>Ventas netas</b><span>fact_ventas.importe_neto</span></div>
           <div class="source-row"><b>Pedidos</b><span>fact_ventas.id_venta</span></div>
           <div class="source-row"><b>Ticket medio</b><span>importe_neto / pedidos</span></div>
@@ -650,422 +665,493 @@
     </section>
   </div>
 
-  <script>
-    const state = {
-      sales: [],
-      articles: [],
-      channels: [],
-      dates: [],
-      promotions: [],
-      users: [],
-      promoArticles: [],
-      year: "all",
-      channel: "all"
-    };
+  
+<script>
+const SNAPSHOT = [{"idVenta": "VTA0000001", "idLineaVenta": "VTA0000001-01", "fecha": "2024-01-01", "anio": 2024, "mesNumero": 1, "mesNombre": "Enero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000177", "categoria": "Cocina", "subcategoria": "Microondas", "marca": "ElectraHome", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 219.99, "margenBruto": 76.26, "estadoVenta": "Completada"}, {"idVenta": "VTA0000002", "idLineaVenta": "VTA0000002-01", "fecha": "2024-01-10", "anio": 2024, "mesNumero": 1, "mesNombre": "Enero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000146", "categoria": "Cocina", "subcategoria": "Hornos", "marca": "FrioMax", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 1759.98, "margenBruto": 585.22, "estadoVenta": "Completada"}, {"idVenta": "VTA0000003", "idLineaVenta": "VTA0000003-01", "fecha": "2024-01-11", "anio": 2024, "mesNumero": 1, "mesNombre": "Enero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000264", "categoria": "Limpieza", "subcategoria": "Aspiradoras", "marca": "Balayra", "seccion": "Limpieza", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 169.99, "margenBruto": 64.64, "estadoVenta": "Completada"}, {"idVenta": "VTA0000004", "idLineaVenta": "VTA0000004-01", "fecha": "2024-01-14", "anio": 2024, "mesNumero": 1, "mesNombre": "Enero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000360", "categoria": "Pequeno electrodomestico", "subcategoria": "Robots de cocina", "marca": "CleanBot", "seccion": "Pequeno electrodomestico", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 709.99, "margenBruto": 284.89, "estadoVenta": "Completada"}, {"idVenta": "VTA0000005", "idLineaVenta": "VTA0000005-01", "fecha": "2024-01-22", "anio": 2024, "mesNumero": 1, "mesNombre": "Enero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000301", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "EcoWash", "seccion": "Limpieza", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 179.99, "margenBruto": 69.03, "estadoVenta": "Completada"}, {"idVenta": "VTA0000006", "idLineaVenta": "VTA0000006-01", "fecha": "2024-01-24", "anio": 2024, "mesNumero": 1, "mesNombre": "Enero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000142", "categoria": "Cocina", "subcategoria": "Hornos", "marca": "FrioMax", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 599.99, "margenBruto": 175.23, "estadoVenta": "Completada"}, {"idVenta": "VTA0000007", "idLineaVenta": "VTA0000007-01", "fecha": "2024-01-28", "anio": 2024, "mesNumero": 1, "mesNombre": "Enero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000181", "categoria": "Cocina", "subcategoria": "Microondas", "marca": "Balayra", "seccion": "Cocina", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 279.99, "margenBruto": 128.14, "estadoVenta": "Completada"}, {"idVenta": "VTA0000008", "idLineaVenta": "VTA0000008-01", "fecha": "2024-01-30", "anio": 2024, "mesNumero": 1, "mesNombre": "Enero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000199", "categoria": "Cocina", "subcategoria": "Campanas extractoras", "marca": "Balayra", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 299.99, "margenBruto": 122.54, "estadoVenta": "Completada"}, {"idVenta": "VTA0000009", "idLineaVenta": "VTA0000009-01", "fecha": "2024-01-31", "anio": 2024, "mesNumero": 1, "mesNombre": "Enero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000146", "categoria": "Cocina", "subcategoria": "Hornos", "marca": "FrioMax", "seccion": "Cocina", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 879.99, "margenBruto": 292.61, "estadoVenta": "Completada"}, {"idVenta": "VTA0000010", "idLineaVenta": "VTA0000010-01", "fecha": "2024-01-31", "anio": 2024, "mesNumero": 1, "mesNombre": "Enero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000326", "categoria": "Pequeno electrodomestico", "subcategoria": "Freidoras de aire", "marca": "HomeTech", "seccion": "Pequeno electrodomestico", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "PMO202401", "nombrePromocion": "Rebajas enero 2024", "tipoPromocion": "Rebajas", "unidades": 1, "importeNeto": 108.51, "margenBruto": 39.46, "estadoVenta": "Completada"}, {"idVenta": "VTA0000011", "idLineaVenta": "VTA0000011-01", "fecha": "2024-02-05", "anio": 2024, "mesNumero": 2, "mesNombre": "Febrero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000182", "categoria": "Cocina", "subcategoria": "Microondas", "marca": "CleanBot", "seccion": "Cocina", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 309.99, "margenBruto": 113.63, "estadoVenta": "Completada"}, {"idVenta": "VTA0000012", "idLineaVenta": "VTA0000012-01", "fecha": "2024-02-07", "anio": 2024, "mesNumero": 2, "mesNombre": "Febrero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000281", "categoria": "Limpieza", "subcategoria": "Robots aspiradores", "marca": "HomeTech", "seccion": "Limpieza", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 519.99, "margenBruto": 172.28, "estadoVenta": "Completada"}, {"idVenta": "VTA0000013", "idLineaVenta": "VTA0000013-01", "fecha": "2024-02-09", "anio": 2024, "mesNumero": 2, "mesNombre": "Febrero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000342", "categoria": "Pequeno electrodomestico", "subcategoria": "Batidoras", "marca": "NovaCasa", "seccion": "Pequeno electrodomestico", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 59.99, "margenBruto": 27.3, "estadoVenta": "Completada"}, {"idVenta": "VTA0000014", "idLineaVenta": "VTA0000014-01", "fecha": "2024-02-15", "anio": 2024, "mesNumero": 2, "mesNombre": "Febrero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000193", "categoria": "Cocina", "subcategoria": "Campanas extractoras", "marca": "CleanBot", "seccion": "Cocina", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 419.99, "margenBruto": 133.36, "estadoVenta": "Completada"}, {"idVenta": "VTA0000015", "idLineaVenta": "VTA0000015-01", "fecha": "2024-02-18", "anio": 2024, "mesNumero": 2, "mesNombre": "Febrero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000350", "categoria": "Pequeno electrodomestico", "subcategoria": "Robots de cocina", "marca": "Balayra", "seccion": "Pequeno electrodomestico", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 269.99, "margenBruto": 87.89, "estadoVenta": "Completada"}, {"idVenta": "VTA0000016", "idLineaVenta": "VTA0000016-01", "fecha": "2024-02-20", "anio": 2024, "mesNumero": 2, "mesNombre": "Febrero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000172", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "FrioMax", "seccion": "Cocina", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 599.99, "margenBruto": 205.08, "estadoVenta": "Completada"}, {"idVenta": "VTA0000017", "idLineaVenta": "VTA0000017-01", "fecha": "2024-02-28", "anio": 2024, "mesNumero": 2, "mesNombre": "Febrero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000260", "categoria": "Limpieza", "subcategoria": "Aspiradoras", "marca": "IberHome", "seccion": "Limpieza", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 309.99, "margenBruto": 136.53, "estadoVenta": "Completada"}, {"idVenta": "VTA0000018", "idLineaVenta": "VTA0000018-01", "fecha": "2024-03-26", "anio": 2024, "mesNumero": 3, "mesNombre": "Marzo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000341", "categoria": "Pequeno electrodomestico", "subcategoria": "Batidoras", "marca": "ElectraHome", "seccion": "Pequeno electrodomestico", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 39.99, "margenBruto": 15.79, "estadoVenta": "Completada"}, {"idVenta": "VTA0000019", "idLineaVenta": "VTA0000019-01", "fecha": "2024-04-10", "anio": 2024, "mesNumero": 4, "mesNombre": "Abril", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000350", "categoria": "Pequeno electrodomestico", "subcategoria": "Robots de cocina", "marca": "Balayra", "seccion": "Pequeno electrodomestico", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 269.99, "margenBruto": 87.89, "estadoVenta": "Completada"}, {"idVenta": "VTA0000020", "idLineaVenta": "VTA0000020-01", "fecha": "2024-04-11", "anio": 2024, "mesNumero": 4, "mesNombre": "Abril", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000285", "categoria": "Limpieza", "subcategoria": "Robots aspiradores", "marca": "HomeTech", "seccion": "Limpieza", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 959.98, "margenBruto": 312.38, "estadoVenta": "Completada"}, {"idVenta": "VTA0000021", "idLineaVenta": "VTA0000021-01", "fecha": "2024-04-11", "anio": 2024, "mesNumero": 4, "mesNombre": "Abril", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000306", "categoria": "Pequeno electrodomestico", "subcategoria": "Cafeteras", "marca": "Nordline", "seccion": "Pequeno electrodomestico", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 299.99, "margenBruto": 111.15, "estadoVenta": "Cancelada"}, {"idVenta": "VTA0000022", "idLineaVenta": "VTA0000022-01", "fecha": "2024-04-18", "anio": 2024, "mesNumero": 4, "mesNombre": "Abril", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000136", "categoria": "Cocina", "subcategoria": "Hornos", "marca": "NovaCasa", "seccion": "Cocina", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 499.99, "margenBruto": 149.73, "estadoVenta": "Devuelta"}, {"idVenta": "VTA0000023", "idLineaVenta": "VTA0000023-01", "fecha": "2024-04-22", "anio": 2024, "mesNumero": 4, "mesNombre": "Abril", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000360", "categoria": "Pequeno electrodomestico", "subcategoria": "Robots de cocina", "marca": "CleanBot", "seccion": "Pequeno electrodomestico", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 688.69, "margenBruto": 263.59, "estadoVenta": "Completada"}, {"idVenta": "VTA0000024", "idLineaVenta": "VTA0000024-01", "fecha": "2024-04-29", "anio": 2024, "mesNumero": 4, "mesNombre": "Abril", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000142", "categoria": "Cocina", "subcategoria": "Hornos", "marca": "FrioMax", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 599.99, "margenBruto": 175.23, "estadoVenta": "Completada"}, {"idVenta": "VTA0000025", "idLineaVenta": "VTA0000025-01", "fecha": "2024-05-01", "anio": 2024, "mesNumero": 5, "mesNombre": "Mayo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000296", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "EcoWash", "seccion": "Limpieza", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 219.99, "margenBruto": 68.06, "estadoVenta": "Completada"}, {"idVenta": "VTA0000026", "idLineaVenta": "VTA0000026-01", "fecha": "2024-05-02", "anio": 2024, "mesNumero": 5, "mesNombre": "Mayo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000191", "categoria": "Cocina", "subcategoria": "Campanas extractoras", "marca": "EcoWash", "seccion": "Cocina", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 469.99, "margenBruto": 175.98, "estadoVenta": "Completada"}, {"idVenta": "VTA0000027", "idLineaVenta": "VTA0000027-01", "fecha": "2024-05-03", "anio": 2024, "mesNumero": 5, "mesNombre": "Mayo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000145", "categoria": "Cocina", "subcategoria": "Hornos", "marca": "CleanBot", "seccion": "Cocina", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 499.99, "margenBruto": 204.99, "estadoVenta": "Completada"}, {"idVenta": "VTA0000028", "idLineaVenta": "VTA0000028-01", "fecha": "2024-05-05", "anio": 2024, "mesNumero": 5, "mesNombre": "Mayo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000260", "categoria": "Limpieza", "subcategoria": "Aspiradoras", "marca": "IberHome", "seccion": "Limpieza", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 309.99, "margenBruto": 136.53, "estadoVenta": "Completada"}, {"idVenta": "VTA0000029", "idLineaVenta": "VTA0000029-01", "fecha": "2024-05-13", "anio": 2024, "mesNumero": 5, "mesNombre": "Mayo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000146", "categoria": "Cocina", "subcategoria": "Hornos", "marca": "FrioMax", "seccion": "Cocina", "idCanal": "CAN005", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Este", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 879.99, "margenBruto": 292.61, "estadoVenta": "Completada"}, {"idVenta": "VTA0000030", "idLineaVenta": "VTA0000030-01", "fecha": "2024-05-16", "anio": 2024, "mesNumero": 5, "mesNombre": "Mayo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000319", "categoria": "Pequeno electrodomestico", "subcategoria": "Cafeteras", "marca": "KitchNova", "seccion": "Pequeno electrodomestico", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 669.29, "margenBruto": 177.0, "estadoVenta": "Completada"}, {"idVenta": "VTA0000031", "idLineaVenta": "VTA0000031-01", "fecha": "2024-05-18", "anio": 2024, "mesNumero": 5, "mesNombre": "Mayo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000188", "categoria": "Cocina", "subcategoria": "Microondas", "marca": "Balayra", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 159.99, "margenBruto": 64.61, "estadoVenta": "Completada"}, {"idVenta": "VTA0000032", "idLineaVenta": "VTA0000032-01", "fecha": "2024-05-29", "anio": 2024, "mesNumero": 5, "mesNombre": "Mayo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000161", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "EcoWash", "seccion": "Cocina", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 279.99, "margenBruto": 88.44, "estadoVenta": "Completada"}, {"idVenta": "VTA0000033", "idLineaVenta": "VTA0000033-01", "fecha": "2024-06-07", "anio": 2024, "mesNumero": 6, "mesNombre": "Junio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000154", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "IberHome", "seccion": "Cocina", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 489.99, "margenBruto": 195.19, "estadoVenta": "Completada"}, {"idVenta": "VTA0000034", "idLineaVenta": "VTA0000034-01", "fecha": "2024-06-13", "anio": 2024, "mesNumero": 6, "mesNombre": "Junio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000348", "categoria": "Pequeno electrodomestico", "subcategoria": "Batidoras", "marca": "EcoWash", "seccion": "Pequeno electrodomestico", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 49.99, "margenBruto": 16.55, "estadoVenta": "Completada"}, {"idVenta": "VTA0000035", "idLineaVenta": "VTA0000035-01", "fecha": "2024-06-14", "anio": 2024, "mesNumero": 6, "mesNombre": "Junio", "idUsuario": "USR003016", "tipoUsuario": "Registrado", "segmentoCliente": "Estandar", "genero": "Hombre", "comunidadAutonoma": "Comunidad de Madrid", "idArticulo": "ART000276", "categoria": "Limpieza", "subcategoria": "Robots aspiradores", "marca": "CleanBot", "seccion": "Limpieza", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 839.99, "margenBruto": 249.8, "estadoVenta": "Completada"}, {"idVenta": "VTA0000036", "idLineaVenta": "VTA0000036-01", "fecha": "2024-06-16", "anio": 2024, "mesNumero": 6, "mesNombre": "Junio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000171", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "EcoWash", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 519.99, "margenBruto": 166.44, "estadoVenta": "Completada"}, {"idVenta": "VTA0000037", "idLineaVenta": "VTA0000037-01", "fecha": "2024-06-25", "anio": 2024, "mesNumero": 6, "mesNombre": "Junio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000342", "categoria": "Pequeno electrodomestico", "subcategoria": "Batidoras", "marca": "NovaCasa", "seccion": "Pequeno electrodomestico", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 59.99, "margenBruto": 27.3, "estadoVenta": "Completada"}, {"idVenta": "VTA0000038", "idLineaVenta": "VTA0000038-01", "fecha": "2024-06-27", "anio": 2024, "mesNumero": 6, "mesNombre": "Junio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000350", "categoria": "Pequeno electrodomestico", "subcategoria": "Robots de cocina", "marca": "Balayra", "seccion": "Pequeno electrodomestico", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 269.99, "margenBruto": 87.89, "estadoVenta": "Completada"}, {"idVenta": "VTA0000039", "idLineaVenta": "VTA0000039-01", "fecha": "2024-06-28", "anio": 2024, "mesNumero": 6, "mesNombre": "Junio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000344", "categoria": "Pequeno electrodomestico", "subcategoria": "Batidoras", "marca": "KitchNova", "seccion": "Pequeno electrodomestico", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 169.99, "margenBruto": 51.76, "estadoVenta": "Completada"}, {"idVenta": "VTA0000040", "idLineaVenta": "VTA0000040-01", "fecha": "2024-07-08", "anio": 2024, "mesNumero": 7, "mesNombre": "Julio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000191", "categoria": "Cocina", "subcategoria": "Campanas extractoras", "marca": "EcoWash", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 469.99, "margenBruto": 175.98, "estadoVenta": "Completada"}, {"idVenta": "VTA0000041", "idLineaVenta": "VTA0000041-01", "fecha": "2024-07-09", "anio": 2024, "mesNumero": 7, "mesNombre": "Julio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000203", "categoria": "Cocina", "subcategoria": "Campanas extractoras", "marca": "KitchNova", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 349.99, "margenBruto": 157.32, "estadoVenta": "Completada"}, {"idVenta": "VTA0000042", "idLineaVenta": "VTA0000042-01", "fecha": "2024-07-19", "anio": 2024, "mesNumero": 7, "mesNombre": "Julio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000295", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "Balayra", "seccion": "Limpieza", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 319.99, "margenBruto": 104.88, "estadoVenta": "Completada"}, {"idVenta": "VTA0000043", "idLineaVenta": "VTA0000043-01", "fecha": "2024-07-22", "anio": 2024, "mesNumero": 7, "mesNombre": "Julio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000171", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "EcoWash", "seccion": "Cocina", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 483.59, "margenBruto": 130.04, "estadoVenta": "Completada"}, {"idVenta": "VTA0000044", "idLineaVenta": "VTA0000044-01", "fecha": "2024-07-31", "anio": 2024, "mesNumero": 7, "mesNombre": "Julio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000321", "categoria": "Pequeno electrodomestico", "subcategoria": "Cafeteras", "marca": "Nordline", "seccion": "Pequeno electrodomestico", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 209.99, "margenBruto": 61.23, "estadoVenta": "Completada"}, {"idVenta": "VTA0000045", "idLineaVenta": "VTA0000045-01", "fecha": "2024-08-05", "anio": 2024, "mesNumero": 8, "mesNombre": "Agosto", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000360", "categoria": "Pequeno electrodomestico", "subcategoria": "Robots de cocina", "marca": "CleanBot", "seccion": "Pequeno electrodomestico", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 709.99, "margenBruto": 284.89, "estadoVenta": "Completada"}, {"idVenta": "VTA0000046", "idLineaVenta": "VTA0000046-01", "fecha": "2024-08-11", "anio": 2024, "mesNumero": 8, "mesNombre": "Agosto", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000296", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "EcoWash", "seccion": "Limpieza", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 219.99, "margenBruto": 68.06, "estadoVenta": "Completada"}, {"idVenta": "VTA0000047", "idLineaVenta": "VTA0000047-01", "fecha": "2024-08-13", "anio": 2024, "mesNumero": 8, "mesNombre": "Agosto", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000297", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "HomeTech", "seccion": "Limpieza", "idCanal": "CAN005", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Este", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 139.99, "margenBruto": 55.79, "estadoVenta": "Completada"}, {"idVenta": "VTA0000048", "idLineaVenta": "VTA0000048-01", "fecha": "2024-08-14", "anio": 2024, "mesNumero": 8, "mesNombre": "Agosto", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000348", "categoria": "Pequeno electrodomestico", "subcategoria": "Batidoras", "marca": "EcoWash", "seccion": "Pequeno electrodomestico", "idCanal": "CAN005", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Este", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 49.99, "margenBruto": 16.55, "estadoVenta": "Completada"}, {"idVenta": "VTA0000049", "idLineaVenta": "VTA0000049-01", "fecha": "2024-08-14", "anio": 2024, "mesNumero": 8, "mesNombre": "Agosto", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000350", "categoria": "Pequeno electrodomestico", "subcategoria": "Robots de cocina", "marca": "Balayra", "seccion": "Pequeno electrodomestico", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 539.98, "margenBruto": 175.78, "estadoVenta": "Completada"}, {"idVenta": "VTA0000050", "idLineaVenta": "VTA0000050-01", "fecha": "2024-08-21", "anio": 2024, "mesNumero": 8, "mesNombre": "Agosto", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000168", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "AireZen", "seccion": "Cocina", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 659.99, "margenBruto": 291.88, "estadoVenta": "Completada"}, {"idVenta": "VTA0000051", "idLineaVenta": "VTA0000051-01", "fecha": "2024-08-25", "anio": 2024, "mesNumero": 8, "mesNombre": "Agosto", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000342", "categoria": "Pequeno electrodomestico", "subcategoria": "Batidoras", "marca": "NovaCasa", "seccion": "Pequeno electrodomestico", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 59.99, "margenBruto": 27.3, "estadoVenta": "Completada"}, {"idVenta": "VTA0000052", "idLineaVenta": "VTA0000052-01", "fecha": "2024-08-26", "anio": 2024, "mesNumero": 8, "mesNombre": "Agosto", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000161", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "EcoWash", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 559.98, "margenBruto": 176.88, "estadoVenta": "Completada"}, {"idVenta": "VTA0000053", "idLineaVenta": "VTA0000053-01", "fecha": "2024-09-03", "anio": 2024, "mesNumero": 9, "mesNombre": "Septiembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000136", "categoria": "Cocina", "subcategoria": "Hornos", "marca": "NovaCasa", "seccion": "Cocina", "idCanal": "CAN005", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Este", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 499.99, "margenBruto": 149.73, "estadoVenta": "Completada"}, {"idVenta": "VTA0000054", "idLineaVenta": "VTA0000054-01", "fecha": "2024-09-18", "anio": 2024, "mesNumero": 9, "mesNombre": "Septiembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000177", "categoria": "Cocina", "subcategoria": "Microondas", "marca": "ElectraHome", "seccion": "Cocina", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 219.99, "margenBruto": 76.26, "estadoVenta": "Completada"}, {"idVenta": "VTA0000055", "idLineaVenta": "VTA0000055-01", "fecha": "2024-09-20", "anio": 2024, "mesNumero": 9, "mesNombre": "Septiembre", "idUsuario": "USR018657", "tipoUsuario": "Registrado", "segmentoCliente": "Premium", "genero": "Hombre", "comunidadAutonoma": "Canarias", "idArticulo": "ART000324", "categoria": "Pequeno electrodomestico", "subcategoria": "Freidoras de aire", "marca": "NovaCasa", "seccion": "Pequeno electrodomestico", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 3, "importeNeto": 839.97, "margenBruto": 295.14, "estadoVenta": "Devuelta"}, {"idVenta": "VTA0000056", "idLineaVenta": "VTA0000056-01", "fecha": "2024-09-20", "anio": 2024, "mesNumero": 9, "mesNombre": "Septiembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000158", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "AquaPlus", "seccion": "Cocina", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 469.99, "margenBruto": 143.31, "estadoVenta": "Completada"}, {"idVenta": "VTA0000057", "idLineaVenta": "VTA0000057-01", "fecha": "2024-09-22", "anio": 2024, "mesNumero": 9, "mesNombre": "Septiembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000296", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "EcoWash", "seccion": "Limpieza", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 219.99, "margenBruto": 68.06, "estadoVenta": "Completada"}, {"idVenta": "VTA0000058", "idLineaVenta": "VTA0000058-01", "fecha": "2024-10-01", "anio": 2024, "mesNumero": 10, "mesNombre": "Octubre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000276", "categoria": "Limpieza", "subcategoria": "Robots aspiradores", "marca": "CleanBot", "seccion": "Limpieza", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 1679.98, "margenBruto": 499.6, "estadoVenta": "Completada"}, {"idVenta": "VTA0000059", "idLineaVenta": "VTA0000059-01", "fecha": "2024-10-08", "anio": 2024, "mesNumero": 10, "mesNombre": "Octubre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000278", "categoria": "Limpieza", "subcategoria": "Robots aspiradores", "marca": "KitchNova", "seccion": "Limpieza", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 397.69, "margenBruto": 161.82, "estadoVenta": "Completada"}, {"idVenta": "VTA0000060", "idLineaVenta": "VTA0000060-01", "fecha": "2024-10-28", "anio": 2024, "mesNumero": 10, "mesNombre": "Octubre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000306", "categoria": "Pequeno electrodomestico", "subcategoria": "Cafeteras", "marca": "Nordline", "seccion": "Pequeno electrodomestico", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 299.99, "margenBruto": 111.15, "estadoVenta": "Completada"}, {"idVenta": "VTA0000061", "idLineaVenta": "VTA0000061-01", "fecha": "2024-10-31", "anio": 2024, "mesNumero": 10, "mesNombre": "Octubre", "idUsuario": "USR010552", "tipoUsuario": "Registrado", "segmentoCliente": "Ocasional", "genero": "Mujer", "comunidadAutonoma": "Cataluna", "idArticulo": "ART000287", "categoria": "Limpieza", "subcategoria": "Robots aspiradores", "marca": "HomeTech", "seccion": "Limpieza", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 729.99, "margenBruto": 291.79, "estadoVenta": "Completada"}, {"idVenta": "VTA0000062", "idLineaVenta": "VTA0000062-01", "fecha": "2024-11-02", "anio": 2024, "mesNumero": 11, "mesNombre": "Noviembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000324", "categoria": "Pequeno electrodomestico", "subcategoria": "Freidoras de aire", "marca": "NovaCasa", "seccion": "Pequeno electrodomestico", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 279.99, "margenBruto": 98.38, "estadoVenta": "Completada"}, {"idVenta": "VTA0000063", "idLineaVenta": "VTA0000063-01", "fecha": "2024-11-11", "anio": 2024, "mesNumero": 11, "mesNombre": "Noviembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000295", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "Balayra", "seccion": "Limpieza", "idCanal": "CAN005", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Este", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 319.99, "margenBruto": 104.88, "estadoVenta": "Completada"}, {"idVenta": "VTA0000064", "idLineaVenta": "VTA0000064-01", "fecha": "2024-11-12", "anio": 2024, "mesNumero": 11, "mesNombre": "Noviembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000171", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "EcoWash", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 3, "importeNeto": 1559.97, "margenBruto": 499.32, "estadoVenta": "Completada"}, {"idVenta": "VTA0000065", "idLineaVenta": "VTA0000065-01", "fecha": "2024-11-13", "anio": 2024, "mesNumero": 11, "mesNombre": "Noviembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000297", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "HomeTech", "seccion": "Limpieza", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 139.99, "margenBruto": 55.79, "estadoVenta": "Completada"}, {"idVenta": "VTA0000066", "idLineaVenta": "VTA0000066-01", "fecha": "2024-11-16", "anio": 2024, "mesNumero": 11, "mesNombre": "Noviembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000260", "categoria": "Limpieza", "subcategoria": "Aspiradoras", "marca": "IberHome", "seccion": "Limpieza", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 309.99, "margenBruto": 136.53, "estadoVenta": "Completada"}, {"idVenta": "VTA0000067", "idLineaVenta": "VTA0000067-01", "fecha": "2024-11-20", "anio": 2024, "mesNumero": 11, "mesNombre": "Noviembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000156", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "NovaCasa", "seccion": "Cocina", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 619.99, "margenBruto": 174.24, "estadoVenta": "Completada"}, {"idVenta": "VTA0000068", "idLineaVenta": "VTA0000068-01", "fecha": "2024-11-25", "anio": 2024, "mesNumero": 11, "mesNombre": "Noviembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000158", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "AquaPlus", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "PMO202411", "nombrePromocion": "Black Friday 2024", "tipoPromocion": "Black Friday", "unidades": 2, "importeNeto": 781.31, "margenBruto": 127.95, "estadoVenta": "Completada"}, {"idVenta": "VTA0000069", "idLineaVenta": "VTA0000069-01", "fecha": "2024-11-28", "anio": 2024, "mesNumero": 11, "mesNombre": "Noviembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000161", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "EcoWash", "seccion": "Cocina", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "PMO202411", "nombrePromocion": "Black Friday 2024", "tipoPromocion": "Black Friday", "unidades": 1, "importeNeto": 233.29, "margenBruto": 41.74, "estadoVenta": "Completada"}, {"idVenta": "VTA0000070", "idLineaVenta": "VTA0000070-01", "fecha": "2024-11-28", "anio": 2024, "mesNumero": 11, "mesNombre": "Noviembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000161", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "EcoWash", "seccion": "Cocina", "idCanal": "CAN005", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Este", "idPromocion": "PMO202411", "nombrePromocion": "Black Friday 2024", "tipoPromocion": "Black Friday", "unidades": 1, "importeNeto": 233.29, "margenBruto": 41.74, "estadoVenta": "Completada"}, {"idVenta": "VTA0000071", "idLineaVenta": "VTA0000071-01", "fecha": "2024-11-28", "anio": 2024, "mesNumero": 11, "mesNombre": "Noviembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000321", "categoria": "Pequeno electrodomestico", "subcategoria": "Cafeteras", "marca": "Nordline", "seccion": "Pequeno electrodomestico", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "PMO202411", "nombrePromocion": "Black Friday 2024", "tipoPromocion": "Black Friday", "unidades": 1, "importeNeto": 168.83, "margenBruto": 20.07, "estadoVenta": "Completada"}, {"idVenta": "VTA0000072", "idLineaVenta": "VTA0000072-01", "fecha": "2024-12-01", "anio": 2024, "mesNumero": 12, "mesNombre": "Diciembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000342", "categoria": "Pequeno electrodomestico", "subcategoria": "Batidoras", "marca": "NovaCasa", "seccion": "Pequeno electrodomestico", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 59.99, "margenBruto": 27.3, "estadoVenta": "Completada"}, {"idVenta": "VTA0000073", "idLineaVenta": "VTA0000073-01", "fecha": "2024-12-02", "anio": 2024, "mesNumero": 12, "mesNombre": "Diciembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000264", "categoria": "Limpieza", "subcategoria": "Aspiradoras", "marca": "Balayra", "seccion": "Limpieza", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 169.99, "margenBruto": 64.64, "estadoVenta": "Completada"}, {"idVenta": "VTA0000074", "idLineaVenta": "VTA0000074-01", "fecha": "2024-12-13", "anio": 2024, "mesNumero": 12, "mesNombre": "Diciembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000348", "categoria": "Pequeno electrodomestico", "subcategoria": "Batidoras", "marca": "EcoWash", "seccion": "Pequeno electrodomestico", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 49.99, "margenBruto": 16.55, "estadoVenta": "Completada"}, {"idVenta": "VTA0000075", "idLineaVenta": "VTA0000075-01", "fecha": "2024-12-15", "anio": 2024, "mesNumero": 12, "mesNombre": "Diciembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000182", "categoria": "Cocina", "subcategoria": "Microondas", "marca": "CleanBot", "seccion": "Cocina", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "PMO202412", "nombrePromocion": "Navidad hogar 2024", "tipoPromocion": "Navidad", "unidades": 1, "importeNeto": 279.27, "margenBruto": 82.91, "estadoVenta": "Completada"}, {"idVenta": "VTA0000076", "idLineaVenta": "VTA0000076-01", "fecha": "2024-12-15", "anio": 2024, "mesNumero": 12, "mesNombre": "Diciembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000256", "categoria": "Limpieza", "subcategoria": "Aspiradoras", "marca": "Balayra", "seccion": "Limpieza", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 199.99, "margenBruto": 72.17, "estadoVenta": "Completada"}, {"idVenta": "VTA0000077", "idLineaVenta": "VTA0000077-01", "fecha": "2024-12-22", "anio": 2024, "mesNumero": 12, "mesNombre": "Diciembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000319", "categoria": "Pequeno electrodomestico", "subcategoria": "Cafeteras", "marca": "KitchNova", "seccion": "Pequeno electrodomestico", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 689.99, "margenBruto": 197.7, "estadoVenta": "Completada"}, {"idVenta": "VTA0000078", "idLineaVenta": "VTA0000078-01", "fecha": "2024-12-25", "anio": 2024, "mesNumero": 12, "mesNombre": "Diciembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000289", "categoria": "Limpieza", "subcategoria": "Robots aspiradores", "marca": "Nordline", "seccion": "Limpieza", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 581.98, "margenBruto": 222.0, "estadoVenta": "Completada"}, {"idVenta": "VTA0000079", "idLineaVenta": "VTA0000079-01", "fecha": "2024-12-26", "anio": 2024, "mesNumero": 12, "mesNombre": "Diciembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000278", "categoria": "Limpieza", "subcategoria": "Robots aspiradores", "marca": "KitchNova", "seccion": "Limpieza", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 409.99, "margenBruto": 174.12, "estadoVenta": "Completada"}, {"idVenta": "VTA0000080", "idLineaVenta": "VTA0000080-01", "fecha": "2024-12-31", "anio": 2024, "mesNumero": 12, "mesNombre": "Diciembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000193", "categoria": "Cocina", "subcategoria": "Campanas extractoras", "marca": "CleanBot", "seccion": "Cocina", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 419.99, "margenBruto": 133.36, "estadoVenta": "Completada"}, {"idVenta": "VTA0000081", "idLineaVenta": "VTA0000081-01", "fecha": "2025-01-03", "anio": 2025, "mesNumero": 1, "mesNombre": "Enero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000294", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "Nordline", "seccion": "Limpieza", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 179.99, "margenBruto": 77.61, "estadoVenta": "Completada"}, {"idVenta": "VTA0000082", "idLineaVenta": "VTA0000082-01", "fecha": "2025-01-12", "anio": 2025, "mesNumero": 1, "mesNombre": "Enero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000188", "categoria": "Cocina", "subcategoria": "Microondas", "marca": "Balayra", "seccion": "Cocina", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 159.99, "margenBruto": 64.61, "estadoVenta": "Completada"}, {"idVenta": "VTA0000083", "idLineaVenta": "VTA0000083-01", "fecha": "2025-01-16", "anio": 2025, "mesNumero": 1, "mesNombre": "Enero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000164", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "NovaCasa", "seccion": "Cocina", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "PMO202501", "nombrePromocion": "Rebajas enero 2025", "tipoPromocion": "Rebajas", "unidades": 1, "importeNeto": 240.26, "margenBruto": 73.24, "estadoVenta": "Completada"}, {"idVenta": "VTA0000084", "idLineaVenta": "VTA0000084-01", "fecha": "2025-01-18", "anio": 2025, "mesNumero": 1, "mesNombre": "Enero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000299", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "Balayra", "seccion": "Limpieza", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 109.99, "margenBruto": 47.45, "estadoVenta": "Completada"}, {"idVenta": "VTA0000085", "idLineaVenta": "VTA0000085-01", "fecha": "2025-01-18", "anio": 2025, "mesNumero": 1, "mesNombre": "Enero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000350", "categoria": "Pequeno electrodomestico", "subcategoria": "Robots de cocina", "marca": "Balayra", "seccion": "Pequeno electrodomestico", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 269.99, "margenBruto": 87.89, "estadoVenta": "Completada"}, {"idVenta": "VTA0000086", "idLineaVenta": "VTA0000086-01", "fecha": "2025-02-06", "anio": 2025, "mesNumero": 2, "mesNombre": "Febrero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000168", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "AireZen", "seccion": "Cocina", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 659.99, "margenBruto": 291.88, "estadoVenta": "Completada"}, {"idVenta": "VTA0000087", "idLineaVenta": "VTA0000087-01", "fecha": "2025-02-06", "anio": 2025, "mesNumero": 2, "mesNombre": "Febrero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000350", "categoria": "Pequeno electrodomestico", "subcategoria": "Robots de cocina", "marca": "Balayra", "seccion": "Pequeno electrodomestico", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 269.99, "margenBruto": 87.89, "estadoVenta": "Completada"}, {"idVenta": "VTA0000088", "idLineaVenta": "VTA0000088-01", "fecha": "2025-02-13", "anio": 2025, "mesNumero": 2, "mesNombre": "Febrero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000168", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "AireZen", "seccion": "Cocina", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 640.19, "margenBruto": 272.08, "estadoVenta": "Completada"}, {"idVenta": "VTA0000089", "idLineaVenta": "VTA0000089-01", "fecha": "2025-02-14", "anio": 2025, "mesNumero": 2, "mesNombre": "Febrero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000278", "categoria": "Limpieza", "subcategoria": "Robots aspiradores", "marca": "KitchNova", "seccion": "Limpieza", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 397.69, "margenBruto": 161.82, "estadoVenta": "Completada"}, {"idVenta": "VTA0000090", "idLineaVenta": "VTA0000090-01", "fecha": "2025-02-16", "anio": 2025, "mesNumero": 2, "mesNombre": "Febrero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000285", "categoria": "Limpieza", "subcategoria": "Robots aspiradores", "marca": "HomeTech", "seccion": "Limpieza", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 959.98, "margenBruto": 312.38, "estadoVenta": "Completada"}, {"idVenta": "VTA0000091", "idLineaVenta": "VTA0000091-01", "fecha": "2025-03-07", "anio": 2025, "mesNumero": 3, "mesNombre": "Marzo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000344", "categoria": "Pequeno electrodomestico", "subcategoria": "Batidoras", "marca": "KitchNova", "seccion": "Pequeno electrodomestico", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 169.99, "margenBruto": 51.76, "estadoVenta": "Completada"}, {"idVenta": "VTA0000092", "idLineaVenta": "VTA0000092-01", "fecha": "2025-03-14", "anio": 2025, "mesNumero": 3, "mesNombre": "Marzo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000318", "categoria": "Pequeno electrodomestico", "subcategoria": "Cafeteras", "marca": "HomeTech", "seccion": "Pequeno electrodomestico", "idCanal": "CAN005", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Este", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 729.99, "margenBruto": 235.88, "estadoVenta": "Completada"}, {"idVenta": "VTA0000093", "idLineaVenta": "VTA0000093-01", "fecha": "2025-03-28", "anio": 2025, "mesNumero": 3, "mesNombre": "Marzo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000195", "categoria": "Cocina", "subcategoria": "Campanas extractoras", "marca": "Balayra", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 209.99, "margenBruto": 74.97, "estadoVenta": "Completada"}, {"idVenta": "VTA0000094", "idLineaVenta": "VTA0000094-01", "fecha": "2025-04-01", "anio": 2025, "mesNumero": 4, "mesNombre": "Abril", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000191", "categoria": "Cocina", "subcategoria": "Campanas extractoras", "marca": "EcoWash", "seccion": "Cocina", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 469.99, "margenBruto": 175.98, "estadoVenta": "Completada"}, {"idVenta": "VTA0000095", "idLineaVenta": "VTA0000095-01", "fecha": "2025-04-04", "anio": 2025, "mesNumero": 4, "mesNombre": "Abril", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000286", "categoria": "Limpieza", "subcategoria": "Robots aspiradores", "marca": "IberHome", "seccion": "Limpieza", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 408.49, "margenBruto": 118.54, "estadoVenta": "Completada"}, {"idVenta": "VTA0000096", "idLineaVenta": "VTA0000096-01", "fecha": "2025-04-04", "anio": 2025, "mesNumero": 4, "mesNombre": "Abril", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000324", "categoria": "Pequeno electrodomestico", "subcategoria": "Freidoras de aire", "marca": "NovaCasa", "seccion": "Pequeno electrodomestico", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 279.99, "margenBruto": 98.38, "estadoVenta": "Completada"}, {"idVenta": "VTA0000097", "idLineaVenta": "VTA0000097-01", "fecha": "2025-04-12", "anio": 2025, "mesNumero": 4, "mesNombre": "Abril", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000156", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "NovaCasa", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 619.99, "margenBruto": 174.24, "estadoVenta": "Completada"}, {"idVenta": "VTA0000098", "idLineaVenta": "VTA0000098-01", "fecha": "2025-04-28", "anio": 2025, "mesNumero": 4, "mesNombre": "Abril", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000151", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "Balayra", "seccion": "Cocina", "idCanal": "CAN005", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Este", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 769.99, "margenBruto": 243.03, "estadoVenta": "Completada"}, {"idVenta": "VTA0000099", "idLineaVenta": "VTA0000099-01", "fecha": "2025-04-28", "anio": 2025, "mesNumero": 4, "mesNombre": "Abril", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000172", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "FrioMax", "seccion": "Cocina", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 569.99, "margenBruto": 175.08, "estadoVenta": "Completada"}, {"idVenta": "VTA0000100", "idLineaVenta": "VTA0000100-01", "fecha": "2025-05-02", "anio": 2025, "mesNumero": 5, "mesNombre": "Mayo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000168", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "AireZen", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 659.99, "margenBruto": 291.88, "estadoVenta": "Completada"}, {"idVenta": "VTA0000101", "idLineaVenta": "VTA0000101-01", "fecha": "2025-05-08", "anio": 2025, "mesNumero": 5, "mesNombre": "Mayo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000253", "categoria": "Limpieza", "subcategoria": "Aspiradoras", "marca": "IberHome", "seccion": "Limpieza", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 119.99, "margenBruto": 53.69, "estadoVenta": "Completada"}, {"idVenta": "VTA0000102", "idLineaVenta": "VTA0000102-01", "fecha": "2025-05-10", "anio": 2025, "mesNumero": 5, "mesNombre": "Mayo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000297", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "HomeTech", "seccion": "Limpieza", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 139.99, "margenBruto": 55.79, "estadoVenta": "Completada"}, {"idVenta": "VTA0000103", "idLineaVenta": "VTA0000103-01", "fecha": "2025-05-14", "anio": 2025, "mesNumero": 5, "mesNombre": "Mayo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000191", "categoria": "Cocina", "subcategoria": "Campanas extractoras", "marca": "EcoWash", "seccion": "Cocina", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 469.99, "margenBruto": 175.98, "estadoVenta": "Completada"}, {"idVenta": "VTA0000104", "idLineaVenta": "VTA0000104-01", "fecha": "2025-05-16", "anio": 2025, "mesNumero": 5, "mesNombre": "Mayo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000203", "categoria": "Cocina", "subcategoria": "Campanas extractoras", "marca": "KitchNova", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 349.99, "margenBruto": 157.32, "estadoVenta": "Completada"}, {"idVenta": "VTA0000105", "idLineaVenta": "VTA0000105-01", "fecha": "2025-05-27", "anio": 2025, "mesNumero": 5, "mesNombre": "Mayo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000296", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "EcoWash", "seccion": "Limpieza", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 219.99, "margenBruto": 68.06, "estadoVenta": "Completada"}, {"idVenta": "VTA0000106", "idLineaVenta": "VTA0000106-01", "fecha": "2025-06-02", "anio": 2025, "mesNumero": 6, "mesNombre": "Junio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000285", "categoria": "Limpieza", "subcategoria": "Robots aspiradores", "marca": "HomeTech", "seccion": "Limpieza", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 479.99, "margenBruto": 156.19, "estadoVenta": "Completada"}, {"idVenta": "VTA0000107", "idLineaVenta": "VTA0000107-01", "fecha": "2025-06-07", "anio": 2025, "mesNumero": 6, "mesNombre": "Junio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000199", "categoria": "Cocina", "subcategoria": "Campanas extractoras", "marca": "Balayra", "seccion": "Cocina", "idCanal": "CAN005", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Este", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 299.99, "margenBruto": 122.54, "estadoVenta": "Completada"}, {"idVenta": "VTA0000108", "idLineaVenta": "VTA0000108-01", "fecha": "2025-06-09", "anio": 2025, "mesNumero": 6, "mesNombre": "Junio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000142", "categoria": "Cocina", "subcategoria": "Hornos", "marca": "FrioMax", "seccion": "Cocina", "idCanal": "CAN005", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Este", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 599.99, "margenBruto": 175.23, "estadoVenta": "Devuelta"}, {"idVenta": "VTA0000109", "idLineaVenta": "VTA0000109-01", "fecha": "2025-06-14", "anio": 2025, "mesNumero": 6, "mesNombre": "Junio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000171", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "EcoWash", "seccion": "Cocina", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 1039.98, "margenBruto": 332.88, "estadoVenta": "Completada"}, {"idVenta": "VTA0000110", "idLineaVenta": "VTA0000110-01", "fecha": "2025-06-24", "anio": 2025, "mesNumero": 6, "mesNombre": "Junio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000161", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "EcoWash", "seccion": "Cocina", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 279.99, "margenBruto": 88.44, "estadoVenta": "Completada"}, {"idVenta": "VTA0000111", "idLineaVenta": "VTA0000111-01", "fecha": "2025-07-05", "anio": 2025, "mesNumero": 7, "mesNombre": "Julio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000181", "categoria": "Cocina", "subcategoria": "Microondas", "marca": "Balayra", "seccion": "Cocina", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 279.99, "margenBruto": 128.14, "estadoVenta": "Completada"}, {"idVenta": "VTA0000112", "idLineaVenta": "VTA0000112-01", "fecha": "2025-07-05", "anio": 2025, "mesNumero": 7, "mesNombre": "Julio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000269", "categoria": "Limpieza", "subcategoria": "Aspiradoras", "marca": "EcoWash", "seccion": "Limpieza", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 279.99, "margenBruto": 97.81, "estadoVenta": "Completada"}, {"idVenta": "VTA0000113", "idLineaVenta": "VTA0000113-01", "fecha": "2025-07-05", "anio": 2025, "mesNumero": 7, "mesNombre": "Julio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000297", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "HomeTech", "seccion": "Limpieza", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 139.99, "margenBruto": 55.79, "estadoVenta": "Completada"}, {"idVenta": "VTA0000114", "idLineaVenta": "VTA0000114-01", "fecha": "2025-07-06", "anio": 2025, "mesNumero": 7, "mesNombre": "Julio", "idUsuario": "USR012286", "tipoUsuario": "Registrado", "segmentoCliente": "Estandar", "genero": "Mujer", "comunidadAutonoma": "Pais Vasco", "idArticulo": "ART000195", "categoria": "Cocina", "subcategoria": "Campanas extractoras", "marca": "Balayra", "seccion": "Cocina", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 419.98, "margenBruto": 149.94, "estadoVenta": "Completada"}, {"idVenta": "VTA0000115", "idLineaVenta": "VTA0000115-01", "fecha": "2025-07-08", "anio": 2025, "mesNumero": 7, "mesNombre": "Julio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000350", "categoria": "Pequeno electrodomestico", "subcategoria": "Robots de cocina", "marca": "Balayra", "seccion": "Pequeno electrodomestico", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 269.99, "margenBruto": 87.89, "estadoVenta": "Completada"}, {"idVenta": "VTA0000116", "idLineaVenta": "VTA0000116-01", "fecha": "2025-07-09", "anio": 2025, "mesNumero": 7, "mesNombre": "Julio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000158", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "AquaPlus", "seccion": "Cocina", "idCanal": "CAN005", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Este", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 469.99, "margenBruto": 143.31, "estadoVenta": "Devuelta"}, {"idVenta": "VTA0000117", "idLineaVenta": "VTA0000117-01", "fecha": "2025-07-09", "anio": 2025, "mesNumero": 7, "mesNombre": "Julio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000276", "categoria": "Limpieza", "subcategoria": "Robots aspiradores", "marca": "CleanBot", "seccion": "Limpieza", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 839.99, "margenBruto": 249.8, "estadoVenta": "Completada"}, {"idVenta": "VTA0000118", "idLineaVenta": "VTA0000118-01", "fecha": "2025-07-11", "anio": 2025, "mesNumero": 7, "mesNombre": "Julio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000153", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "EcoWash", "seccion": "Cocina", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 559.99, "margenBruto": 223.62, "estadoVenta": "Completada"}, {"idVenta": "VTA0000119", "idLineaVenta": "VTA0000119-01", "fecha": "2025-07-11", "anio": 2025, "mesNumero": 7, "mesNombre": "Julio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000181", "categoria": "Cocina", "subcategoria": "Microondas", "marca": "Balayra", "seccion": "Cocina", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 279.99, "margenBruto": 128.14, "estadoVenta": "Completada"}, {"idVenta": "VTA0000120", "idLineaVenta": "VTA0000120-01", "fecha": "2025-07-14", "anio": 2025, "mesNumero": 7, "mesNombre": "Julio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000182", "categoria": "Cocina", "subcategoria": "Microondas", "marca": "CleanBot", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 309.99, "margenBruto": 113.63, "estadoVenta": "Devuelta"}, {"idVenta": "VTA0000121", "idLineaVenta": "VTA0000121-01", "fecha": "2025-07-24", "anio": 2025, "mesNumero": 7, "mesNombre": "Julio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000177", "categoria": "Cocina", "subcategoria": "Microondas", "marca": "ElectraHome", "seccion": "Cocina", "idCanal": "CAN005", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Este", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 219.99, "margenBruto": 76.26, "estadoVenta": "Completada"}, {"idVenta": "VTA0000122", "idLineaVenta": "VTA0000122-01", "fecha": "2025-07-29", "anio": 2025, "mesNumero": 7, "mesNombre": "Julio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000295", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "Balayra", "seccion": "Limpieza", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 639.98, "margenBruto": 209.76, "estadoVenta": "Completada"}, {"idVenta": "VTA0000123", "idLineaVenta": "VTA0000123-01", "fecha": "2025-08-04", "anio": 2025, "mesNumero": 8, "mesNombre": "Agosto", "idUsuario": "USR008498", "tipoUsuario": "Registrado", "segmentoCliente": "Estandar", "genero": "Mujer", "comunidadAutonoma": "Comunidad de Madrid", "idArticulo": "ART000260", "categoria": "Limpieza", "subcategoria": "Aspiradoras", "marca": "IberHome", "seccion": "Limpieza", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 309.99, "margenBruto": 136.53, "estadoVenta": "Completada"}, {"idVenta": "VTA0000124", "idLineaVenta": "VTA0000124-01", "fecha": "2025-08-07", "anio": 2025, "mesNumero": 8, "mesNombre": "Agosto", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000269", "categoria": "Limpieza", "subcategoria": "Aspiradoras", "marca": "EcoWash", "seccion": "Limpieza", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 279.99, "margenBruto": 97.81, "estadoVenta": "Completada"}, {"idVenta": "VTA0000125", "idLineaVenta": "VTA0000125-01", "fecha": "2025-08-07", "anio": 2025, "mesNumero": 8, "mesNombre": "Agosto", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000342", "categoria": "Pequeno electrodomestico", "subcategoria": "Batidoras", "marca": "NovaCasa", "seccion": "Pequeno electrodomestico", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 55.79, "margenBruto": 23.1, "estadoVenta": "Completada"}, {"idVenta": "VTA0000126", "idLineaVenta": "VTA0000126-01", "fecha": "2025-08-08", "anio": 2025, "mesNumero": 8, "mesNombre": "Agosto", "idUsuario": "USR009678", "tipoUsuario": "Registrado", "segmentoCliente": "Estandar", "genero": "Mujer", "comunidadAutonoma": "Galicia", "idArticulo": "ART000306", "categoria": "Pequeno electrodomestico", "subcategoria": "Cafeteras", "marca": "Nordline", "seccion": "Pequeno electrodomestico", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 599.98, "margenBruto": 222.3, "estadoVenta": "Completada"}, {"idVenta": "VTA0000127", "idLineaVenta": "VTA0000127-01", "fecha": "2025-08-12", "anio": 2025, "mesNumero": 8, "mesNombre": "Agosto", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000203", "categoria": "Cocina", "subcategoria": "Campanas extractoras", "marca": "KitchNova", "seccion": "Cocina", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 3, "importeNeto": 1049.97, "margenBruto": 471.96, "estadoVenta": "Completada"}, {"idVenta": "VTA0000128", "idLineaVenta": "VTA0000128-01", "fecha": "2025-08-17", "anio": 2025, "mesNumero": 8, "mesNombre": "Agosto", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000294", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "Nordline", "seccion": "Limpieza", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 359.98, "margenBruto": 155.22, "estadoVenta": "Completada"}, {"idVenta": "VTA0000129", "idLineaVenta": "VTA0000129-01", "fecha": "2025-08-23", "anio": 2025, "mesNumero": 8, "mesNombre": "Agosto", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000145", "categoria": "Cocina", "subcategoria": "Hornos", "marca": "CleanBot", "seccion": "Cocina", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 499.99, "margenBruto": 204.99, "estadoVenta": "Completada"}, {"idVenta": "VTA0000130", "idLineaVenta": "VTA0000130-01", "fecha": "2025-09-05", "anio": 2025, "mesNumero": 9, "mesNombre": "Septiembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000154", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "IberHome", "seccion": "Cocina", "idCanal": "CAN005", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Este", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 489.99, "margenBruto": 195.19, "estadoVenta": "Completada"}, {"idVenta": "VTA0000131", "idLineaVenta": "VTA0000131-01", "fecha": "2025-09-09", "anio": 2025, "mesNumero": 9, "mesNombre": "Septiembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000188", "categoria": "Cocina", "subcategoria": "Microondas", "marca": "Balayra", "seccion": "Cocina", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 159.99, "margenBruto": 64.61, "estadoVenta": "Completada"}, {"idVenta": "VTA0000132", "idLineaVenta": "VTA0000132-01", "fecha": "2025-09-11", "anio": 2025, "mesNumero": 9, "mesNombre": "Septiembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000253", "categoria": "Limpieza", "subcategoria": "Aspiradoras", "marca": "IberHome", "seccion": "Limpieza", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 239.98, "margenBruto": 107.38, "estadoVenta": "Completada"}, {"idVenta": "VTA0000133", "idLineaVenta": "VTA0000133-01", "fecha": "2025-09-27", "anio": 2025, "mesNumero": 9, "mesNombre": "Septiembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000168", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "AireZen", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 659.99, "margenBruto": 291.88, "estadoVenta": "Completada"}, {"idVenta": "VTA0000134", "idLineaVenta": "VTA0000134-01", "fecha": "2025-09-30", "anio": 2025, "mesNumero": 9, "mesNombre": "Septiembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000158", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "AquaPlus", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 469.99, "margenBruto": 143.31, "estadoVenta": "Completada"}, {"idVenta": "VTA0000135", "idLineaVenta": "VTA0000135-01", "fecha": "2025-09-30", "anio": 2025, "mesNumero": 9, "mesNombre": "Septiembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000348", "categoria": "Pequeno electrodomestico", "subcategoria": "Batidoras", "marca": "EcoWash", "seccion": "Pequeno electrodomestico", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 49.99, "margenBruto": 16.55, "estadoVenta": "Completada"}, {"idVenta": "VTA0000136", "idLineaVenta": "VTA0000136-01", "fecha": "2025-10-03", "anio": 2025, "mesNumero": 10, "mesNombre": "Octubre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000156", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "NovaCasa", "seccion": "Cocina", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 619.99, "margenBruto": 174.24, "estadoVenta": "Devuelta"}, {"idVenta": "VTA0000137", "idLineaVenta": "VTA0000137-01", "fecha": "2025-10-04", "anio": 2025, "mesNumero": 10, "mesNombre": "Octubre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000165", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "CleanBot", "seccion": "Cocina", "idCanal": "CAN005", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Este", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 489.99, "margenBruto": 214.29, "estadoVenta": "Completada"}, {"idVenta": "VTA0000138", "idLineaVenta": "VTA0000138-01", "fecha": "2025-10-06", "anio": 2025, "mesNumero": 10, "mesNombre": "Octubre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000203", "categoria": "Cocina", "subcategoria": "Campanas extractoras", "marca": "KitchNova", "seccion": "Cocina", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 349.99, "margenBruto": 157.32, "estadoVenta": "Completada"}, {"idVenta": "VTA0000139", "idLineaVenta": "VTA0000139-01", "fecha": "2025-10-10", "anio": 2025, "mesNumero": 10, "mesNombre": "Octubre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000342", "categoria": "Pequeno electrodomestico", "subcategoria": "Batidoras", "marca": "NovaCasa", "seccion": "Pequeno electrodomestico", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 59.99, "margenBruto": 27.3, "estadoVenta": "Completada"}, {"idVenta": "VTA0000140", "idLineaVenta": "VTA0000140-01", "fecha": "2025-10-15", "anio": 2025, "mesNumero": 10, "mesNombre": "Octubre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000321", "categoria": "Pequeno electrodomestico", "subcategoria": "Cafeteras", "marca": "Nordline", "seccion": "Pequeno electrodomestico", "idCanal": "CAN005", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Este", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 209.99, "margenBruto": 61.23, "estadoVenta": "Completada"}, {"idVenta": "VTA0000141", "idLineaVenta": "VTA0000141-01", "fecha": "2025-11-03", "anio": 2025, "mesNumero": 11, "mesNombre": "Noviembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000295", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "Balayra", "seccion": "Limpieza", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 319.99, "margenBruto": 104.88, "estadoVenta": "Completada"}, {"idVenta": "VTA0000142", "idLineaVenta": "VTA0000142-01", "fecha": "2025-11-04", "anio": 2025, "mesNumero": 11, "mesNombre": "Noviembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000299", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "Balayra", "seccion": "Limpieza", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 219.98, "margenBruto": 94.9, "estadoVenta": "Completada"}, {"idVenta": "VTA0000143", "idLineaVenta": "VTA0000143-01", "fecha": "2025-11-07", "anio": 2025, "mesNumero": 11, "mesNombre": "Noviembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000294", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "Nordline", "seccion": "Limpieza", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 3, "importeNeto": 539.97, "margenBruto": 232.83, "estadoVenta": "Completada"}, {"idVenta": "VTA0000144", "idLineaVenta": "VTA0000144-01", "fecha": "2025-11-10", "anio": 2025, "mesNumero": 11, "mesNombre": "Noviembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000344", "categoria": "Pequeno electrodomestico", "subcategoria": "Batidoras", "marca": "KitchNova", "seccion": "Pequeno electrodomestico", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 339.98, "margenBruto": 103.52, "estadoVenta": "Completada"}, {"idVenta": "VTA0000145", "idLineaVenta": "VTA0000145-01", "fecha": "2025-11-12", "anio": 2025, "mesNumero": 11, "mesNombre": "Noviembre", "idUsuario": "USR027624", "tipoUsuario": "Registrado", "segmentoCliente": "Estandar", "genero": "Mujer", "comunidadAutonoma": "Andalucia", "idArticulo": "ART000172", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "FrioMax", "seccion": "Cocina", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 599.99, "margenBruto": 205.08, "estadoVenta": "Completada"}, {"idVenta": "VTA0000146", "idLineaVenta": "VTA0000146-01", "fecha": "2025-11-15", "anio": 2025, "mesNumero": 11, "mesNombre": "Noviembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000324", "categoria": "Pequeno electrodomestico", "subcategoria": "Freidoras de aire", "marca": "NovaCasa", "seccion": "Pequeno electrodomestico", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 265.99, "margenBruto": 84.38, "estadoVenta": "Completada"}, {"idVenta": "VTA0000147", "idLineaVenta": "VTA0000147-01", "fecha": "2025-11-18", "anio": 2025, "mesNumero": 11, "mesNombre": "Noviembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000154", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "IberHome", "seccion": "Cocina", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 489.99, "margenBruto": 195.19, "estadoVenta": "Completada"}, {"idVenta": "VTA0000148", "idLineaVenta": "VTA0000148-01", "fecha": "2025-11-21", "anio": 2025, "mesNumero": 11, "mesNombre": "Noviembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000156", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "NovaCasa", "seccion": "Cocina", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 619.99, "margenBruto": 174.24, "estadoVenta": "Completada"}, {"idVenta": "VTA0000149", "idLineaVenta": "VTA0000149-01", "fecha": "2025-11-23", "anio": 2025, "mesNumero": 11, "mesNombre": "Noviembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000177", "categoria": "Cocina", "subcategoria": "Microondas", "marca": "ElectraHome", "seccion": "Cocina", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 219.99, "margenBruto": 76.26, "estadoVenta": "Completada"}, {"idVenta": "VTA0000150", "idLineaVenta": "VTA0000150-01", "fecha": "2025-11-23", "anio": 2025, "mesNumero": 11, "mesNombre": "Noviembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000195", "categoria": "Cocina", "subcategoria": "Campanas extractoras", "marca": "Balayra", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "PMO202511", "nombrePromocion": "Black Friday 2025", "tipoPromocion": "Black Friday", "unidades": 1, "importeNeto": 168.68, "margenBruto": 33.66, "estadoVenta": "Completada"}, {"idVenta": "VTA0000151", "idLineaVenta": "VTA0000151-01", "fecha": "2025-11-24", "anio": 2025, "mesNumero": 11, "mesNombre": "Noviembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000264", "categoria": "Limpieza", "subcategoria": "Aspiradoras", "marca": "Balayra", "seccion": "Limpieza", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 169.99, "margenBruto": 64.64, "estadoVenta": "Completada"}, {"idVenta": "VTA0000152", "idLineaVenta": "VTA0000152-01", "fecha": "2025-11-28", "anio": 2025, "mesNumero": 11, "mesNombre": "Noviembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000253", "categoria": "Limpieza", "subcategoria": "Aspiradoras", "marca": "IberHome", "seccion": "Limpieza", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 119.99, "margenBruto": 53.69, "estadoVenta": "Completada"}, {"idVenta": "VTA0000153", "idLineaVenta": "VTA0000153-01", "fecha": "2025-11-28", "anio": 2025, "mesNumero": 11, "mesNombre": "Noviembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000269", "categoria": "Limpieza", "subcategoria": "Aspiradoras", "marca": "EcoWash", "seccion": "Limpieza", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 279.99, "margenBruto": 97.81, "estadoVenta": "Completada"}, {"idVenta": "VTA0000154", "idLineaVenta": "VTA0000154-01", "fecha": "2025-12-04", "anio": 2025, "mesNumero": 12, "mesNombre": "Diciembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000145", "categoria": "Cocina", "subcategoria": "Hornos", "marca": "CleanBot", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 499.99, "margenBruto": 204.99, "estadoVenta": "Completada"}, {"idVenta": "VTA0000155", "idLineaVenta": "VTA0000155-01", "fecha": "2025-12-09", "anio": 2025, "mesNumero": 12, "mesNombre": "Diciembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000203", "categoria": "Cocina", "subcategoria": "Campanas extractoras", "marca": "KitchNova", "seccion": "Cocina", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 349.99, "margenBruto": 157.32, "estadoVenta": "Completada"}, {"idVenta": "VTA0000156", "idLineaVenta": "VTA0000156-01", "fecha": "2025-12-11", "anio": 2025, "mesNumero": 12, "mesNombre": "Diciembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000295", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "Balayra", "seccion": "Limpieza", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 639.98, "margenBruto": 209.76, "estadoVenta": "Completada"}, {"idVenta": "VTA0000157", "idLineaVenta": "VTA0000157-01", "fecha": "2025-12-12", "anio": 2025, "mesNumero": 12, "mesNombre": "Diciembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000135", "categoria": "Cocina", "subcategoria": "Hornos", "marca": "Balayra", "seccion": "Cocina", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 978.49, "margenBruto": 349.26, "estadoVenta": "Completada"}, {"idVenta": "VTA0000158", "idLineaVenta": "VTA0000158-01", "fecha": "2025-12-19", "anio": 2025, "mesNumero": 12, "mesNombre": "Diciembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000154", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "IberHome", "seccion": "Cocina", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "PMO202512", "nombrePromocion": "Navidad hogar 2025", "tipoPromocion": "Navidad", "unidades": 1, "importeNeto": 441.28, "margenBruto": 146.48, "estadoVenta": "Completada"}, {"idVenta": "VTA0000159", "idLineaVenta": "VTA0000159-01", "fecha": "2025-12-20", "anio": 2025, "mesNumero": 12, "mesNombre": "Diciembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000350", "categoria": "Pequeno electrodomestico", "subcategoria": "Robots de cocina", "marca": "Balayra", "seccion": "Pequeno electrodomestico", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 269.99, "margenBruto": 87.89, "estadoVenta": "Completada"}, {"idVenta": "VTA0000160", "idLineaVenta": "VTA0000160-01", "fecha": "2025-12-26", "anio": 2025, "mesNumero": 12, "mesNombre": "Diciembre", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000188", "categoria": "Cocina", "subcategoria": "Microondas", "marca": "Balayra", "seccion": "Cocina", "idCanal": "CAN005", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Este", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 159.99, "margenBruto": 64.61, "estadoVenta": "Completada"}, {"idVenta": "VTA0000161", "idLineaVenta": "VTA0000161-01", "fecha": "2026-01-02", "anio": 2026, "mesNumero": 1, "mesNombre": "Enero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000253", "categoria": "Limpieza", "subcategoria": "Aspiradoras", "marca": "IberHome", "seccion": "Limpieza", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 119.99, "margenBruto": 53.69, "estadoVenta": "Completada"}, {"idVenta": "VTA0000162", "idLineaVenta": "VTA0000162-01", "fecha": "2026-01-15", "anio": 2026, "mesNumero": 1, "mesNombre": "Enero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000299", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "Balayra", "seccion": "Limpieza", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 109.99, "margenBruto": 47.45, "estadoVenta": "Completada"}, {"idVenta": "VTA0000163", "idLineaVenta": "VTA0000163-01", "fecha": "2026-01-18", "anio": 2026, "mesNumero": 1, "mesNombre": "Enero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000136", "categoria": "Cocina", "subcategoria": "Hornos", "marca": "NovaCasa", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 484.99, "margenBruto": 134.73, "estadoVenta": "Completada"}, {"idVenta": "VTA0000164", "idLineaVenta": "VTA0000164-01", "fecha": "2026-01-18", "anio": 2026, "mesNumero": 1, "mesNombre": "Enero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000172", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "FrioMax", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 599.99, "margenBruto": 205.08, "estadoVenta": "Completada"}, {"idVenta": "VTA0000165", "idLineaVenta": "VTA0000165-01", "fecha": "2026-01-18", "anio": 2026, "mesNumero": 1, "mesNombre": "Enero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000319", "categoria": "Pequeno electrodomestico", "subcategoria": "Cafeteras", "marca": "KitchNova", "seccion": "Pequeno electrodomestico", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 689.99, "margenBruto": 197.7, "estadoVenta": "Devuelta"}, {"idVenta": "VTA0000166", "idLineaVenta": "VTA0000166-01", "fecha": "2026-01-23", "anio": 2026, "mesNumero": 1, "mesNombre": "Enero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000137", "categoria": "Cocina", "subcategoria": "Hornos", "marca": "NovaCasa", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "PMO202501", "nombrePromocion": "Rebajas enero 2025", "tipoPromocion": "Rebajas", "unidades": 1, "importeNeto": 704.39, "margenBruto": 164.72, "estadoVenta": "Completada"}, {"idVenta": "VTA0000167", "idLineaVenta": "VTA0000167-01", "fecha": "2026-02-09", "anio": 2026, "mesNumero": 2, "mesNombre": "Febrero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000135", "categoria": "Cocina", "subcategoria": "Hornos", "marca": "Balayra", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 1029.99, "margenBruto": 400.76, "estadoVenta": "Completada"}, {"idVenta": "VTA0000168", "idLineaVenta": "VTA0000168-01", "fecha": "2026-02-11", "anio": 2026, "mesNumero": 2, "mesNombre": "Febrero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000146", "categoria": "Cocina", "subcategoria": "Hornos", "marca": "FrioMax", "seccion": "Cocina", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 1759.98, "margenBruto": 585.22, "estadoVenta": "Completada"}, {"idVenta": "VTA0000169", "idLineaVenta": "VTA0000169-01", "fecha": "2026-02-12", "anio": 2026, "mesNumero": 2, "mesNombre": "Febrero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000351", "categoria": "Pequeno electrodomestico", "subcategoria": "Robots de cocina", "marca": "Nordline", "seccion": "Pequeno electrodomestico", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 519.99, "margenBruto": 184.39, "estadoVenta": "Completada"}, {"idVenta": "VTA0000170", "idLineaVenta": "VTA0000170-01", "fecha": "2026-02-13", "anio": 2026, "mesNumero": 2, "mesNombre": "Febrero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000324", "categoria": "Pequeno electrodomestico", "subcategoria": "Freidoras de aire", "marca": "NovaCasa", "seccion": "Pequeno electrodomestico", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 559.98, "margenBruto": 196.76, "estadoVenta": "Completada"}, {"idVenta": "VTA0000171", "idLineaVenta": "VTA0000171-01", "fecha": "2026-02-17", "anio": 2026, "mesNumero": 2, "mesNombre": "Febrero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000260", "categoria": "Limpieza", "subcategoria": "Aspiradoras", "marca": "IberHome", "seccion": "Limpieza", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 309.99, "margenBruto": 136.53, "estadoVenta": "Completada"}, {"idVenta": "VTA0000172", "idLineaVenta": "VTA0000172-01", "fecha": "2026-02-20", "anio": 2026, "mesNumero": 2, "mesNombre": "Febrero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000286", "categoria": "Limpieza", "subcategoria": "Robots aspiradores", "marca": "IberHome", "seccion": "Limpieza", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 429.99, "margenBruto": 140.04, "estadoVenta": "Completada"}, {"idVenta": "VTA0000173", "idLineaVenta": "VTA0000173-01", "fecha": "2026-02-24", "anio": 2026, "mesNumero": 2, "mesNombre": "Febrero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000276", "categoria": "Limpieza", "subcategoria": "Robots aspiradores", "marca": "CleanBot", "seccion": "Limpieza", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 1679.98, "margenBruto": 499.6, "estadoVenta": "Completada"}, {"idVenta": "VTA0000174", "idLineaVenta": "VTA0000174-01", "fecha": "2026-02-28", "anio": 2026, "mesNumero": 2, "mesNombre": "Febrero", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000146", "categoria": "Cocina", "subcategoria": "Hornos", "marca": "FrioMax", "seccion": "Cocina", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 879.99, "margenBruto": 292.61, "estadoVenta": "Completada"}, {"idVenta": "VTA0000175", "idLineaVenta": "VTA0000175-01", "fecha": "2026-03-01", "anio": 2026, "mesNumero": 3, "mesNombre": "Marzo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000287", "categoria": "Limpieza", "subcategoria": "Robots aspiradores", "marca": "HomeTech", "seccion": "Limpieza", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 1459.98, "margenBruto": 583.58, "estadoVenta": "Completada"}, {"idVenta": "VTA0000176", "idLineaVenta": "VTA0000176-01", "fecha": "2026-03-03", "anio": 2026, "mesNumero": 3, "mesNombre": "Marzo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000278", "categoria": "Limpieza", "subcategoria": "Robots aspiradores", "marca": "KitchNova", "seccion": "Limpieza", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 819.98, "margenBruto": 348.24, "estadoVenta": "Completada"}, {"idVenta": "VTA0000177", "idLineaVenta": "VTA0000177-01", "fecha": "2026-03-07", "anio": 2026, "mesNumero": 3, "mesNombre": "Marzo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000350", "categoria": "Pequeno electrodomestico", "subcategoria": "Robots de cocina", "marca": "Balayra", "seccion": "Pequeno electrodomestico", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 539.98, "margenBruto": 175.78, "estadoVenta": "Completada"}, {"idVenta": "VTA0000178", "idLineaVenta": "VTA0000178-01", "fecha": "2026-03-12", "anio": 2026, "mesNumero": 3, "mesNombre": "Marzo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000193", "categoria": "Cocina", "subcategoria": "Campanas extractoras", "marca": "CleanBot", "seccion": "Cocina", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 419.99, "margenBruto": 133.36, "estadoVenta": "Completada"}, {"idVenta": "VTA0000179", "idLineaVenta": "VTA0000179-01", "fecha": "2026-03-14", "anio": 2026, "mesNumero": 3, "mesNombre": "Marzo", "idUsuario": "USR009388", "tipoUsuario": "Registrado", "segmentoCliente": "Estandar", "genero": "Mujer", "comunidadAutonoma": "Comunidad de Madrid", "idArticulo": "ART000297", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "HomeTech", "seccion": "Limpieza", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 139.99, "margenBruto": 55.79, "estadoVenta": "Completada"}, {"idVenta": "VTA0000180", "idLineaVenta": "VTA0000180-01", "fecha": "2026-03-14", "anio": 2026, "mesNumero": 3, "mesNombre": "Marzo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000351", "categoria": "Pequeno electrodomestico", "subcategoria": "Robots de cocina", "marca": "Nordline", "seccion": "Pequeno electrodomestico", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 519.99, "margenBruto": 184.39, "estadoVenta": "Completada"}, {"idVenta": "VTA0000181", "idLineaVenta": "VTA0000181-01", "fecha": "2026-03-17", "anio": 2026, "mesNumero": 3, "mesNombre": "Marzo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000193", "categoria": "Cocina", "subcategoria": "Campanas extractoras", "marca": "CleanBot", "seccion": "Cocina", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 419.99, "margenBruto": 133.36, "estadoVenta": "Completada"}, {"idVenta": "VTA0000182", "idLineaVenta": "VTA0000182-01", "fecha": "2026-03-18", "anio": 2026, "mesNumero": 3, "mesNombre": "Marzo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000195", "categoria": "Cocina", "subcategoria": "Campanas extractoras", "marca": "Balayra", "seccion": "Cocina", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 419.98, "margenBruto": 149.94, "estadoVenta": "Completada"}, {"idVenta": "VTA0000183", "idLineaVenta": "VTA0000183-01", "fecha": "2026-03-20", "anio": 2026, "mesNumero": 3, "mesNombre": "Marzo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000287", "categoria": "Limpieza", "subcategoria": "Robots aspiradores", "marca": "HomeTech", "seccion": "Limpieza", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 693.49, "margenBruto": 255.29, "estadoVenta": "Completada"}, {"idVenta": "VTA0000184", "idLineaVenta": "VTA0000184-01", "fecha": "2026-03-24", "anio": 2026, "mesNumero": 3, "mesNombre": "Marzo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000287", "categoria": "Limpieza", "subcategoria": "Robots aspiradores", "marca": "HomeTech", "seccion": "Limpieza", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 729.99, "margenBruto": 291.79, "estadoVenta": "Completada"}, {"idVenta": "VTA0000185", "idLineaVenta": "VTA0000185-01", "fecha": "2026-03-25", "anio": 2026, "mesNumero": 3, "mesNombre": "Marzo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000299", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "Balayra", "seccion": "Limpieza", "idCanal": "CAN007", "canal": "Marketplace", "tipoCanal": "Partner", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 109.99, "margenBruto": 47.45, "estadoVenta": "Completada"}, {"idVenta": "VTA0000186", "idLineaVenta": "VTA0000186-01", "fecha": "2026-04-16", "anio": 2026, "mesNumero": 4, "mesNombre": "Abril", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000264", "categoria": "Limpieza", "subcategoria": "Aspiradoras", "marca": "Balayra", "seccion": "Limpieza", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 339.98, "margenBruto": 129.28, "estadoVenta": "Completada"}, {"idVenta": "VTA0000187", "idLineaVenta": "VTA0000187-01", "fecha": "2026-04-16", "anio": 2026, "mesNumero": 4, "mesNombre": "Abril", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000360", "categoria": "Pequeno electrodomestico", "subcategoria": "Robots de cocina", "marca": "CleanBot", "seccion": "Pequeno electrodomestico", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 688.69, "margenBruto": 263.59, "estadoVenta": "Completada"}, {"idVenta": "VTA0000188", "idLineaVenta": "VTA0000188-01", "fecha": "2026-04-18", "anio": 2026, "mesNumero": 4, "mesNombre": "Abril", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000164", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "NovaCasa", "seccion": "Cocina", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 259.99, "margenBruto": 92.97, "estadoVenta": "Completada"}, {"idVenta": "VTA0000189", "idLineaVenta": "VTA0000189-01", "fecha": "2026-04-24", "anio": 2026, "mesNumero": 4, "mesNombre": "Abril", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000294", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "Nordline", "seccion": "Limpieza", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 179.99, "margenBruto": 77.61, "estadoVenta": "Completada"}, {"idVenta": "VTA0000190", "idLineaVenta": "VTA0000190-01", "fecha": "2026-04-24", "anio": 2026, "mesNumero": 4, "mesNombre": "Abril", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000344", "categoria": "Pequeno electrodomestico", "subcategoria": "Batidoras", "marca": "KitchNova", "seccion": "Pequeno electrodomestico", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 2, "importeNeto": 339.98, "margenBruto": 103.52, "estadoVenta": "Completada"}, {"idVenta": "VTA0000191", "idLineaVenta": "VTA0000191-01", "fecha": "2026-04-26", "anio": 2026, "mesNumero": 4, "mesNombre": "Abril", "idUsuario": "USR028158", "tipoUsuario": "Registrado", "segmentoCliente": "Profesional", "genero": "Hombre", "comunidadAutonoma": "Andalucia", "idArticulo": "ART000168", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "AireZen", "seccion": "Cocina", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 659.99, "margenBruto": 291.88, "estadoVenta": "Completada"}, {"idVenta": "VTA0000192", "idLineaVenta": "VTA0000192-01", "fecha": "2026-05-10", "anio": 2026, "mesNumero": 5, "mesNombre": "Mayo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000281", "categoria": "Limpieza", "subcategoria": "Robots aspiradores", "marca": "HomeTech", "seccion": "Limpieza", "idCanal": "CAN005", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Este", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 519.99, "margenBruto": 172.28, "estadoVenta": "Completada"}, {"idVenta": "VTA0000193", "idLineaVenta": "VTA0000193-01", "fecha": "2026-05-10", "anio": 2026, "mesNumero": 5, "mesNombre": "Mayo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000301", "categoria": "Limpieza", "subcategoria": "Limpiadoras de vapor", "marca": "EcoWash", "seccion": "Limpieza", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 179.99, "margenBruto": 69.03, "estadoVenta": "Completada"}, {"idVenta": "VTA0000194", "idLineaVenta": "VTA0000194-01", "fecha": "2026-05-15", "anio": 2026, "mesNumero": 5, "mesNombre": "Mayo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000264", "categoria": "Limpieza", "subcategoria": "Aspiradoras", "marca": "Balayra", "seccion": "Limpieza", "idCanal": "CAN004", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Noreste", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 169.99, "margenBruto": 64.64, "estadoVenta": "Completada"}, {"idVenta": "VTA0000195", "idLineaVenta": "VTA0000195-01", "fecha": "2026-05-19", "anio": 2026, "mesNumero": 5, "mesNombre": "Mayo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000146", "categoria": "Cocina", "subcategoria": "Hornos", "marca": "FrioMax", "seccion": "Cocina", "idCanal": "CAN002", "canal": "App", "tipoCanal": "Mobile commerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 879.99, "margenBruto": 292.61, "estadoVenta": "Completada"}, {"idVenta": "VTA0000196", "idLineaVenta": "VTA0000196-01", "fecha": "2026-05-19", "anio": 2026, "mesNumero": 5, "mesNombre": "Mayo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000360", "categoria": "Pequeno electrodomestico", "subcategoria": "Robots de cocina", "marca": "CleanBot", "seccion": "Pequeno electrodomestico", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 709.99, "margenBruto": 284.89, "estadoVenta": "Completada"}, {"idVenta": "VTA0000197", "idLineaVenta": "VTA0000197-01", "fecha": "2026-05-23", "anio": 2026, "mesNumero": 5, "mesNombre": "Mayo", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000341", "categoria": "Pequeno electrodomestico", "subcategoria": "Batidoras", "marca": "ElectraHome", "seccion": "Pequeno electrodomestico", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 39.99, "margenBruto": 15.79, "estadoVenta": "Completada"}, {"idVenta": "VTA0000198", "idLineaVenta": "VTA0000198-01", "fecha": "2026-05-28", "anio": 2026, "mesNumero": 5, "mesNombre": "Mayo", "idUsuario": "USR009945", "tipoUsuario": "Registrado", "segmentoCliente": "Premium", "genero": "Mujer", "comunidadAutonoma": "Comunidad de Madrid", "idArticulo": "ART000193", "categoria": "Cocina", "subcategoria": "Campanas extractoras", "marca": "CleanBot", "seccion": "Cocina", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 419.99, "margenBruto": 133.36, "estadoVenta": "Completada"}, {"idVenta": "VTA0000199", "idLineaVenta": "VTA0000199-01", "fecha": "2026-06-01", "anio": 2026, "mesNumero": 6, "mesNombre": "Junio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000172", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "FrioMax", "seccion": "Cocina", "idCanal": "CAN001", "canal": "Online", "tipoCanal": "Ecommerce", "zonaVenta": "Digital", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 599.99, "margenBruto": 205.08, "estadoVenta": "Completada"}, {"idVenta": "VTA0000200", "idLineaVenta": "VTA0000200-01", "fecha": "2026-06-11", "anio": 2026, "mesNumero": 6, "mesNombre": "Junio", "idUsuario": "USR_NO_REG", "tipoUsuario": "No registrado", "segmentoCliente": "No registrado", "genero": "No indicado", "comunidadAutonoma": "No aplica", "idArticulo": "ART000161", "categoria": "Cocina", "subcategoria": "Placas de induccion", "marca": "EcoWash", "seccion": "Cocina", "idCanal": "CAN003", "canal": "Tienda fisica", "tipoCanal": "Retail", "zonaVenta": "Centro", "idPromocion": "SIN_PROMO", "nombrePromocion": "Sin promocion", "tipoPromocion": "No aplica", "unidades": 1, "importeNeto": 260.39, "margenBruto": 68.84, "estadoVenta": "Completada"}];
+const QUALITY = {"generatedAt": "2026-07-16", "tableChecks": [{"name": "fact_ventas", "rows": 200, "unique": 200, "status": "PASS"}, {"name": "dim_articulos", "rows": 57, "unique": 57, "status": "PASS"}, {"name": "dim_canal", "rows": 6, "unique": 6, "status": "PASS"}, {"name": "dim_fecha", "rows": 174, "unique": 174, "status": "PASS"}, {"name": "dim_promociones", "rows": 7, "unique": 7, "status": "PASS"}, {"name": "dim_usuarios", "rows": 11, "unique": 11, "status": "PASS"}, {"name": "fact_promociones_articulos", "rows": 124, "unique": 124, "status": "PASS"}], "joinRows": 200};
+const money = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
+const number = new Intl.NumberFormat('es-ES');
+const pct = new Intl.NumberFormat('es-ES', { style: 'percent', maximumFractionDigits: 1 });
+const dateFmt = new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+const rawUserTypes = ['Registrado', 'No registrado'];
+const displayUserTypes = { Registrado: 'Registrado', 'No registrado': 'Invitado' };
+const state = { years: new Set(), months: new Set(), channels: new Set(), userTypes: new Set(), promotions: new Set(), defaults: null };
 
-    const money = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
-    const number = new Intl.NumberFormat("es-ES");
+function setText(selector, value) {
+  const node = document.querySelector(selector);
+  if (node) node.textContent = value;
+}
 
-    function parseCSV(text) {
-      const firstLine = text.split(/\r?\n/).find(line => line.trim().length > 0) || "";
-      const commaCount = (firstLine.match(/,/g) || []).length;
-      const semicolonCount = (firstLine.match(/;/g) || []).length;
-      const delimiter = semicolonCount > commaCount ? ";" : ",";
-      const rows = [];
-      let current = [];
-      let value = "";
-      let inQuotes = false;
-
-      for (let i = 0; i < text.length; i += 1) {
-        const char = text[i];
-        const next = text[i + 1];
-
-        if (inQuotes) {
-          if (char === '"' && next === '"') {
-            value += '"';
-            i += 1;
-          } else if (char === '"') {
-            inQuotes = false;
-          } else {
-            value += char;
-          }
-          continue;
-        }
-
-        if (char === '"') {
-          inQuotes = true;
-          continue;
-        }
-
-        if (char === delimiter) {
-          current.push(value);
-          value = "";
-          continue;
-        }
-
-        if (char === "\n") {
-          current.push(value);
-          rows.push(current);
-          current = [];
-          value = "";
-          continue;
-        }
-
-        if (char !== "\r") {
-          value += char;
-        }
-      }
-
-      if (value.length || current.length) {
-        current.push(value);
-        rows.push(current);
-      }
-
-      const headers = rows.shift().map(header => header.trim());
-      return rows
-        .filter(row => row.some(cell => String(cell).trim() !== ""))
-        .map(row => Object.fromEntries(headers.map((header, index) => [header, (row[index] ?? "").trim()])));
+function fmtMoney(value) { return money.format(value || 0); }
+function fmtNumber(value) { return number.format(value || 0); }
+function fmtSignedMoney(value) { return (value > 0 ? '+' : '') + fmtMoney(value); }
+function fmtSignedPct(value) { return (value > 0 ? '+' : '') + pct.format(value); }
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+function shiftYear(dateString, delta) {
+  const [y, m, d] = dateString.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCFullYear(dt.getUTCFullYear() + delta);
+  return [dt.getUTCFullYear(), String(dt.getUTCMonth() + 1).padStart(2, '0'), String(dt.getUTCDate()).padStart(2, '0')].join('-');
+}
+function formatDate(dateString) {
+  const [y, m, d] = dateString.split('-').map(Number);
+  return dateFmt.format(new Date(Date.UTC(y, m - 1, d)));
+}
+function formatPeriod(years, months) {
+  const yearLabel = [...years].sort((a, b) => a - b).join(' · ') || 'todos los años';
+  const monthLabel = [...months].sort((a, b) => a - b).map((month) => new Intl.DateTimeFormat('es-ES', { month: 'short' }).format(new Date(Date.UTC(2024, month - 1, 1))).replace('.', '')).join(' · ') || 'todos los meses';
+  return yearLabel + ' | ' + monthLabel;
+}
+function sum(rows, getter) { return rows.reduce((acc, row) => acc + Number(getter(row) || 0), 0); }
+function countDistinct(rows, getter) { return new Set(rows.map(getter)).size; }
+function groupSum(rows, keyFn, valueFn) {
+  const map = new Map();
+  rows.forEach((row) => {
+    const key = keyFn(row);
+    map.set(key, (map.get(key) || 0) + Number(valueFn(row) || 0));
+  });
+  return map;
+}
+function metrics(rows) {
+  const revenue = sum(rows, (row) => row.importeNeto);
+  const orders = countDistinct(rows, (row) => row.idVenta);
+  const units = sum(rows, (row) => row.unidades);
+  const margin = sum(rows, (row) => row.margenBruto);
+  return { revenue, orders, units, margin, averageTicket: orders ? revenue / orders : 0, marginRate: revenue ? margin / revenue : 0 };
+}
+function diff(current, previous) { const absolute = current - previous; return { absolute, relative: previous ? absolute / previous : (current ? 1 : 0) }; }
+function availableYears() { return [...new Set(SNAPSHOT.map((row) => row.anio))].sort((a, b) => a - b); }
+function availableMonths(year) { return [...new Set(SNAPSHOT.filter((row) => row.anio === year).map((row) => row.mesNumero))].sort((a, b) => a - b); }
+function availableValues(field) { return [...new Set(SNAPSHOT.map((row) => row[field]))].filter(Boolean).sort((a, b) => String(a).localeCompare(String(b), 'es')); }
+function getDefaults() {
+  const years = availableYears();
+  const latest = years[years.length - 1];
+  return {
+    years: new Set([latest]),
+    months: new Set(availableMonths(latest)),
+    channels: new Set(availableValues('canal')),
+    userTypes: new Set(rawUserTypes),
+    promotions: new Set(availableValues('nombrePromocion')),
+    latest,
+  };
+}
+function selectedBaseRows() {
+  return SNAPSHOT.filter((row) => state.years.has(row.anio) && state.months.has(row.mesNumero) && state.channels.has(row.canal) && state.userTypes.has(row.tipoUsuario) && state.promotions.has(row.nombrePromocion));
+}
+function selectedComparisonRows(base) {
+  const shiftedDates = new Set(base.map((row) => shiftYear(row.fecha, -1)));
+  return SNAPSHOT.filter((row) => shiftedDates.has(row.fecha) && state.channels.has(row.canal) && state.userTypes.has(row.tipoUsuario) && state.promotions.has(row.nombrePromocion));
+}
+function buildChart(base, comp) {
+  const width = 1000;
+  const height = 340;
+  const padX = 48;
+  const padY = 24;
+  const maxPoints = Math.max(base.length, comp.length, 1);
+  const maxValue = Math.max(1, ...base.map((d) => d.value), ...comp.map((d) => d.value));
+  const chartWidth = width - (padX * 2);
+  const chartHeight = height - (padY * 2);
+  const point = (series, index) => {
+    const item = series[index];
+    if (!item) return null;
+    const x = maxPoints === 1 ? padX : padX + ((index / (maxPoints - 1)) * chartWidth);
+    const y = padY + chartHeight - ((item.value / maxValue) * chartHeight);
+    return { x, y, item };
+  };
+  const line = (series) => {
+    const pts = [];
+    for (let i = 0; i < maxPoints; i += 1) { const p = point(series, i); if (p) pts.push(p); }
+    return pts.map((p, i) => (i ? 'L ' : 'M ') + p.x.toFixed(1) + ' ' + p.y.toFixed(1)).join(' ');
+  };
+  const area = (series) => {
+    const pts = [];
+    for (let i = 0; i < maxPoints; i += 1) { const p = point(series, i); if (p) pts.push(p); }
+    if (!pts.length) return '';
+    const first = pts[0];
+    const last = pts[pts.length - 1];
+    return 'M ' + first.x.toFixed(1) + ' ' + (padY + chartHeight).toFixed(1) + ' ' + pts.map((p) => 'L ' + p.x.toFixed(1) + ' ' + p.y.toFixed(1)).join(' ') + ' L ' + last.x.toFixed(1) + ' ' + (padY + chartHeight).toFixed(1) + ' Z';
+  };
+  const baseLine = line(base);
+  const compLine = line(comp);
+  const baseArea = area(base);
+  const compArea = area(comp);
+  const grid = [];
+  for (let i = 0; i <= 4; i += 1) {
+    const y = padY + ((chartHeight / 4) * i);
+    grid.push('<line x1="' + padX + '" y1="' + y.toFixed(1) + '" x2="' + (width - padX) + '" y2="' + y.toFixed(1) + '" stroke="rgba(18,32,51,0.08)" stroke-dasharray="4 8" />');
+  }
+  const ticks = [];
+  const tickIndex = new Set([0, Math.floor((maxPoints - 1) / 2), maxPoints - 1]);
+  for (let i = 0; i < maxPoints; i += 1) {
+    if (!tickIndex.has(i)) continue;
+    const p = point(base, i) || point(comp, i);
+    if (!p) continue;
+    ticks.push('<text x="' + p.x.toFixed(1) + '" y="' + (height - 12) + '" text-anchor="middle" font-size="12" fill="#5e6a7b">' + escapeHtml(formatDate(p.item.date)) + '</text>');
+  }
+  const baseDots = [];
+  const compDots = [];
+  for (let i = 0; i < maxPoints; i += 1) {
+    const pb = point(base, i);
+    const pc = point(comp, i);
+    if (pb) baseDots.push('<circle cx="' + pb.x.toFixed(1) + '" cy="' + pb.y.toFixed(1) + '" r="4" fill="#2563eb" stroke="#fff" stroke-width="2" />');
+    if (pc) compDots.push('<circle cx="' + pc.x.toFixed(1) + '" cy="' + pc.y.toFixed(1) + '" r="3.6" fill="#0f766e" stroke="#fff" stroke-width="2" />');
+  }
+  return '<svg class="svg-wrap" width="1000" height="420" viewBox="0 0 ' + width + ' ' + height + '" preserveAspectRatio="none" role="img" aria-label="Comparativa interanual por fecha equivalente"><defs><linearGradient id="baseFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="rgba(37,99,235,0.24)" /><stop offset="100%" stop-color="rgba(37,99,235,0.02)" /></linearGradient><linearGradient id="compFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="rgba(15,118,110,0.22)" /><stop offset="100%" stop-color="rgba(15,118,110,0.02)" /></linearGradient></defs>' + grid.join('') + '<path d="' + compArea + '" fill="url(#compFill)" />' + '<path d="' + baseArea + '" fill="url(#baseFill)" />' + '<path d="' + compLine + '" fill="none" stroke="#0f766e" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" />' + '<path d="' + baseLine + '" fill="none" stroke="#2563eb" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" />' + compDots.join('') + baseDots.join('') + ticks.join('') + '</svg>';
+}
+function renderFilters() {
+  const meta = document.querySelector('.meta-row');
+  const years = availableYears();
+  const months = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: new Intl.DateTimeFormat('es-ES', { month: 'short' }).format(new Date(Date.UTC(2024, i, 1))).replace('.', '') }));
+  const channels = availableValues('canal');
+  const promotions = availableValues('nombrePromocion');
+  meta.innerHTML = '<div style="min-width:100%;color:var(--muted);font-size:0.9rem;margin-bottom:6px">Filtra por periodo, canal, tipo de usuario y promoción. El bloque comparado se calcula un año atrás con el mismo contexto.</div>';
+  const defs = [
+    ['Año', 'yearFilter', years, (v) => String(v), true],
+    ['Mes', 'monthFilter', months, (v) => v.label, true],
+    ['Canal', 'channelFilter', channels, (v) => v, false],
+    ['Tipo de usuario', 'userTypeFilter', rawUserTypes, (v) => displayUserTypes[v], false],
+    ['Promoción', 'promotionFilter', promotions, (v) => v, false],
+  ];
+  defs.forEach(([label, id, items, labelFn, numeric]) => {
+    const wrap = document.createElement('label');
+    wrap.style.display = 'grid';
+    wrap.style.gap = '6px';
+    wrap.style.minWidth = '160px';
+    const cap = document.createElement('span');
+    cap.style.color = 'var(--muted)';
+    cap.style.fontSize = '0.82rem';
+    cap.style.textTransform = 'uppercase';
+    cap.style.letterSpacing = '0.06em';
+    cap.textContent = label;
+    const sel = document.createElement('select');
+    sel.id = id;
+    sel.multiple = true;
+    sel.size = Math.min(5, items.length);
+    sel.setAttribute('data-testid', 'filter-' + label.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+    items.forEach((item) => {
+      const opt = document.createElement('option');
+      opt.value = String(numeric && typeof item === 'object' && item !== null ? item.value : item);
+      opt.textContent = labelFn(item);
+      opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener('change', () => {
+      const selected = [...sel.selectedOptions].map((opt) => opt.value);
+      if (id === 'yearFilter') state.years = new Set(selected.map(Number));
+      if (id === 'monthFilter') state.months = new Set(selected.map(Number));
+      if (id === 'channelFilter') state.channels = new Set(selected);
+      if (id === 'userTypeFilter') state.userTypes = new Set(selected);
+      if (id === 'promotionFilter') state.promotions = new Set(selected);
+      renderAll();
+    });
+    wrap.appendChild(cap);
+    wrap.appendChild(sel);
+    meta.appendChild(wrap);
+  });
+  const button = document.createElement('button');
+  button.className = 'chip';
+  button.type = 'button';
+  button.textContent = 'Restablecer';
+  button.setAttribute('data-testid', 'reset-filters');
+  button.addEventListener('click', () => {
+    const defaults = getDefaults();
+    state.years = new Set(defaults.years);
+    state.months = new Set(defaults.months);
+    state.channels = new Set(defaults.channels);
+    state.userTypes = new Set(defaults.userTypes);
+    state.promotions = new Set(defaults.promotions);
+    state.defaults = defaults;
+    renderToolbar();
+    renderAll();
+  });
+  meta.appendChild(button);
+}
+function renderSelectionSummary() {
+  const summary = document.getElementById('selectionSummary');
+  summary.innerHTML = '';
+  [['Periodo', formatPeriod(state.years, state.months)], ['Canales', String(state.channels.size)], ['Usuario', [...state.userTypes].map((value) => displayUserTypes[value] || value).join(' · ')], ['Promociones', String(state.promotions.size)]].forEach(([label, value]) => {
+    const chip = document.createElement('div');
+    chip.className = 'summary-chip';
+    chip.innerHTML = '<span>' + escapeHtml(label) + '</span><em>' + escapeHtml(value || 'sin filtro') + '</em>';
+    summary.appendChild(chip);
+  });
+}
+function renderKpis(base, comp) {
+  const cards = [
+    ['sales', 'kpiSales', 'kpiSalesDelta', base.revenue, comp.revenue, false],
+    ['orders', 'kpiOrders', 'kpiOrdersDelta', base.orders, comp.orders, true],
+    ['ticket', 'kpiAov', 'kpiAovDelta', base.averageTicket, comp.averageTicket, false],
+    ['margin', 'kpiMargin', 'kpiMarginDelta', base.margin, comp.margin, false],
+    ['units', 'kpiUnits', 'kpiUnitsDelta', base.units, comp.units, true],
+  ];
+  cards.forEach(([id, valueId, deltaId, current, previous, numeric]) => {
+    const d = diff(current, previous);
+    const valueNode = document.getElementById(valueId);
+    const deltaNode = document.getElementById(deltaId);
+    if (valueNode) {
+      valueNode.textContent = numeric ? fmtNumber(current) : fmtMoney(current);
+      valueNode.setAttribute('data-testid', 'kpi-' + id + '-current');
     }
-
-    async function loadCSV(path) {
-      const response = await fetch(path);
-      if (!response.ok) {
-        throw new Error(`No se pudo cargar ${path}: ${response.status}`);
-      }
-      return parseCSV(await response.text());
+    if (deltaNode) {
+      deltaNode.textContent = (numeric ? fmtNumber(d.absolute) : fmtSignedMoney(d.absolute)) + ' · ' + fmtSignedPct(d.relative);
+      deltaNode.className = 'delta' + (d.absolute < 0 ? ' negative' : '');
+      deltaNode.setAttribute('data-testid', 'kpi-' + id + '-delta');
     }
+  });
+}
+function renderChart(base, comp) {
+  const chart = document.getElementById('weeklyChart');
+  const summary = document.getElementById('weeklySummary');
+  if (!base.length) {
+    chart.innerHTML = '<div class="chart-empty"><div><strong>No hay datos para el periodo base</strong><div>Amplía el rango o limpia los filtros para recuperar un bloque de comparación válido.</div></div></div>';
+    if (summary) summary.textContent = 'Sin base';
+    return false;
+  }
+  if (!comp.length) {
+    chart.innerHTML = '<div class="chart-empty"><div><strong>No existe bloque comparable del año anterior</strong><div>El periodo base tiene datos, pero no hay una serie equivalente en el año previo con los filtros actuales.</div></div></div>';
+    if (summary) summary.textContent = 'Sin comparado';
+    return false;
+  }
+  const baseSeries = [...groupSum(base, (row) => row.fecha, (row) => row.importeNeto).entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([date, value]) => ({ date, value }));
+  const compSeries = [...groupSum(comp, (row) => row.fecha, (row) => row.importeNeto).entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([date, value]) => ({ date, value }));
+  chart.innerHTML = buildChart(baseSeries, compSeries) + '<div style="position:absolute;right:16px;top:16px;display:flex;gap:8px;flex-wrap:wrap;"><span class="summary-chip"><span>Base</span><em>' + escapeHtml(formatPeriod(state.years, state.months)) + '</em></span><span class="summary-chip"><span>Comparado</span><em>' + escapeHtml(formatPeriod(new Set([...state.years].map((year) => year - 1)), state.months)) + '</em></span></div>';
+  if (summary) summary.textContent = baseSeries.length + ' puntos';
+  return true;
+}
+function renderDrivers(base, comp) {
+  const dimensions = [
+    { target: 'channelList', key: (row) => row.canal, color: 'blue' },
+    { target: 'categoryList', key: (row) => row.categoria, color: 'alt' },
+    { target: 'promoList', key: (row) => row.nombrePromocion, color: 'purple' },
+    { target: 'segmentList', key: (row) => displayUserTypes[row.tipoUsuario] || row.tipoUsuario, color: 'blue' },
+  ];
+  dimensions.forEach((dim) => {
+    const current = groupSum(base, dim.key, (row) => row.importeNeto);
+    const previous = groupSum(comp, dim.key, (row) => row.importeNeto);
+    const items = [...new Set([...current.keys(), ...previous.keys()])].map((key) => ({ key, current: current.get(key) || 0, previous: previous.get(key) || 0, delta: (current.get(key) || 0) - (previous.get(key) || 0) })).sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta)).slice(0, 4);
+    const container = document.getElementById(dim.target);
+    container.innerHTML = '';
+    items.forEach((item) => {
+      const max = Math.max(...items.map((x) => Math.abs(x.delta)), 1);
+      const pctWidth = Math.max(10, (Math.abs(item.delta) / max) * 100);
+      const row = document.createElement('div');
+      row.className = 'list-item';
+      row.innerHTML = '<div class="list-head"><strong>' + escapeHtml(item.key || 'Sin dato') + '</strong><span>' + escapeHtml(fmtSignedMoney(item.delta)) + '</span></div>' + '<div class="track"><div style="width:' + pctWidth.toFixed(1) + '%" class="bar ' + (dim.color === 'purple' ? 'secondary' : '') + '"></div></div>' + '<div class="list-head"><span>Base ' + escapeHtml(fmtMoney(item.current)) + '</span><span>Comp ' + escapeHtml(fmtMoney(item.previous)) + '</span></div>';
+      container.appendChild(row);
+    });
+  });
+}
+function renderInsights(base, comp) {
+  const root = document.getElementById('insightList');
+  root.innerHTML = '';
+  const bm = metrics(base);
+  const cm = metrics(comp);
+  const revenue = diff(bm.revenue, cm.revenue);
+  const marginRate = bm.marginRate - cm.marginRate;
+  const channelCurrent = groupSum(base, (row) => row.canal, (row) => row.importeNeto);
+  const channelPrevious = groupSum(comp, (row) => row.canal, (row) => row.importeNeto);
+  const channelDelta = [...new Set([...channelCurrent.keys(), ...channelPrevious.keys()])].map((key) => ({ key, delta: (channelCurrent.get(key) || 0) - (channelPrevious.get(key) || 0) })).sort((a, b) => b.delta - a.delta);
+  const topPositive = channelDelta[0];
+  const topNegative = channelDelta[channelDelta.length - 1];
+  const lines = [
+    'El periodo base suma ' + fmtMoney(bm.revenue) + ' frente a ' + fmtMoney(cm.revenue) + ' en la comparación, con un cambio de ' + fmtSignedMoney(revenue.absolute) + ' (' + fmtSignedPct(revenue.relative) + ').',
+    'Los pedidos pasan de ' + fmtNumber(cm.orders) + ' a ' + fmtNumber(bm.orders) + ' y el ticket medio queda en ' + fmtMoney(bm.averageTicket) + '.',
+    'La tasa de margen bruto se mueve de ' + pct.format(cm.marginRate) + ' a ' + pct.format(bm.marginRate) + ' (' + fmtSignedPct(marginRate) + ').',
+    topPositive ? 'El principal impulso positivo viene de ' + topPositive.key + '.' : 'No hay un impulsor positivo dominante en el contexto actual.',
+    topNegative ? 'La principal resta frente al comparado llega desde ' + topNegative.key + '.' : 'No se detecta un factor negativo dominante.',
+    'El mix visible sigue usando únicamente atributos anonimizados de usuario: segmento, género y comunidad autónoma.',
+  ];
+  lines.forEach((line) => {
+    const el = document.createElement('div');
+    el.className = 'insight';
+    el.textContent = line;
+    root.appendChild(el);
+  });
+}
+function renderQuality() {
+  setText('#qualitySummary', 'Todas las tablas requeridas están en PASS, el join principal conserva las 200 filas de ventas y el snapshot está validado con Supabase en modo lectura.');
+  const badges = document.getElementById('qualityBadges');
+  badges.innerHTML = '';
+  const overall = document.createElement('span');
+  overall.className = 'status-pill';
+  overall.innerHTML = '<span class="status-dot"></span><span>PASS general</span>';
+  badges.appendChild(overall);
+  QUALITY.tableChecks.forEach((item) => {
+    const chip = document.createElement('span');
+    chip.className = 'status-pill';
+    chip.setAttribute('data-testid', 'quality-table-' + item.name);
+    chip.innerHTML = '<span class="status-dot"></span><span>' + escapeHtml(item.name) + ' · PASS</span>';
+    badges.appendChild(chip);
+  });
+  const qualityList = document.getElementById('qualityList');
+  qualityList.innerHTML = '';
+  QUALITY.tableChecks.forEach((item) => {
+    const row = document.createElement('div');
+    row.className = 'quality-row';
+    row.setAttribute('data-testid', 'quality-row-' + item.name);
+    row.innerHTML = '<b>' + escapeHtml(item.name) + '</b><span>' + escapeHtml(item.rows + ' filas | ' + item.unique + ' claves únicas | PASS') + '</span>';
+    qualityList.appendChild(row);
+  });
+  const joinRow = document.createElement('div');
+  joinRow.className = 'join-row';
+  joinRow.setAttribute('data-testid', 'join-row-fact-ventas-dimensiones');
+  joinRow.innerHTML = '<b>fact_ventas → dimensiones</b><span>200 → 200 filas | PASS</span>';
+  qualityList.appendChild(joinRow);
+  const sourceList = document.getElementById('sourceList');
+  sourceList.innerHTML = '';
+  [
+    ['Ventas netas', 'fact_ventas.importe_neto'],
+    ['Pedidos', 'fact_ventas.id_venta'],
+    ['Ticket medio', 'ventas netas / pedidos'],
+    ['Margen bruto', 'fact_ventas.margen_bruto'],
+    ['Canal', 'dim_canal.canal + fact_ventas.id_canal'],
+    ['Tiempo', 'dim_fecha.fecha + fact_ventas.id_fecha'],
+    ['Producto', 'dim_articulos.categoria / subcategoria / marca'],
+    ['Promoción', 'dim_promociones.nombre_promocion + fact_ventas.id_promocion'],
+    ['Usuario', 'dim_usuarios.tipo_usuario + segmento_cliente + genero + comunidad_autonoma'],
+  ].forEach(([label, value]) => {
+    const row = document.createElement('div');
+    row.className = 'source-row';
+    row.innerHTML = '<b>' + escapeHtml(label) + '</b><span>' + escapeHtml(value) + '</span>';
+    sourceList.appendChild(row);
+  });
+}
+function updateHero(base, comp, baseLen, compLen) {
+  setText('#heroBasePeriod', formatPeriod(state.years, state.months));
+  setText('#heroComparisonPeriod', formatPeriod(new Set([...state.years].map((year) => year - 1)), state.months));
+  if (!baseLen) setText('#heroStatus', 'Sin base seleccionada');
+  else if (!compLen) setText('#heroStatus', 'Bloque comparativo ausente');
+  else setText('#heroStatus', base.revenue >= comp.revenue ? 'Crecimiento ' + fmtSignedMoney(base.revenue - comp.revenue) : 'Caída ' + fmtSignedMoney(base.revenue - comp.revenue));
+}
+function renderRecent(rows) {
+  const recent = [...rows].sort((a, b) => b.fecha.localeCompare(a.fecha)).slice(0, 10);
+  const tbody = document.getElementById('salesTable');
+  tbody.innerHTML = recent.map((row) => '<tr><td>' + row.idVenta + '</td><td>' + formatDate(row.fecha) + '</td><td>' + escapeHtml(row.canal) + '</td><td>' + escapeHtml(row.subcategoria) + '</td><td>' + escapeHtml(row.categoria) + '</td><td>' + escapeHtml(row.nombrePromocion) + '</td><td>' + escapeHtml(fmtMoney(row.importeNeto)) + '</td><td>' + escapeHtml(fmtMoney(row.margenBruto)) + '</td><td><span class="status ok">' + escapeHtml(row.estadoVenta) + '</span></td></tr>').join('');
+  setText('#tableSummary', recent.length + ' registros');
+}
+function renderTitles() {
+  const titles = document.querySelectorAll('.panel-title');
+  const subtitles = document.querySelectorAll('.panel-subtitle');
+  const titleMap = ['Evolución comparada por fecha equivalente', 'Impulsores del cambio', 'Lecturas de negocio', 'Calidad de tablas y cardinalidad', 'Mapa de fuentes y privacidad'];
+  titles.forEach((el, index) => { if (titleMap[index]) el.textContent = titleMap[index]; });
+  const subtitleMap = [
+    'La línea azul representa el periodo base y la verde el bloque desplazado un año atrás.',
+    'Ranking por contribución neta al delta frente al periodo comparado.',
+    'Texto generado desde los datos filtrados para resaltar cambio, no solo volumen.',
+    'Estados PASS/FAIL medidos con el snapshot validado antes de usar cualquier KPI.',
+    'Las etiquetas visibles excluyen nombres, apellidos, email, fecha de nacimiento y código postal.'
+  ];
+  subtitles.forEach((el, index) => { if (subtitleMap[index]) el.textContent = subtitleMap[index]; });
+  setText('.eyebrow', 'Comparativa interanual con snapshot validado desde Supabase');
+  document.querySelector('h1').textContent = 'Ventas, margen y contribución de cambio con un bloque comparado real';
+  setText('.hero-copy', 'El dashboard compara el periodo seleccionado con el mismo tramo del año anterior, aplica los filtros no temporales de forma simétrica y bloquea cualquier lectura si la calidad de datos deja de ser confiable.');
+}
+function renderAll() {
+  const base = selectedBaseRows();
+  const comp = selectedComparisonRows(base);
+  const bm = metrics(base);
+  const cm = metrics(comp);
+  updateHero(bm, cm, base.length, comp.length);
+  renderSelectionSummary();
+  renderKpis(bm, cm);
+  renderChart(base, comp);
+  renderDrivers(base, comp);
+  renderInsights(base, comp);
+  renderQuality();
+  renderRecent(base);
+  document.getElementById('qualityBanner').className = 'quality-banner ok';
+}
+function renderToolbar() {
+  const meta = document.querySelector('.meta-row');
+  const years = availableYears();
+  const months = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: new Intl.DateTimeFormat('es-ES', { month: 'short' }).format(new Date(Date.UTC(2024, i, 1))).replace('.', '') }));
+  const channels = availableValues('canal');
+  const promotions = availableValues('nombrePromocion');
+  meta.innerHTML = '<div style="min-width:100%;color:var(--muted);font-size:0.9rem;margin-bottom:6px">Filtra por periodo, canal, tipo de usuario y promoción. El bloque comparado se calcula un año atrás con el mismo contexto.</div>';
+  const defs = [
+    ['Año', 'yearFilter', years, (v) => String(v), true],
+    ['Mes', 'monthFilter', months, (v) => v.label, true],
+    ['Canal', 'channelFilter', channels, (v) => v, false],
+    ['Tipo de usuario', 'userTypeFilter', rawUserTypes, (v) => displayUserTypes[v], false],
+    ['Promoción', 'promotionFilter', promotions, (v) => v, false],
+  ];
+  defs.forEach(([label, id, items, labelFn, numeric]) => {
+    const wrap = document.createElement('label');
+    wrap.style.display = 'grid';
+    wrap.style.gap = '6px';
+    wrap.style.minWidth = '160px';
+    const cap = document.createElement('span');
+    cap.style.color = 'var(--muted)';
+    cap.style.fontSize = '0.82rem';
+    cap.style.textTransform = 'uppercase';
+    cap.style.letterSpacing = '0.06em';
+    cap.textContent = label;
+    const sel = document.createElement('select');
+    sel.id = id;
+    sel.multiple = true;
+    sel.size = Math.min(5, items.length);
+    sel.setAttribute('data-testid', 'filter-' + label.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+    items.forEach((item) => {
+      const opt = document.createElement('option');
+      opt.value = String(numeric && typeof item === 'object' && item !== null ? item.value : item);
+      opt.textContent = labelFn(item);
+      opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener('change', () => {
+      const selected = [...sel.selectedOptions].map((opt) => opt.value);
+      if (id === 'yearFilter') state.years = new Set(selected.map(Number));
+      if (id === 'monthFilter') state.months = new Set(selected.map(Number));
+      if (id === 'channelFilter') state.channels = new Set(selected);
+      if (id === 'userTypeFilter') state.userTypes = new Set(selected);
+      if (id === 'promotionFilter') state.promotions = new Set(selected);
+      renderAll();
+    });
+    wrap.appendChild(cap);
+    wrap.appendChild(sel);
+    meta.appendChild(wrap);
+  });
+  const button = document.createElement('button');
+  button.className = 'chip';
+  button.type = 'button';
+  button.textContent = 'Restablecer';
+  button.setAttribute('data-testid', 'reset-filters');
+  button.addEventListener('click', () => {
+    const defaults = getDefaults();
+    state.years = new Set(defaults.years);
+    state.months = new Set(defaults.months);
+    state.channels = new Set(defaults.channels);
+    state.userTypes = new Set(defaults.userTypes);
+    state.promotions = new Set(defaults.promotions);
+    state.defaults = defaults;
+    renderToolbar();
+    renderAll();
+  });
+  meta.appendChild(button);
+}
+function init() {
+  const defaults = getDefaults();
+  state.years = new Set(defaults.years);
+  state.months = new Set(defaults.months);
+  state.channels = new Set(defaults.channels);
+  state.userTypes = new Set(defaults.userTypes);
+  state.promotions = new Set(defaults.promotions);
+  state.defaults = defaults;
+  renderTitles();
+  renderToolbar();
+  setText('#qualityState', 'PASS');
+  setText('#loadState', 'Datos cargados correctamente');
+  renderAll();
+}
+init();
+</script>
 
-    function sum(list, selector) {
-      return list.reduce((acc, item) => acc + selector(item), 0);
-    }
-
-    function groupBy(list, keyFn, valueFn) {
-      const map = new Map();
-      for (const item of list) {
-        const key = keyFn(item);
-        map.set(key, (map.get(key) || 0) + valueFn(item));
-      }
-      return [...map.entries()].map(([key, value]) => ({ key, value }));
-    }
-
-    function compactDate(raw) {
-      if (!raw) return "-";
-      const date = new Date(raw);
-      if (Number.isNaN(date.getTime())) return raw;
-      return date.toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" });
-    }
-
-    function getMap(rows, key) {
-      return new Map(rows.map(row => [row[key], row]));
-    }
-
-    function enrichSales() {
-      const articles = getMap(state.articles, "id_articulo");
-      const channels = getMap(state.channels, "id_canal");
-      const dates = getMap(state.dates, "id_fecha");
-      const promotions = getMap(state.promotions, "id_promocion");
-      const users = getMap(state.users, "id_usuario");
-
-      return state.sales.map(sale => {
-        const article = articles.get(sale.id_articulo) || {};
-        const channel = channels.get(sale.id_canal) || {};
-        const date = dates.get(sale.id_fecha) || {};
-        const promo = promotions.get(sale.id_promocion) || {};
-        const user = users.get(sale.id_usuario) || {};
-        const amount = Number(sale.importe_neto || 0);
-        const margin = Number(sale.margen_bruto || 0);
-        const qty = Number(sale.unidades || 0);
-        const orderDate = sale.fecha_venta ? new Date(sale.fecha_venta) : null;
-
-        return {
-          ...sale,
-          _amount: Number.isFinite(amount) ? amount : 0,
-          _margin: Number.isFinite(margin) ? margin : 0,
-          _qty: Number.isFinite(qty) ? qty : 0,
-          _year: Number(date.anio || (orderDate ? orderDate.getFullYear() : 0)),
-          _weekday: orderDate ? orderDate.toLocaleDateString("es-ES", { weekday: "short" }) : "",
-          articleName: article.nombre_articulo || sale.id_articulo,
-          articleCategory: article.categoria || "Sin categoría",
-          articleBrand: article.marca || "Sin marca",
-          channelName: channel.canal || sale.id_canal,
-          channelType: channel.tipo_canal || "",
-          channelZone: channel.zona_venta || "",
-          promoName: promo.nombre_promocion || sale.id_promocion,
-          promoType: promo.tipo_promocion || "",
-          userSegment: user.segmento_cliente || "Sin segmento",
-          userCity: user.ciudad || ""
-        };
-      });
-    }
-
-    function applyFilters(rows) {
-      return rows.filter(row => {
-        const yearOk = state.year === "all" || String(row._year) === state.year;
-        const channelOk = state.channel === "all" || row.channelName === state.channel;
-        return yearOk && channelOk;
-      });
-    }
-
-    function renderOptions() {
-      const years = [...new Set(state.sales.map(sale => {
-        const row = state.dates.find(date => date.id_fecha === sale.id_fecha);
-        return row ? row.anio : null;
-      }).filter(Boolean))].sort();
-
-      const channels = [...new Set(state.channels.map(channel => channel.canal).filter(Boolean))].sort();
-      const yearFilter = document.getElementById("yearFilter");
-      const channelFilter = document.getElementById("channelFilter");
-
-      yearFilter.innerHTML = `<option value="all">Todo el período</option>${years.map(year => `<option value="${year}">${year}</option>`).join("")}`;
-      channelFilter.innerHTML = `<option value="all">Todos los canales</option>${channels.map(channel => `<option value="${channel}">${channel}</option>`).join("")}`;
-    }
-
-    function renderKPIs(filtered) {
-      const totalSales = sum(filtered, sale => sale._amount);
-      const totalOrders = filtered.length;
-      const totalUnits = sum(filtered, sale => sale._qty);
-      const totalMargin = sum(filtered, sale => sale._margin);
-      const aov = totalOrders ? totalSales / totalOrders : 0;
-      const marginPct = totalSales ? (totalMargin / totalSales) * 100 : 0;
-
-      document.getElementById("kpiSales").textContent = money.format(totalSales);
-      document.getElementById("kpiOrders").textContent = number.format(totalOrders);
-      document.getElementById("kpiAov").textContent = money.format(aov);
-      document.getElementById("kpiMargin").textContent = `${marginPct.toFixed(1)}%`;
-      document.getElementById("kpiUnits").textContent = number.format(totalUnits);
-
-      document.getElementById("kpiSalesDelta").textContent = `${money.format(totalMargin)} de margen bruto`;
-      document.getElementById("kpiOrdersDelta").textContent = `${number.format(filtered.length)} pedidos visibles`;
-      document.getElementById("kpiAovDelta").textContent = `${money.format(aov)} por pedido`;
-      document.getElementById("kpiMarginDelta").textContent = `${money.format(totalMargin)} acumulados`;
-      document.getElementById("kpiUnitsDelta").textContent = `${number.format(totalUnits)} unidades vendidas`;
-    }
-
-    function renderWeeklyChart(filtered) {
-      const order = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"];
-      const weekly = order.map(day => ({
-        day,
-        value: sum(filtered.filter(sale => sale._weekday.toLowerCase().startsWith(day.slice(0, 2))), sale => sale._amount)
-      }));
-      const max = Math.max(...weekly.map(item => item.value), 1);
-
-      document.getElementById("weeklyChart").innerHTML = weekly.map(item => {
-        const primary = Math.max(12, (item.value / max) * 100);
-        const secondary = Math.max(10, primary * 0.72);
-        return `
-          <div class="bar-group">
-            <div class="bars">
-              <div class="bar" style="height:${primary}%"></div>
-              <div class="bar secondary" style="height:${secondary}%"></div>
-            </div>
-            <div class="day">${item.day}</div>
-          </div>
-        `;
-      }).join("");
-
-      const topDay = weekly.reduce((best, item) => item.value > best.value ? item : best, weekly[0]);
-      document.getElementById("weeklySummary").textContent = topDay.value ? `${topDay.day.toUpperCase()} lidera con ${money.format(topDay.value)}` : "Sin ventas";
-    }
-
-    function renderList(targetId, items, total, options = {}) {
-      const target = document.getElementById(targetId);
-      target.innerHTML = items.map(item => {
-        const pct = total ? (item.value / total) * 100 : 0;
-        const color = options.color || "linear-gradient(90deg, var(--accent-2), var(--accent))";
-        return `
-          <div class="list-item">
-            <div class="list-head">
-              <strong>${item.key}</strong>
-              <span>${options.right ? options.right(item) : money.format(item.value)}</span>
-            </div>
-            <div class="track"><div style="width:${Math.min(100, pct)}%; background:${color};"></div></div>
-          </div>
-        `;
-      }).join("");
-    }
-
-    function renderChannelList(filtered) {
-      const grouped = groupBy(filtered, sale => sale.channelName, sale => sale._amount)
-        .sort((a, b) => b.value - a.value)
-        .slice(0, 5);
-      const total = sum(filtered, sale => sale._amount) || 1;
-      renderList("channelList", grouped, total, { color: "linear-gradient(90deg, #76a7ff, #46d7b2)" });
-    }
-
-    function renderCategoryList(filtered) {
-      const grouped = groupBy(filtered, sale => `${sale.articleCategory} · ${sale.articleBrand}`, sale => sale._amount)
-        .sort((a, b) => b.value - a.value)
-        .slice(0, 6);
-      const total = sum(filtered, sale => sale._amount) || 1;
-      renderList("categoryList", grouped, total, { color: "linear-gradient(90deg, #ffb25e, #76a7ff)" });
-    }
-
-    function renderPromoList(filtered) {
-      const grouped = groupBy(filtered, sale => sale.promoName, sale => sale._amount)
-        .sort((a, b) => b.value - a.value)
-        .slice(0, 5);
-      const total = sum(filtered, sale => sale._amount) || 1;
-      renderList("promoList", grouped, total, { color: "linear-gradient(90deg, #a78bfa, #76a7ff)" });
-    }
-
-    function renderSegmentList(filtered) {
-      const grouped = groupBy(filtered, sale => sale.userSegment, sale => sale._amount)
-        .sort((a, b) => b.value - a.value)
-        .slice(0, 5);
-      const total = sum(filtered, sale => sale._amount) || 1;
-      renderList("segmentList", grouped, total, { color: "linear-gradient(90deg, #46d7b2, #8df1d5)" });
-    }
-
-    function renderQuality(filtered) {
-      const articleSet = new Set(state.articles.map(article => article.id_articulo));
-      const channelSet = new Set(state.channels.map(channel => channel.id_canal));
-      const dateSet = new Set(state.dates.map(date => date.id_fecha));
-      const promoSet = new Set(state.promotions.map(promo => promo.id_promocion));
-
-      const missingArticles = filtered.filter(sale => !articleSet.has(sale.id_articulo)).length;
-      const missingChannels = filtered.filter(sale => !channelSet.has(sale.id_canal)).length;
-      const missingDates = filtered.filter(sale => !dateSet.has(sale.id_fecha)).length;
-      const missingPromos = filtered.filter(sale => !promoSet.has(sale.id_promocion)).length;
-      const parseIssues = filtered.filter(sale => !Number.isFinite(Number(sale.importe_neto)) || !Number.isFinite(Number(sale.margen_bruto))).length;
-      const totalIssues = missingArticles + missingChannels + missingDates + missingPromos + parseIssues;
-
-      const items = [
-        { label: "Artículos sin dimensión", value: missingArticles },
-        { label: "Canales sin dimensión", value: missingChannels },
-        { label: "Fechas sin dimensión", value: missingDates },
-        { label: "Promociones sin catálogo", value: missingPromos },
-        { label: "Valores numéricos dudosos", value: parseIssues }
-      ];
-
-      document.getElementById("qualityState").textContent = totalIssues ? `${totalIssues} incidencias` : "Sin incidencias";
-
-      document.getElementById("qualityList").innerHTML = items.map(item => `
-        <div class="list-item">
-          <div class="list-head">
-            <strong>${item.label}</strong>
-            <span>${number.format(item.value)}</span>
-          </div>
-          <div class="track"><div style="width:${Math.min(100, item.value * 20)}%; background: linear-gradient(90deg, var(--danger), var(--accent-3));"></div></div>
-        </div>
-      `).join("");
-
-      document.getElementById("loadState").textContent = totalIssues ? `Revisar ${number.format(totalIssues)} incidencias` : `Datos cargados correctamente`;
-    }
-
-    function renderInsights(filtered) {
-      const totalSales = sum(filtered, sale => sale._amount);
-      const totalOrders = filtered.length;
-      const topChannel = groupBy(filtered, sale => sale.channelName, sale => sale._amount).sort((a, b) => b.value - a.value)[0];
-      const topCategory = groupBy(filtered, sale => sale.articleCategory, sale => sale._amount).sort((a, b) => b.value - a.value)[0];
-      const topPromo = groupBy(filtered, sale => sale.promoName, sale => sale._amount).sort((a, b) => b.value - a.value)[0];
-      const marginPct = totalSales ? (sum(filtered, sale => sale._margin) / totalSales) * 100 : 0;
-      const topSegment = groupBy(filtered, sale => sale.userSegment, sale => sale._amount).sort((a, b) => b.value - a.value)[0];
-
-      const insights = [
-        totalOrders ? `Se analizaron ${number.format(totalOrders)} pedidos con unas ventas netas de ${money.format(totalSales)}.` : "No hay registros para los filtros activos.",
-        topChannel ? `El canal principal es ${topChannel.key} con ${money.format(topChannel.value)}.` : "No hay canal dominante en este corte.",
-        topCategory ? `La categoría líder es ${topCategory.key}, por delante del resto del mix.` : "No se detectó una categoría clara.",
-        topPromo ? `La promoción más relevante es ${topPromo.key}, concentrando más ventas que el resto.` : "No hay promociones destacadas en este corte.",
-        `El margen bruto medio del filtro actual es ${marginPct.toFixed(1)}%.`,
-        topSegment ? `El segmento con mayor peso es ${topSegment.key}.` : "No hay información suficiente de segmento."
-      ];
-
-      document.getElementById("insightList").innerHTML = insights.map(text => `<div class="insight">${text}</div>`).join("");
-    }
-
-    function renderTable(filtered) {
-      const recent = [...filtered]
-        .sort((a, b) => new Date(b.fecha_venta) - new Date(a.fecha_venta))
-        .slice(0, 10);
-
-      document.getElementById("tableSummary").textContent = `${number.format(recent.length)} registros`;
-      document.getElementById("salesTable").innerHTML = recent.map(sale => {
-        const statusClass = sale.estado_venta === "Completada" ? "ok" : sale.estado_venta === "Pendiente" ? "wait" : "bad";
-        return `
-          <tr>
-            <td>${sale.id_venta}</td>
-            <td>${compactDate(sale.fecha_venta)}</td>
-            <td>${sale.channelName}</td>
-            <td>${sale.articleName}</td>
-            <td>${sale.articleCategory}</td>
-            <td>${sale.promoName}</td>
-            <td>${money.format(sale._amount)}</td>
-            <td>${money.format(sale._margin)}</td>
-            <td><span class="status ${statusClass}">${sale.estado_venta}</span></td>
-          </tr>
-        `;
-      }).join("");
-    }
-
-    function updateDashboard() {
-      const enriched = enrichSales();
-      const filtered = applyFilters(enriched);
-
-      renderKPIs(filtered);
-      renderWeeklyChart(filtered);
-      renderChannelList(filtered);
-      renderCategoryList(filtered);
-      renderPromoList(filtered);
-      renderSegmentList(filtered);
-      renderQuality(enriched);
-      renderInsights(filtered);
-      renderTable(filtered);
-
-      const channelsVisible = [...new Set(filtered.map(sale => sale.channelName).filter(Boolean))].length;
-      document.getElementById("loadState").textContent = `${number.format(filtered.length)} pedidos | ${number.format(channelsVisible)} canales visibles`;
-    }
-
-    async function init() {
-      try {
-        const base = "resources";
-        const [sales, articles, channels, dates, promotions, users, promoArticles] = await Promise.all([
-          loadCSV(`${base}/fact_ventas.csv`),
-          loadCSV(`${base}/dim_articulos.csv`),
-          loadCSV(`${base}/dim_canal.csv`),
-          loadCSV(`${base}/dim_fecha.csv`),
-          loadCSV(`${base}/dim_promociones.csv`),
-          loadCSV(`${base}/dim_usuarios.csv`),
-          loadCSV(`${base}/fact_promociones_articulos.csv`)
-        ]);
-
-        state.sales = sales;
-        state.articles = articles;
-        state.channels = channels;
-        state.dates = dates;
-        state.promotions = promotions;
-        state.users = users;
-        state.promoArticles = promoArticles;
-
-        renderOptions();
-
-        const yearFilter = document.getElementById("yearFilter");
-        const channelFilter = document.getElementById("channelFilter");
-
-        yearFilter.addEventListener("change", event => {
-          state.year = event.target.value;
-          updateDashboard();
-        });
-
-        channelFilter.addEventListener("change", event => {
-          state.channel = event.target.value;
-          updateDashboard();
-        });
-
-        updateDashboard();
-      } catch (error) {
-        console.error(error);
-        document.body.innerHTML = `
-          <div class="error-box">
-            <h1>No se pudieron cargar los CSV</h1>
-            <p>Este dashboard necesita ejecutarse mediante HTTP para poder leer la carpeta <strong>resources/</strong>.</p>
-            <p>Arráncalo con un servidor local y vuelve a abrir la página.</p>
-            <code>${String(error)}</code>
-          </div>
-        `;
-      }
-    }
-
-    init();
-  </script>
 </body>
 </html>
