@@ -1,0 +1,19 @@
+web.html
+  s_39ba63720569d8::t_0bbc008e5ccb41 1-1008
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "54a6cc4ccfe3c8159ad944101b54c47229950ec0",
+  "prompts": {},
+  "sessions": {
+    "s_39ba63720569d8": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "d3ad7a9d-9be0-437f-a38f-34d53d8f0435",
+        "model": "unknown"
+      },
+      "human_author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}
