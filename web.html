@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sales Dashboard</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f6f9fc;
+      --surface-2: #eef4fa;
+      --line: #d7e1ec;
+      --text: #122033;
+      --muted: #5d6b7b;
+      --blue: #215d95;
+      --blue-2: #4f82b8;
+      --green: #2f8c62;
+      --green-2: #7bbf95;
+      --teal: #4c8f9f;
+      --gold: #b7933e;
+      --danger: #b14545;
+      --shadow: 0 18px 48px rgba(18, 32, 51, 0.08);
+      --radius: 20px;
+      --radius-sm: 14px;
+      --max: 1320px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: linear-gradient(180deg, #ffffff 0%, #f8fbfe 100%); color: var(--text); }
+    body {
+      font-family: "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    .shell {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 28px 18px 40px;
+    }
+
+    .hero {
+      background:
+        radial-gradient(circle at top right, rgba(33, 93, 149, 0.08), transparent 30%),
+        radial-gradient(circle at left bottom, rgba(47, 140, 98, 0.08), transparent 28%),
+        linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+      border: 1px solid var(--line);
+      border-radius: calc(var(--radius) + 6px);
+      box-shadow: var(--shadow);
+      padding: 28px;
+      overflow: hidden;
+    }
+
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: .18em;
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--blue);
+      margin: 0 0 10px;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+      font-size: clamp(2rem, 3.6vw, 3.5rem);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .hero-copy {
+      margin-top: 12px;
+      max-width: 860px;
+      font-size: 1rem;
+      line-height: 1.65;
+      color: var(--muted);
+    }
+
+    .banner {
+      margin-top: 22px;
+      padding: 16px 18px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(33, 93, 149, 0.16);
+      background: linear-gradient(180deg, #f8fbff 0%, #eef5fb 100%);
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .banner strong { font-size: 1rem; }
+    .banner .status { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: var(--green); }
+    .banner .status::before {
+      content: "";
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 6px rgba(47, 140, 98, 0.12);
+    }
+    .banner .security { color: var(--danger); font-size: .95rem; line-height: 1.45; }
+    .banner .meta { color: var(--muted); font-size: .92rem; line-height: 1.45; }
+
+    .filters {
+      margin-top: 18px;
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      backdrop-filter: blur(8px);
+    }
+
+    .filters-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .filters-header h2,
+    .section-header h2,
+    .section-header h3 {
+      margin: 0;
+      font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+      letter-spacing: -0.02em;
+    }
+
+    .filters-header p,
+    .section-header p,
+    .legend-note,
+    .card-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: .92rem;
+      line-height: 1.5;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .combo-filter {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--surface);
+      padding: 12px;
+      min-height: 100%;
+      min-width: 0;
+    }
+
+    .combo-filter summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      font-size: .85rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      user-select: none;
+    }
+
+    .combo-filter summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .combo-filter summary::after {
+      content: "⌄";
+      font-size: 1rem;
+      line-height: 1;
+      color: var(--blue);
+      transform: translateY(-1px);
+      transition: transform .18s ease;
+    }
+
+    .combo-filter[open] summary::after {
+      transform: rotate(180deg) translateY(1px);
+    }
+
+    .combo-summary {
+      text-transform: none;
+      letter-spacing: normal;
+      font-size: .78rem;
+      color: var(--blue);
+      font-weight: 700;
+    }
+
+    .combo-panel {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+    }
+
+    .filter-option-grid,
+    .year-calendar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .year-calendar {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .filter-option {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      color: var(--text);
+      padding: 8px 11px;
+      border-radius: 999px;
+      font: inherit;
+      font-size: .88rem;
+      cursor: pointer;
+      transition: background .18s ease, border-color .18s ease, transform .18s ease, color .18s ease, box-shadow .18s ease;
+      min-width: 0;
+    }
+
+    .filter-option:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(18, 32, 51, 0.06); }
+    .filter-option.is-active {
+      background: linear-gradient(180deg, var(--blue) 0%, #1b4f82 100%);
+      color: #fff;
+      border-color: transparent;
+    }
+    .year-cell {
+      border-radius: 14px;
+      padding: 12px 10px;
+      text-align: center;
+      font-weight: 700;
+    }
+    .year-cell.is-active {
+      background: linear-gradient(180deg, var(--green) 0%, #26714e 100%);
+    }
+    .filter-option.reset {
+      background: linear-gradient(180deg, var(--green) 0%, #26714e 100%);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .kpi {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      min-height: 148px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi::after {
+      content: "";
+      position: absolute;
+      inset: auto -24px -24px auto;
+      width: 112px;
+      height: 112px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(33, 93, 149, 0.12), transparent 70%);
+      pointer-events: none;
+    }
+
+    .kpi .label {
+      font-size: .82rem;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .kpi .value {
+      font-size: clamp(1.7rem, 2.3vw, 2.35rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin: 0;
+    }
+
+    .kpi .delta {
+      margin-top: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: .9rem;
+      color: var(--muted);
+    }
+
+    .kpi .delta .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .section {
+      margin-top: 18px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: end;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .section-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr;
+      gap: 14px;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(180deg, #ffffff 0%, #fafcfe 100%);
+      padding: 14px;
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .panel h3 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .panel svg {
+      width: 100%;
+      height: 100%;
+      min-height: 220px;
+      overflow: visible;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+      align-items: center;
+      font-size: .88rem;
+      color: var(--muted);
+    }
+
+    .legend-item { display: inline-flex; align-items: center; gap: 7px; }
+    .legend-swatch { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+
+    .chart-span-2 { grid-column: span 2; }
+    .chart-span-3 { grid-column: span 3; }
+
+    .footer-note {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: .88rem;
+      line-height: 1.55;
+    }
+
+    .empty {
+      display: grid;
+      place-items: center;
+      min-height: 180px;
+      color: var(--muted);
+      text-align: center;
+      padding: 20px;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 1200px) {
+      .filter-grid, .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .section-grid { grid-template-columns: 1fr 1fr; }
+      .chart-span-2, .chart-span-3 { grid-column: span 2; }
+    }
+
+    @media (max-width: 820px) {
+      .shell { padding: 18px 14px 30px; }
+      .hero { padding: 20px; }
+      .banner { grid-template-columns: 1fr; }
+      .filter-grid, .kpis, .section-grid { grid-template-columns: 1fr; }
+      .chart-span-2, .chart-span-3 { grid-column: auto; }
+      .panel { min-height: 280px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero" aria-labelledby="dashboard-title">
+      <p class="eyebrow">Retail sales intelligence</p>
+      <h1 id="dashboard-title">Interactive Sales Dashboard</h1>
+      <!-- Personal identifiers are intentionally excluded so the dashboard only uses anonymous operational attributes. -->
+      <p class="hero-copy">
+        This dashboard analyzes validated sales facts from Supabase and keeps every KPI and chart synchronized with the active filters.
+        Personal identifiers are intentionally excluded from the analysis; the dashboard uses anonymous operational attributes only.
+      </p>
+      <div class="banner" role="status" aria-live="polite">
+        <div>
+          <div class="status" id="qualityStatus">Data quality: loading</div>
+          <div class="meta" id="qualitySummary">Waiting for embedded snapshot.</div>
+        </div>
+        <div class="security" id="securityNote">Security note: source tables in Supabase have RLS disabled, so this dashboard relies on embedded read-only data and excludes personal data fields.</div>
+      </div>
+    </section>
+
+    <section class="filters" aria-labelledby="filters-title">
+      <div class="filters-header">
+        <div>
+          <h2 id="filters-title">Filters</h2>
+          <p>Use the combo controls below to update the KPIs and every chart at once.</p>
+        </div>
+        <button class="chip reset" id="resetFilters" type="button">Reset all</button>
+      </div>
+      <div class="filter-grid" id="filterGrid">
+        <details class="combo-filter" data-filter-group="years">
+          <summary><span>Year calendar</span><span class="combo-summary" id="yearsSummary">All selected</span></summary>
+          <div class="combo-panel">
+            <div class="year-calendar" id="yearFilters" role="grid" aria-label="Available years"></div>
+          </div>
+        </details>
+        <details class="combo-filter" data-filter-group="months">
+          <summary><span>Month</span><span class="combo-summary" id="monthsSummary">All selected</span></summary>
+          <div class="combo-panel">
+            <div class="filter-option-grid" id="monthFilters"></div>
+          </div>
+        </details>
+        <details class="combo-filter" data-filter-group="channels">
+          <summary><span>Sales channel</span><span class="combo-summary" id="channelsSummary">All selected</span></summary>
+          <div class="combo-panel">
+            <div class="filter-option-grid" id="channelFilters"></div>
+          </div>
+        </details>
+        <details class="combo-filter" data-filter-group="userTypes">
+          <summary><span>User type</span><span class="combo-summary" id="userTypesSummary">All selected</span></summary>
+          <div class="combo-panel">
+            <div class="filter-option-grid" id="userTypeFilters"></div>
+          </div>
+        </details>
+        <details class="combo-filter" data-filter-group="promotions">
+          <summary><span>Applied promotion</span><span class="combo-summary" id="promotionsSummary">All selected</span></summary>
+          <div class="combo-panel">
+            <div class="filter-option-grid" id="promotionFilters"></div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section aria-labelledby="kpis-title">
+      <div class="sr-only" id="kpis-title">Key performance indicators</div>
+      <div class="kpis">
+        <article class="kpi">
+          <div>
+            <div class="label">Total Sales — Revenue (€)</div>
+            <p class="value" id="kpiSalesRevenue">€0</p>
+          </div>
+          <div class="delta"><span class="badge">Completed sales</span><span id="kpiSalesRevenueNote">Filtered revenue from completed lines.</span></div>
+        </article>
+        <article class="kpi">
+          <div>
+            <div class="label">Total Sales — Units</div>
+            <p class="value" id="kpiSalesUnits">0</p>
+          </div>
+          <div class="delta"><span class="badge">Completed sales</span><span id="kpiSalesUnitsNote">Units sold after filters.</span></div>
+        </article>
+        <article class="kpi">
+          <div>
+            <div class="label">Returns — Revenue (€)</div>
+            <p class="value" id="kpiReturnsRevenue">€0</p>
+          </div>
+          <div class="delta"><span class="badge">Returned lines</span><span id="kpiReturnsRevenueNote">Revenue from returned lines.</span></div>
+        </article>
+        <article class="kpi">
+          <div>
+            <div class="label">Returns — Units</div>
+            <p class="value" id="kpiReturnsUnits">0</p>
+          </div>
+          <div class="delta"><span class="badge">Returned lines</span><span id="kpiReturnsUnitsNote">Units from returned lines.</span></div>
+        </article>
+        <article class="kpi">
+          <div>
+            <div class="label">% of Sales from Registered Users</div>
+            <p class="value" id="kpiRegisteredShare">0%</p>
+          </div>
+          <div class="delta"><span class="badge">Registered</span><span id="kpiRegisteredShareNote">Share of completed sales revenue.</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="charts-title">
+      <div class="section-header">
+        <div>
+          <h2 id="charts-title">Charts</h2>
+          <p>Comparative trend, sales mix, and promotion performance for the active selection.</p>
+        </div>
+        <p class="legend-note" id="selectionSummary">All filters selected.</p>
+      </div>
+
+      <div class="section-grid">
+        <article class="panel chart-span-3">
+          <h3>Comparative Trend</h3>
+          <p class="card-note">Monthly completed sales revenue by selected year.</p>
+          <div class="legend" id="trendLegend"></div>
+          <div id="trendChart"></div>
+        </article>
+
+        <article class="panel">
+          <h3>Sales by Channel</h3>
+          <p class="card-note">Completed sales revenue split by channel.</p>
+          <div id="channelChart"></div>
+        </article>
+
+        <article class="panel">
+          <h3>Sales by User Type</h3>
+          <p class="card-note">Completed sales revenue split by registered and guest users.</p>
+          <div id="userTypeChart"></div>
+        </article>
+
+        <article class="panel chart-span-2">
+          <h3>Sales by Product Category</h3>
+          <p class="card-note">Top 8 categories by completed sales revenue.</p>
+          <div id="categoryChart"></div>
+        </article>
+
+        <article class="panel chart-span-1">
+          <h3>Sales by Promotion</h3>
+          <p class="card-note">Top promotions by completed sales revenue.</p>
+          <div id="promotionChart"></div>
+        </article>
+      </div>
+
+      <p class="footer-note">
+        Revenue and unit metrics use completed sales lines. Returns are reported separately from returned lines, and cancelled lines are excluded from the KPI rollup.
+      </p>
+    </section>
+  </main>
+
+  <script>
+    const rawData = [{"id_linea_venta":"VTA0000001-01","id_venta":"VTA0000001","anio":2024,"mes_numero":1,"mes_nombre":"Enero","fecha_venta":"2024-01-01","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Microondas","marca":"ElectraHome","unidades":1,"precio_lista_unitario":219.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":219.99,"importe_bruto":219.99,"importe_neto":219.99,"iva_pct":0.21,"importe_iva":46.2,"importe_total":266.19,"coste_unitario":143.73,"margen_bruto":76.26,"metodo_pago":"Efectivo","estado_venta":"Completada"},{"id_linea_venta":"VTA0000002-01","id_venta":"VTA0000002","anio":2024,"mes_numero":1,"mes_nombre":"Enero","fecha_venta":"2024-01-10","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Hornos","marca":"FrioMax","unidades":2,"precio_lista_unitario":879.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":879.99,"importe_bruto":1759.98,"importe_neto":1759.98,"iva_pct":0.21,"importe_iva":369.6,"importe_total":2129.58,"coste_unitario":587.38,"margen_bruto":585.22,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000003-01","id_venta":"VTA0000003","anio":2024,"mes_numero":1,"mes_nombre":"Enero","fecha_venta":"2024-01-11","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Aspiradoras","marca":"Balayra","unidades":1,"precio_lista_unitario":169.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":169.99,"importe_bruto":169.99,"importe_neto":169.99,"iva_pct":0.21,"importe_iva":35.7,"importe_total":205.69,"coste_unitario":105.35,"margen_bruto":64.64,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000004-01","id_venta":"VTA0000004","anio":2024,"mes_numero":1,"mes_nombre":"Enero","fecha_venta":"2024-01-14","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Robots de cocina","marca":"CleanBot","unidades":1,"precio_lista_unitario":709.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":709.99,"importe_bruto":709.99,"importe_neto":709.99,"iva_pct":0.21,"importe_iva":149.1,"importe_total":859.09,"coste_unitario":425.1,"margen_bruto":284.89,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000005-01","id_venta":"VTA0000005","anio":2024,"mes_numero":1,"mes_nombre":"Enero","fecha_venta":"2024-01-22","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"EcoWash","unidades":1,"precio_lista_unitario":179.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":179.99,"importe_bruto":179.99,"importe_neto":179.99,"iva_pct":0.21,"importe_iva":37.8,"importe_total":217.79,"coste_unitario":110.96,"margen_bruto":69.03,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000006-01","id_venta":"VTA0000006","anio":2024,"mes_numero":1,"mes_nombre":"Enero","fecha_venta":"2024-01-24","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Hornos","marca":"FrioMax","unidades":1,"precio_lista_unitario":599.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":599.99,"importe_bruto":599.99,"importe_neto":599.99,"iva_pct":0.21,"importe_iva":126,"importe_total":725.99,"coste_unitario":424.76,"margen_bruto":175.23,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000007-01","id_venta":"VTA0000007","anio":2024,"mes_numero":1,"mes_nombre":"Enero","fecha_venta":"2024-01-28","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Microondas","marca":"Balayra","unidades":1,"precio_lista_unitario":279.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":279.99,"importe_bruto":279.99,"importe_neto":279.99,"iva_pct":0.21,"importe_iva":58.8,"importe_total":338.79,"coste_unitario":151.85,"margen_bruto":128.14,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000008-01","id_venta":"VTA0000008","anio":2024,"mes_numero":1,"mes_nombre":"Enero","fecha_venta":"2024-01-30","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Campanas extractoras","marca":"Balayra","unidades":1,"precio_lista_unitario":299.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":299.99,"importe_bruto":299.99,"importe_neto":299.99,"iva_pct":0.21,"importe_iva":63,"importe_total":362.99,"coste_unitario":177.45,"margen_bruto":122.54,"metodo_pago":"Financiacion","estado_venta":"Completada"},{"id_linea_venta":"VTA0000009-01","id_venta":"VTA0000009","anio":2024,"mes_numero":1,"mes_nombre":"Enero","fecha_venta":"2024-01-31","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Hornos","marca":"FrioMax","unidades":1,"precio_lista_unitario":879.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":879.99,"importe_bruto":879.99,"importe_neto":879.99,"iva_pct":0.21,"importe_iva":184.8,"importe_total":1064.79,"coste_unitario":587.38,"margen_bruto":292.61,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000010-01","id_venta":"VTA0000010","anio":2024,"mes_numero":1,"mes_nombre":"Enero","fecha_venta":"2024-01-31","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Rebajas enero 2024","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Freidoras de aire","marca":"HomeTech","unidades":1,"precio_lista_unitario":119.99,"descuento_pct":0.0957,"importe_descuento":11.48,"precio_unitario_final":108.51,"importe_bruto":119.99,"importe_neto":108.51,"iva_pct":0.21,"importe_iva":22.79,"importe_total":131.3,"coste_unitario":69.05,"margen_bruto":39.46,"metodo_pago":"Financiacion","estado_venta":"Completada"},{"id_linea_venta":"VTA0000011-01","id_venta":"VTA0000011","anio":2024,"mes_numero":2,"mes_nombre":"Febrero","fecha_venta":"2024-02-05","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Microondas","marca":"CleanBot","unidades":1,"precio_lista_unitario":309.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":309.99,"importe_bruto":309.99,"importe_neto":309.99,"iva_pct":0.21,"importe_iva":65.1,"importe_total":375.09,"coste_unitario":196.36,"margen_bruto":113.63,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000012-01","id_venta":"VTA0000012","anio":2024,"mes_numero":2,"mes_nombre":"Febrero","fecha_venta":"2024-02-07","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Robots aspiradores","marca":"HomeTech","unidades":1,"precio_lista_unitario":519.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":519.99,"importe_bruto":519.99,"importe_neto":519.99,"iva_pct":0.21,"importe_iva":109.2,"importe_total":629.19,"coste_unitario":347.71,"margen_bruto":172.28,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000013-01","id_venta":"VTA0000013","anio":2024,"mes_numero":2,"mes_nombre":"Febrero","fecha_venta":"2024-02-09","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Batidoras","marca":"NovaCasa","unidades":1,"precio_lista_unitario":59.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":59.99,"importe_bruto":59.99,"importe_neto":59.99,"iva_pct":0.21,"importe_iva":12.6,"importe_total":72.59,"coste_unitario":32.69,"margen_bruto":27.3,"metodo_pago":"Financiacion","estado_venta":"Completada"},{"id_linea_venta":"VTA0000014-01","id_venta":"VTA0000014","anio":2024,"mes_numero":2,"mes_nombre":"Febrero","fecha_venta":"2024-02-15","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Campanas extractoras","marca":"CleanBot","unidades":1,"precio_lista_unitario":419.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":419.99,"importe_bruto":419.99,"importe_neto":419.99,"iva_pct":0.21,"importe_iva":88.2,"importe_total":508.19,"coste_unitario":286.63,"margen_bruto":133.36,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000015-01","id_venta":"VTA0000015","anio":2024,"mes_numero":2,"mes_nombre":"Febrero","fecha_venta":"2024-02-18","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Robots de cocina","marca":"Balayra","unidades":1,"precio_lista_unitario":269.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":269.99,"importe_bruto":269.99,"importe_neto":269.99,"iva_pct":0.21,"importe_iva":56.7,"importe_total":326.69,"coste_unitario":182.1,"margen_bruto":87.89,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000016-01","id_venta":"VTA0000016","anio":2024,"mes_numero":2,"mes_nombre":"Febrero","fecha_venta":"2024-02-20","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"FrioMax","unidades":1,"precio_lista_unitario":599.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":599.99,"importe_bruto":599.99,"importe_neto":599.99,"iva_pct":0.21,"importe_iva":126,"importe_total":725.99,"coste_unitario":394.91,"margen_bruto":205.08,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000017-01","id_venta":"VTA0000017","anio":2024,"mes_numero":2,"mes_nombre":"Febrero","fecha_venta":"2024-02-28","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Aspiradoras","marca":"IberHome","unidades":1,"precio_lista_unitario":309.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":309.99,"importe_bruto":309.99,"importe_neto":309.99,"iva_pct":0.21,"importe_iva":65.1,"importe_total":375.09,"coste_unitario":173.46,"margen_bruto":136.53,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000018-01","id_venta":"VTA0000018","anio":2024,"mes_numero":3,"mes_nombre":"Marzo","fecha_venta":"2024-03-26","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Batidoras","marca":"ElectraHome","unidades":1,"precio_lista_unitario":39.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":39.99,"importe_bruto":39.99,"importe_neto":39.99,"iva_pct":0.21,"importe_iva":8.4,"importe_total":48.39,"coste_unitario":24.2,"margen_bruto":15.79,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000019-01","id_venta":"VTA0000019","anio":2024,"mes_numero":4,"mes_nombre":"Abril","fecha_venta":"2024-04-10","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Robots de cocina","marca":"Balayra","unidades":1,"precio_lista_unitario":269.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":269.99,"importe_bruto":269.99,"importe_neto":269.99,"iva_pct":0.21,"importe_iva":56.7,"importe_total":326.69,"coste_unitario":182.1,"margen_bruto":87.89,"metodo_pago":"Financiacion","estado_venta":"Completada"},{"id_linea_venta":"VTA0000020-01","id_venta":"VTA0000020","anio":2024,"mes_numero":4,"mes_nombre":"Abril","fecha_venta":"2024-04-11","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Robots aspiradores","marca":"HomeTech","unidades":2,"precio_lista_unitario":479.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":479.99,"importe_bruto":959.98,"importe_neto":959.98,"iva_pct":0.21,"importe_iva":201.6,"importe_total":1161.58,"coste_unitario":323.8,"margen_bruto":312.38,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000021-01","id_venta":"VTA0000021","anio":2024,"mes_numero":4,"mes_nombre":"Abril","fecha_venta":"2024-04-11","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Cafeteras","marca":"Nordline","unidades":1,"precio_lista_unitario":299.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":299.99,"importe_bruto":299.99,"importe_neto":299.99,"iva_pct":0.21,"importe_iva":63,"importe_total":362.99,"coste_unitario":188.84,"margen_bruto":111.15,"metodo_pago":"Financiacion","estado_venta":"Cancelada"},{"id_linea_venta":"VTA0000022-01","id_venta":"VTA0000022","anio":2024,"mes_numero":4,"mes_nombre":"Abril","fecha_venta":"2024-04-18","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Hornos","marca":"NovaCasa","unidades":1,"precio_lista_unitario":499.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":499.99,"importe_bruto":499.99,"importe_neto":499.99,"iva_pct":0.21,"importe_iva":105,"importe_total":604.99,"coste_unitario":350.26,"margen_bruto":149.73,"metodo_pago":"Tarjeta","estado_venta":"Devuelta"},{"id_linea_venta":"VTA0000023-01","id_venta":"VTA0000023","anio":2024,"mes_numero":4,"mes_nombre":"Abril","fecha_venta":"2024-04-22","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Robots de cocina","marca":"CleanBot","unidades":1,"precio_lista_unitario":709.99,"descuento_pct":0.03,"importe_descuento":21.3,"precio_unitario_final":688.69,"importe_bruto":709.99,"importe_neto":688.69,"iva_pct":0.21,"importe_iva":144.62,"importe_total":833.31,"coste_unitario":425.1,"margen_bruto":263.59,"metodo_pago":"Efectivo","estado_venta":"Completada"},{"id_linea_venta":"VTA0000024-01","id_venta":"VTA0000024","anio":2024,"mes_numero":4,"mes_nombre":"Abril","fecha_venta":"2024-04-29","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Hornos","marca":"FrioMax","unidades":1,"precio_lista_unitario":599.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":599.99,"importe_bruto":599.99,"importe_neto":599.99,"iva_pct":0.21,"importe_iva":126,"importe_total":725.99,"coste_unitario":424.76,"margen_bruto":175.23,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000025-01","id_venta":"VTA0000025","anio":2024,"mes_numero":5,"mes_nombre":"Mayo","fecha_venta":"2024-05-01","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"EcoWash","unidades":1,"precio_lista_unitario":219.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":219.99,"importe_bruto":219.99,"importe_neto":219.99,"iva_pct":0.21,"importe_iva":46.2,"importe_total":266.19,"coste_unitario":151.93,"margen_bruto":68.06,"metodo_pago":"Transferencia","estado_venta":"Completada"},{"id_linea_venta":"VTA0000026-01","id_venta":"VTA0000026","anio":2024,"mes_numero":5,"mes_nombre":"Mayo","fecha_venta":"2024-05-02","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Campanas extractoras","marca":"EcoWash","unidades":1,"precio_lista_unitario":469.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":469.99,"importe_bruto":469.99,"importe_neto":469.99,"iva_pct":0.21,"importe_iva":98.7,"importe_total":568.69,"coste_unitario":294.01,"margen_bruto":175.98,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000027-01","id_venta":"VTA0000027","anio":2024,"mes_numero":5,"mes_nombre":"Mayo","fecha_venta":"2024-05-03","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Hornos","marca":"CleanBot","unidades":1,"precio_lista_unitario":499.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":499.99,"importe_bruto":499.99,"importe_neto":499.99,"iva_pct":0.21,"importe_iva":105,"importe_total":604.99,"coste_unitario":295,"margen_bruto":204.99,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000028-01","id_venta":"VTA0000028","anio":2024,"mes_numero":5,"mes_nombre":"Mayo","fecha_venta":"2024-05-05","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Aspiradoras","marca":"IberHome","unidades":1,"precio_lista_unitario":309.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":309.99,"importe_bruto":309.99,"importe_neto":309.99,"iva_pct":0.21,"importe_iva":65.1,"importe_total":375.09,"coste_unitario":173.46,"margen_bruto":136.53,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000029-01","id_venta":"VTA0000029","anio":2024,"mes_numero":5,"mes_nombre":"Mayo","fecha_venta":"2024-05-13","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Hornos","marca":"FrioMax","unidades":1,"precio_lista_unitario":879.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":879.99,"importe_bruto":879.99,"importe_neto":879.99,"iva_pct":0.21,"importe_iva":184.8,"importe_total":1064.79,"coste_unitario":587.38,"margen_bruto":292.61,"metodo_pago":"Transferencia","estado_venta":"Completada"},{"id_linea_venta":"VTA0000030-01","id_venta":"VTA0000030","anio":2024,"mes_numero":5,"mes_nombre":"Mayo","fecha_venta":"2024-05-16","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Cafeteras","marca":"KitchNova","unidades":1,"precio_lista_unitario":689.99,"descuento_pct":0.03,"importe_descuento":20.7,"precio_unitario_final":669.29,"importe_bruto":689.99,"importe_neto":669.29,"iva_pct":0.21,"importe_iva":140.55,"importe_total":809.84,"coste_unitario":492.29,"margen_bruto":177,"metodo_pago":"Transferencia","estado_venta":"Completada"},{"id_linea_venta":"VTA0000031-01","id_venta":"VTA0000031","anio":2024,"mes_numero":5,"mes_nombre":"Mayo","fecha_venta":"2024-05-18","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Microondas","marca":"Balayra","unidades":1,"precio_lista_unitario":159.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":159.99,"importe_bruto":159.99,"importe_neto":159.99,"iva_pct":0.21,"importe_iva":33.6,"importe_total":193.59,"coste_unitario":95.38,"margen_bruto":64.61,"metodo_pago":"Financiacion","estado_venta":"Completada"},{"id_linea_venta":"VTA0000032-01","id_venta":"VTA0000032","anio":2024,"mes_numero":5,"mes_nombre":"Mayo","fecha_venta":"2024-05-29","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"EcoWash","unidades":1,"precio_lista_unitario":279.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":279.99,"importe_bruto":279.99,"importe_neto":279.99,"iva_pct":0.21,"importe_iva":58.8,"importe_total":338.79,"coste_unitario":191.55,"margen_bruto":88.44,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000033-01","id_venta":"VTA0000033","anio":2024,"mes_numero":6,"mes_nombre":"Junio","fecha_venta":"2024-06-07","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"IberHome","unidades":1,"precio_lista_unitario":489.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":489.99,"importe_bruto":489.99,"importe_neto":489.99,"iva_pct":0.21,"importe_iva":102.9,"importe_total":592.89,"coste_unitario":294.8,"margen_bruto":195.19,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000034-01","id_venta":"VTA0000034","anio":2024,"mes_numero":6,"mes_nombre":"Junio","fecha_venta":"2024-06-13","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Batidoras","marca":"EcoWash","unidades":1,"precio_lista_unitario":49.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":49.99,"importe_bruto":49.99,"importe_neto":49.99,"iva_pct":0.21,"importe_iva":10.5,"importe_total":60.49,"coste_unitario":33.44,"margen_bruto":16.55,"metodo_pago":"Transferencia","estado_venta":"Completada"},{"id_linea_venta":"VTA0000035-01","id_venta":"VTA0000035","anio":2024,"mes_numero":6,"mes_nombre":"Junio","fecha_venta":"2024-06-14","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"Registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Robots aspiradores","marca":"CleanBot","unidades":1,"precio_lista_unitario":839.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":839.99,"importe_bruto":839.99,"importe_neto":839.99,"iva_pct":0.21,"importe_iva":176.4,"importe_total":1016.39,"coste_unitario":590.19,"margen_bruto":249.8,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000036-01","id_venta":"VTA0000036","anio":2024,"mes_numero":6,"mes_nombre":"Junio","fecha_venta":"2024-06-16","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"EcoWash","unidades":1,"precio_lista_unitario":519.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":519.99,"importe_bruto":519.99,"importe_neto":519.99,"iva_pct":0.21,"importe_iva":109.2,"importe_total":629.19,"coste_unitario":353.55,"margen_bruto":166.44,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000037-01","id_venta":"VTA0000037","anio":2024,"mes_numero":6,"mes_nombre":"Junio","fecha_venta":"2024-06-25","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Batidoras","marca":"NovaCasa","unidades":1,"precio_lista_unitario":59.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":59.99,"importe_bruto":59.99,"importe_neto":59.99,"iva_pct":0.21,"importe_iva":12.6,"importe_total":72.59,"coste_unitario":32.69,"margen_bruto":27.3,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000038-01","id_venta":"VTA0000038","anio":2024,"mes_numero":6,"mes_nombre":"Junio","fecha_venta":"2024-06-27","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Robots de cocina","marca":"Balayra","unidades":1,"precio_lista_unitario":269.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":269.99,"importe_bruto":269.99,"importe_neto":269.99,"iva_pct":0.21,"importe_iva":56.7,"importe_total":326.69,"coste_unitario":182.1,"margen_bruto":87.89,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000039-01","id_venta":"VTA0000039","anio":2024,"mes_numero":6,"mes_nombre":"Junio","fecha_venta":"2024-06-28","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Batidoras","marca":"KitchNova","unidades":1,"precio_lista_unitario":169.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":169.99,"importe_bruto":169.99,"importe_neto":169.99,"iva_pct":0.21,"importe_iva":35.7,"importe_total":205.69,"coste_unitario":118.23,"margen_bruto":51.76,"metodo_pago":"Efectivo","estado_venta":"Completada"},{"id_linea_venta":"VTA0000040-01","id_venta":"VTA0000040","anio":2024,"mes_numero":7,"mes_nombre":"Julio","fecha_venta":"2024-07-08","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Campanas extractoras","marca":"EcoWash","unidades":1,"precio_lista_unitario":469.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":469.99,"importe_bruto":469.99,"importe_neto":469.99,"iva_pct":0.21,"importe_iva":98.7,"importe_total":568.69,"coste_unitario":294.01,"margen_bruto":175.98,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000041-01","id_venta":"VTA0000041","anio":2024,"mes_numero":7,"mes_nombre":"Julio","fecha_venta":"2024-07-09","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Campanas extractoras","marca":"KitchNova","unidades":1,"precio_lista_unitario":349.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":349.99,"importe_bruto":349.99,"importe_neto":349.99,"iva_pct":0.21,"importe_iva":73.5,"importe_total":423.49,"coste_unitario":192.67,"margen_bruto":157.32,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000042-01","id_venta":"VTA0000042","anio":2024,"mes_numero":7,"mes_nombre":"Julio","fecha_venta":"2024-07-19","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"Balayra","unidades":1,"precio_lista_unitario":319.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":319.99,"importe_bruto":319.99,"importe_neto":319.99,"iva_pct":0.21,"importe_iva":67.2,"importe_total":387.19,"coste_unitario":215.11,"margen_bruto":104.88,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000043-01","id_venta":"VTA0000043","anio":2024,"mes_numero":7,"mes_nombre":"Julio","fecha_venta":"2024-07-22","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"EcoWash","unidades":1,"precio_lista_unitario":519.99,"descuento_pct":0.07,"importe_descuento":36.4,"precio_unitario_final":483.59,"importe_bruto":519.99,"importe_neto":483.59,"iva_pct":0.21,"importe_iva":101.55,"importe_total":585.14,"coste_unitario":353.55,"margen_bruto":130.04,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000044-01","id_venta":"VTA0000044","anio":2024,"mes_numero":7,"mes_nombre":"Julio","fecha_venta":"2024-07-31","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Cafeteras","marca":"Nordline","unidades":1,"precio_lista_unitario":209.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":209.99,"importe_bruto":209.99,"importe_neto":209.99,"iva_pct":0.21,"importe_iva":44.1,"importe_total":254.09,"coste_unitario":148.76,"margen_bruto":61.23,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000045-01","id_venta":"VTA0000045","anio":2024,"mes_numero":8,"mes_nombre":"Agosto","fecha_venta":"2024-08-05","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Robots de cocina","marca":"CleanBot","unidades":1,"precio_lista_unitario":709.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":709.99,"importe_bruto":709.99,"importe_neto":709.99,"iva_pct":0.21,"importe_iva":149.1,"importe_total":859.09,"coste_unitario":425.1,"margen_bruto":284.89,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000046-01","id_venta":"VTA0000046","anio":2024,"mes_numero":8,"mes_nombre":"Agosto","fecha_venta":"2024-08-11","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"EcoWash","unidades":1,"precio_lista_unitario":219.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":219.99,"importe_bruto":219.99,"importe_neto":219.99,"iva_pct":0.21,"importe_iva":46.2,"importe_total":266.19,"coste_unitario":151.93,"margen_bruto":68.06,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000047-01","id_venta":"VTA0000047","anio":2024,"mes_numero":8,"mes_nombre":"Agosto","fecha_venta":"2024-08-13","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"HomeTech","unidades":1,"precio_lista_unitario":139.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":139.99,"importe_bruto":139.99,"importe_neto":139.99,"iva_pct":0.21,"importe_iva":29.4,"importe_total":169.39,"coste_unitario":84.2,"margen_bruto":55.79,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000048-01","id_venta":"VTA0000048","anio":2024,"mes_numero":8,"mes_nombre":"Agosto","fecha_venta":"2024-08-14","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Batidoras","marca":"EcoWash","unidades":1,"precio_lista_unitario":49.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":49.99,"importe_bruto":49.99,"importe_neto":49.99,"iva_pct":0.21,"importe_iva":10.5,"importe_total":60.49,"coste_unitario":33.44,"margen_bruto":16.55,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000049-01","id_venta":"VTA0000049","anio":2024,"mes_numero":8,"mes_nombre":"Agosto","fecha_venta":"2024-08-14","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Robots de cocina","marca":"Balayra","unidades":2,"precio_lista_unitario":269.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":269.99,"importe_bruto":539.98,"importe_neto":539.98,"iva_pct":0.21,"importe_iva":113.4,"importe_total":653.38,"coste_unitario":182.1,"margen_bruto":175.78,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000050-01","id_venta":"VTA0000050","anio":2024,"mes_numero":8,"mes_nombre":"Agosto","fecha_venta":"2024-08-21","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"AireZen","unidades":1,"precio_lista_unitario":659.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":659.99,"importe_bruto":659.99,"importe_neto":659.99,"iva_pct":0.21,"importe_iva":138.6,"importe_total":798.59,"coste_unitario":368.11,"margen_bruto":291.88,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000051-01","id_venta":"VTA0000051","anio":2024,"mes_numero":8,"mes_nombre":"Agosto","fecha_venta":"2024-08-25","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Batidoras","marca":"NovaCasa","unidades":1,"precio_lista_unitario":59.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":59.99,"importe_bruto":59.99,"importe_neto":59.99,"iva_pct":0.21,"importe_iva":12.6,"importe_total":72.59,"coste_unitario":32.69,"margen_bruto":27.3,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000052-01","id_venta":"VTA0000052","anio":2024,"mes_numero":8,"mes_nombre":"Agosto","fecha_venta":"2024-08-26","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"EcoWash","unidades":2,"precio_lista_unitario":279.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":279.99,"importe_bruto":559.98,"importe_neto":559.98,"iva_pct":0.21,"importe_iva":117.6,"importe_total":677.58,"coste_unitario":191.55,"margen_bruto":176.88,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000053-01","id_venta":"VTA0000053","anio":2024,"mes_numero":9,"mes_nombre":"Septiembre","fecha_venta":"2024-09-03","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Hornos","marca":"NovaCasa","unidades":1,"precio_lista_unitario":499.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":499.99,"importe_bruto":499.99,"importe_neto":499.99,"iva_pct":0.21,"importe_iva":105,"importe_total":604.99,"coste_unitario":350.26,"margen_bruto":149.73,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000054-01","id_venta":"VTA0000054","anio":2024,"mes_numero":9,"mes_nombre":"Septiembre","fecha_venta":"2024-09-18","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Microondas","marca":"ElectraHome","unidades":1,"precio_lista_unitario":219.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":219.99,"importe_bruto":219.99,"importe_neto":219.99,"iva_pct":0.21,"importe_iva":46.2,"importe_total":266.19,"coste_unitario":143.73,"margen_bruto":76.26,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000055-01","id_venta":"VTA0000055","anio":2024,"mes_numero":9,"mes_nombre":"Septiembre","fecha_venta":"2024-09-20","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"Registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Freidoras de aire","marca":"NovaCasa","unidades":3,"precio_lista_unitario":279.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":279.99,"importe_bruto":839.97,"importe_neto":839.97,"iva_pct":0.21,"importe_iva":176.39,"importe_total":1016.36,"coste_unitario":181.61,"margen_bruto":295.14,"metodo_pago":"Tarjeta","estado_venta":"Devuelta"},{"id_linea_venta":"VTA0000056-01","id_venta":"VTA0000056","anio":2024,"mes_numero":9,"mes_nombre":"Septiembre","fecha_venta":"2024-09-20","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"AquaPlus","unidades":1,"precio_lista_unitario":469.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":469.99,"importe_bruto":469.99,"importe_neto":469.99,"iva_pct":0.21,"importe_iva":98.7,"importe_total":568.69,"coste_unitario":326.68,"margen_bruto":143.31,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000057-01","id_venta":"VTA0000057","anio":2024,"mes_numero":9,"mes_nombre":"Septiembre","fecha_venta":"2024-09-22","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"EcoWash","unidades":1,"precio_lista_unitario":219.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":219.99,"importe_bruto":219.99,"importe_neto":219.99,"iva_pct":0.21,"importe_iva":46.2,"importe_total":266.19,"coste_unitario":151.93,"margen_bruto":68.06,"metodo_pago":"Financiacion","estado_venta":"Completada"},{"id_linea_venta":"VTA0000058-01","id_venta":"VTA0000058","anio":2024,"mes_numero":10,"mes_nombre":"Octubre","fecha_venta":"2024-10-01","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Robots aspiradores","marca":"CleanBot","unidades":2,"precio_lista_unitario":839.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":839.99,"importe_bruto":1679.98,"importe_neto":1679.98,"iva_pct":0.21,"importe_iva":352.8,"importe_total":2032.78,"coste_unitario":590.19,"margen_bruto":499.6,"metodo_pago":"Transferencia","estado_venta":"Completada"},{"id_linea_venta":"VTA0000059-01","id_venta":"VTA0000059","anio":2024,"mes_numero":10,"mes_nombre":"Octubre","fecha_venta":"2024-10-08","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Robots aspiradores","marca":"KitchNova","unidades":1,"precio_lista_unitario":409.99,"descuento_pct":0.03,"importe_descuento":12.3,"precio_unitario_final":397.69,"importe_bruto":409.99,"importe_neto":397.69,"iva_pct":0.21,"importe_iva":83.51,"importe_total":481.2,"coste_unitario":235.87,"margen_bruto":161.82,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000060-01","id_venta":"VTA0000060","anio":2024,"mes_numero":10,"mes_nombre":"Octubre","fecha_venta":"2024-10-28","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Cafeteras","marca":"Nordline","unidades":1,"precio_lista_unitario":299.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":299.99,"importe_bruto":299.99,"importe_neto":299.99,"iva_pct":0.21,"importe_iva":63,"importe_total":362.99,"coste_unitario":188.84,"margen_bruto":111.15,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000061-01","id_venta":"VTA0000061","anio":2024,"mes_numero":10,"mes_nombre":"Octubre","fecha_venta":"2024-10-31","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"Registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Robots aspiradores","marca":"HomeTech","unidades":1,"precio_lista_unitario":729.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":729.99,"importe_bruto":729.99,"importe_neto":729.99,"iva_pct":0.21,"importe_iva":153.3,"importe_total":883.29,"coste_unitario":438.2,"margen_bruto":291.79,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000062-01","id_venta":"VTA0000062","anio":2024,"mes_numero":11,"mes_nombre":"Noviembre","fecha_venta":"2024-11-02","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Freidoras de aire","marca":"NovaCasa","unidades":1,"precio_lista_unitario":279.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":279.99,"importe_bruto":279.99,"importe_neto":279.99,"iva_pct":0.21,"importe_iva":58.8,"importe_total":338.79,"coste_unitario":181.61,"margen_bruto":98.38,"metodo_pago":"Financiacion","estado_venta":"Completada"},{"id_linea_venta":"VTA0000063-01","id_venta":"VTA0000063","anio":2024,"mes_numero":11,"mes_nombre":"Noviembre","fecha_venta":"2024-11-11","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"Balayra","unidades":1,"precio_lista_unitario":319.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":319.99,"importe_bruto":319.99,"importe_neto":319.99,"iva_pct":0.21,"importe_iva":67.2,"importe_total":387.19,"coste_unitario":215.11,"margen_bruto":104.88,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000064-01","id_venta":"VTA0000064","anio":2024,"mes_numero":11,"mes_nombre":"Noviembre","fecha_venta":"2024-11-12","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"EcoWash","unidades":3,"precio_lista_unitario":519.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":519.99,"importe_bruto":1559.97,"importe_neto":1559.97,"iva_pct":0.21,"importe_iva":327.59,"importe_total":1887.56,"coste_unitario":353.55,"margen_bruto":499.32,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000065-01","id_venta":"VTA0000065","anio":2024,"mes_numero":11,"mes_nombre":"Noviembre","fecha_venta":"2024-11-13","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"HomeTech","unidades":1,"precio_lista_unitario":139.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":139.99,"importe_bruto":139.99,"importe_neto":139.99,"iva_pct":0.21,"importe_iva":29.4,"importe_total":169.39,"coste_unitario":84.2,"margen_bruto":55.79,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000066-01","id_venta":"VTA0000066","anio":2024,"mes_numero":11,"mes_nombre":"Noviembre","fecha_venta":"2024-11-16","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Aspiradoras","marca":"IberHome","unidades":1,"precio_lista_unitario":309.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":309.99,"importe_bruto":309.99,"importe_neto":309.99,"iva_pct":0.21,"importe_iva":65.1,"importe_total":375.09,"coste_unitario":173.46,"margen_bruto":136.53,"metodo_pago":"Efectivo","estado_venta":"Completada"},{"id_linea_venta":"VTA0000067-01","id_venta":"VTA0000067","anio":2024,"mes_numero":11,"mes_nombre":"Noviembre","fecha_venta":"2024-11-20","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"NovaCasa","unidades":1,"precio_lista_unitario":619.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":619.99,"importe_bruto":619.99,"importe_neto":619.99,"iva_pct":0.21,"importe_iva":130.2,"importe_total":750.19,"coste_unitario":445.75,"margen_bruto":174.24,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000068-01","id_venta":"VTA0000068","anio":2024,"mes_numero":11,"mes_nombre":"Noviembre","fecha_venta":"2024-11-25","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Black Friday 2024","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"AquaPlus","unidades":2,"precio_lista_unitario":469.99,"descuento_pct":0.1688,"importe_descuento":158.67,"precio_unitario_final":390.66,"importe_bruto":939.98,"importe_neto":781.31,"iva_pct":0.21,"importe_iva":164.08,"importe_total":945.39,"coste_unitario":326.68,"margen_bruto":127.95,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000069-01","id_venta":"VTA0000069","anio":2024,"mes_numero":11,"mes_nombre":"Noviembre","fecha_venta":"2024-11-28","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Black Friday 2024","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"EcoWash","unidades":1,"precio_lista_unitario":279.99,"descuento_pct":0.1668,"importe_descuento":46.7,"precio_unitario_final":233.29,"importe_bruto":279.99,"importe_neto":233.29,"iva_pct":0.21,"importe_iva":48.99,"importe_total":282.28,"coste_unitario":191.55,"margen_bruto":41.74,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000070-01","id_venta":"VTA0000070","anio":2024,"mes_numero":11,"mes_nombre":"Noviembre","fecha_venta":"2024-11-28","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Black Friday 2024","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"EcoWash","unidades":1,"precio_lista_unitario":279.99,"descuento_pct":0.1668,"importe_descuento":46.7,"precio_unitario_final":233.29,"importe_bruto":279.99,"importe_neto":233.29,"iva_pct":0.21,"importe_iva":48.99,"importe_total":282.28,"coste_unitario":191.55,"margen_bruto":41.74,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000071-01","id_venta":"VTA0000071","anio":2024,"mes_numero":11,"mes_nombre":"Noviembre","fecha_venta":"2024-11-28","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Black Friday 2024","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Cafeteras","marca":"Nordline","unidades":1,"precio_lista_unitario":209.99,"descuento_pct":0.196,"importe_descuento":41.16,"precio_unitario_final":168.83,"importe_bruto":209.99,"importe_neto":168.83,"iva_pct":0.21,"importe_iva":35.45,"importe_total":204.28,"coste_unitario":148.76,"margen_bruto":20.07,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000072-01","id_venta":"VTA0000072","anio":2024,"mes_numero":12,"mes_nombre":"Diciembre","fecha_venta":"2024-12-01","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Batidoras","marca":"NovaCasa","unidades":1,"precio_lista_unitario":59.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":59.99,"importe_bruto":59.99,"importe_neto":59.99,"iva_pct":0.21,"importe_iva":12.6,"importe_total":72.59,"coste_unitario":32.69,"margen_bruto":27.3,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000073-01","id_venta":"VTA0000073","anio":2024,"mes_numero":12,"mes_nombre":"Diciembre","fecha_venta":"2024-12-02","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Aspiradoras","marca":"Balayra","unidades":1,"precio_lista_unitario":169.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":169.99,"importe_bruto":169.99,"importe_neto":169.99,"iva_pct":0.21,"importe_iva":35.7,"importe_total":205.69,"coste_unitario":105.35,"margen_bruto":64.64,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000074-01","id_venta":"VTA0000074","anio":2024,"mes_numero":12,"mes_nombre":"Diciembre","fecha_venta":"2024-12-13","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Batidoras","marca":"EcoWash","unidades":1,"precio_lista_unitario":49.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":49.99,"importe_bruto":49.99,"importe_neto":49.99,"iva_pct":0.21,"importe_iva":10.5,"importe_total":60.49,"coste_unitario":33.44,"margen_bruto":16.55,"metodo_pago":"Efectivo","estado_venta":"Completada"},{"id_linea_venta":"VTA0000075-01","id_venta":"VTA0000075","anio":2024,"mes_numero":12,"mes_nombre":"Diciembre","fecha_venta":"2024-12-15","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Navidad hogar 2024","seccion":"Cocina","categoria":"Cocina","subcategoria":"Microondas","marca":"CleanBot","unidades":1,"precio_lista_unitario":309.99,"descuento_pct":0.0991,"importe_descuento":30.72,"precio_unitario_final":279.27,"importe_bruto":309.99,"importe_neto":279.27,"iva_pct":0.21,"importe_iva":58.65,"importe_total":337.92,"coste_unitario":196.36,"margen_bruto":82.91,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000076-01","id_venta":"VTA0000076","anio":2024,"mes_numero":12,"mes_nombre":"Diciembre","fecha_venta":"2024-12-15","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Aspiradoras","marca":"Balayra","unidades":1,"precio_lista_unitario":199.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":199.99,"importe_bruto":199.99,"importe_neto":199.99,"iva_pct":0.21,"importe_iva":42,"importe_total":241.99,"coste_unitario":127.82,"margen_bruto":72.17,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000077-01","id_venta":"VTA0000077","anio":2024,"mes_numero":12,"mes_nombre":"Diciembre","fecha_venta":"2024-12-22","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Cafeteras","marca":"KitchNova","unidades":1,"precio_lista_unitario":689.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":689.99,"importe_bruto":689.99,"importe_neto":689.99,"iva_pct":0.21,"importe_iva":144.9,"importe_total":834.89,"coste_unitario":492.29,"margen_bruto":197.7,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000078-01","id_venta":"VTA0000078","anio":2024,"mes_numero":12,"mes_nombre":"Diciembre","fecha_venta":"2024-12-25","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Robots aspiradores","marca":"Nordline","unidades":2,"precio_lista_unitario":299.99,"descuento_pct":0.03,"importe_descuento":18,"precio_unitario_final":290.99,"importe_bruto":599.98,"importe_neto":581.98,"iva_pct":0.21,"importe_iva":122.22,"importe_total":704.2,"coste_unitario":179.99,"margen_bruto":222,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000079-01","id_venta":"VTA0000079","anio":2024,"mes_numero":12,"mes_nombre":"Diciembre","fecha_venta":"2024-12-26","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Robots aspiradores","marca":"KitchNova","unidades":1,"precio_lista_unitario":409.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":409.99,"importe_bruto":409.99,"importe_neto":409.99,"iva_pct":0.21,"importe_iva":86.1,"importe_total":496.09,"coste_unitario":235.87,"margen_bruto":174.12,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000080-01","id_venta":"VTA0000080","anio":2024,"mes_numero":12,"mes_nombre":"Diciembre","fecha_venta":"2024-12-31","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Campanas extractoras","marca":"CleanBot","unidades":1,"precio_lista_unitario":419.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":419.99,"importe_bruto":419.99,"importe_neto":419.99,"iva_pct":0.21,"importe_iva":88.2,"importe_total":508.19,"coste_unitario":286.63,"margen_bruto":133.36,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000081-01","id_venta":"VTA0000081","anio":2025,"mes_numero":1,"mes_nombre":"Enero","fecha_venta":"2025-01-03","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"Nordline","unidades":1,"precio_lista_unitario":179.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":179.99,"importe_bruto":179.99,"importe_neto":179.99,"iva_pct":0.21,"importe_iva":37.8,"importe_total":217.79,"coste_unitario":102.38,"margen_bruto":77.61,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000082-01","id_venta":"VTA0000082","anio":2025,"mes_numero":1,"mes_nombre":"Enero","fecha_venta":"2025-01-12","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Microondas","marca":"Balayra","unidades":1,"precio_lista_unitario":159.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":159.99,"importe_bruto":159.99,"importe_neto":159.99,"iva_pct":0.21,"importe_iva":33.6,"importe_total":193.59,"coste_unitario":95.38,"margen_bruto":64.61,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000083-01","id_venta":"VTA0000083","anio":2025,"mes_numero":1,"mes_nombre":"Enero","fecha_venta":"2025-01-16","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Rebajas enero 2025","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"NovaCasa","unidades":1,"precio_lista_unitario":259.99,"descuento_pct":0.0759,"importe_descuento":19.73,"precio_unitario_final":240.26,"importe_bruto":259.99,"importe_neto":240.26,"iva_pct":0.21,"importe_iva":50.45,"importe_total":290.71,"coste_unitario":167.02,"margen_bruto":73.24,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000084-01","id_venta":"VTA0000084","anio":2025,"mes_numero":1,"mes_nombre":"Enero","fecha_venta":"2025-01-18","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"Balayra","unidades":1,"precio_lista_unitario":109.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":109.99,"importe_bruto":109.99,"importe_neto":109.99,"iva_pct":0.21,"importe_iva":23.1,"importe_total":133.09,"coste_unitario":62.54,"margen_bruto":47.45,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000085-01","id_venta":"VTA0000085","anio":2025,"mes_numero":1,"mes_nombre":"Enero","fecha_venta":"2025-01-18","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Robots de cocina","marca":"Balayra","unidades":1,"precio_lista_unitario":269.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":269.99,"importe_bruto":269.99,"importe_neto":269.99,"iva_pct":0.21,"importe_iva":56.7,"importe_total":326.69,"coste_unitario":182.1,"margen_bruto":87.89,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000086-01","id_venta":"VTA0000086","anio":2025,"mes_numero":2,"mes_nombre":"Febrero","fecha_venta":"2025-02-06","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"AireZen","unidades":1,"precio_lista_unitario":659.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":659.99,"importe_bruto":659.99,"importe_neto":659.99,"iva_pct":0.21,"importe_iva":138.6,"importe_total":798.59,"coste_unitario":368.11,"margen_bruto":291.88,"metodo_pago":"Transferencia","estado_venta":"Completada"},{"id_linea_venta":"VTA0000087-01","id_venta":"VTA0000087","anio":2025,"mes_numero":2,"mes_nombre":"Febrero","fecha_venta":"2025-02-06","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Robots de cocina","marca":"Balayra","unidades":1,"precio_lista_unitario":269.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":269.99,"importe_bruto":269.99,"importe_neto":269.99,"iva_pct":0.21,"importe_iva":56.7,"importe_total":326.69,"coste_unitario":182.1,"margen_bruto":87.89,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000088-01","id_venta":"VTA0000088","anio":2025,"mes_numero":2,"mes_nombre":"Febrero","fecha_venta":"2025-02-13","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"AireZen","unidades":1,"precio_lista_unitario":659.99,"descuento_pct":0.03,"importe_descuento":19.8,"precio_unitario_final":640.19,"importe_bruto":659.99,"importe_neto":640.19,"iva_pct":0.21,"importe_iva":134.44,"importe_total":774.63,"coste_unitario":368.11,"margen_bruto":272.08,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000089-01","id_venta":"VTA0000089","anio":2025,"mes_numero":2,"mes_nombre":"Febrero","fecha_venta":"2025-02-14","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Robots aspiradores","marca":"KitchNova","unidades":1,"precio_lista_unitario":409.99,"descuento_pct":0.03,"importe_descuento":12.3,"precio_unitario_final":397.69,"importe_bruto":409.99,"importe_neto":397.69,"iva_pct":0.21,"importe_iva":83.51,"importe_total":481.2,"coste_unitario":235.87,"margen_bruto":161.82,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000090-01","id_venta":"VTA0000090","anio":2025,"mes_numero":2,"mes_nombre":"Febrero","fecha_venta":"2025-02-16","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Robots aspiradores","marca":"HomeTech","unidades":2,"precio_lista_unitario":479.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":479.99,"importe_bruto":959.98,"importe_neto":959.98,"iva_pct":0.21,"importe_iva":201.6,"importe_total":1161.58,"coste_unitario":323.8,"margen_bruto":312.38,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000091-01","id_venta":"VTA0000091","anio":2025,"mes_numero":3,"mes_nombre":"Marzo","fecha_venta":"2025-03-07","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Batidoras","marca":"KitchNova","unidades":1,"precio_lista_unitario":169.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":169.99,"importe_bruto":169.99,"importe_neto":169.99,"iva_pct":0.21,"importe_iva":35.7,"importe_total":205.69,"coste_unitario":118.23,"margen_bruto":51.76,"metodo_pago":"Transferencia","estado_venta":"Completada"},{"id_linea_venta":"VTA0000092-01","id_venta":"VTA0000092","anio":2025,"mes_numero":3,"mes_nombre":"Marzo","fecha_venta":"2025-03-14","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Cafeteras","marca":"HomeTech","unidades":1,"precio_lista_unitario":729.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":729.99,"importe_bruto":729.99,"importe_neto":729.99,"iva_pct":0.21,"importe_iva":153.3,"importe_total":883.29,"coste_unitario":494.11,"margen_bruto":235.88,"metodo_pago":"Financiacion","estado_venta":"Completada"},{"id_linea_venta":"VTA0000093-01","id_venta":"VTA0000093","anio":2025,"mes_numero":3,"mes_nombre":"Marzo","fecha_venta":"2025-03-28","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Campanas extractoras","marca":"Balayra","unidades":1,"precio_lista_unitario":209.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":209.99,"importe_bruto":209.99,"importe_neto":209.99,"iva_pct":0.21,"importe_iva":44.1,"importe_total":254.09,"coste_unitario":135.02,"margen_bruto":74.97,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000094-01","id_venta":"VTA0000094","anio":2025,"mes_numero":4,"mes_nombre":"Abril","fecha_venta":"2025-04-01","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Campanas extractoras","marca":"EcoWash","unidades":1,"precio_lista_unitario":469.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":469.99,"importe_bruto":469.99,"importe_neto":469.99,"iva_pct":0.21,"importe_iva":98.7,"importe_total":568.69,"coste_unitario":294.01,"margen_bruto":175.98,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000095-01","id_venta":"VTA0000095","anio":2025,"mes_numero":4,"mes_nombre":"Abril","fecha_venta":"2025-04-04","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Robots aspiradores","marca":"IberHome","unidades":1,"precio_lista_unitario":429.99,"descuento_pct":0.05,"importe_descuento":21.5,"precio_unitario_final":408.49,"importe_bruto":429.99,"importe_neto":408.49,"iva_pct":0.21,"importe_iva":85.78,"importe_total":494.27,"coste_unitario":289.95,"margen_bruto":118.54,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000096-01","id_venta":"VTA0000096","anio":2025,"mes_numero":4,"mes_nombre":"Abril","fecha_venta":"2025-04-04","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Freidoras de aire","marca":"NovaCasa","unidades":1,"precio_lista_unitario":279.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":279.99,"importe_bruto":279.99,"importe_neto":279.99,"iva_pct":0.21,"importe_iva":58.8,"importe_total":338.79,"coste_unitario":181.61,"margen_bruto":98.38,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000097-01","id_venta":"VTA0000097","anio":2025,"mes_numero":4,"mes_nombre":"Abril","fecha_venta":"2025-04-12","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"NovaCasa","unidades":1,"precio_lista_unitario":619.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":619.99,"importe_bruto":619.99,"importe_neto":619.99,"iva_pct":0.21,"importe_iva":130.2,"importe_total":750.19,"coste_unitario":445.75,"margen_bruto":174.24,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000098-01","id_venta":"VTA0000098","anio":2025,"mes_numero":4,"mes_nombre":"Abril","fecha_venta":"2025-04-28","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"Balayra","unidades":1,"precio_lista_unitario":769.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":769.99,"importe_bruto":769.99,"importe_neto":769.99,"iva_pct":0.21,"importe_iva":161.7,"importe_total":931.69,"coste_unitario":526.96,"margen_bruto":243.03,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000099-01","id_venta":"VTA0000099","anio":2025,"mes_numero":4,"mes_nombre":"Abril","fecha_venta":"2025-04-28","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"FrioMax","unidades":1,"precio_lista_unitario":599.99,"descuento_pct":0.05,"importe_descuento":30,"precio_unitario_final":569.99,"importe_bruto":599.99,"importe_neto":569.99,"iva_pct":0.21,"importe_iva":119.7,"importe_total":689.69,"coste_unitario":394.91,"margen_bruto":175.08,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000100-01","id_venta":"VTA0000100","anio":2025,"mes_numero":5,"mes_nombre":"Mayo","fecha_venta":"2025-05-02","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"AireZen","unidades":1,"precio_lista_unitario":659.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":659.99,"importe_bruto":659.99,"importe_neto":659.99,"iva_pct":0.21,"importe_iva":138.6,"importe_total":798.59,"coste_unitario":368.11,"margen_bruto":291.88,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000101-01","id_venta":"VTA0000101","anio":2025,"mes_numero":5,"mes_nombre":"Mayo","fecha_venta":"2025-05-08","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Aspiradoras","marca":"IberHome","unidades":1,"precio_lista_unitario":119.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":119.99,"importe_bruto":119.99,"importe_neto":119.99,"iva_pct":0.21,"importe_iva":25.2,"importe_total":145.19,"coste_unitario":66.3,"margen_bruto":53.69,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000102-01","id_venta":"VTA0000102","anio":2025,"mes_numero":5,"mes_nombre":"Mayo","fecha_venta":"2025-05-10","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"HomeTech","unidades":1,"precio_lista_unitario":139.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":139.99,"importe_bruto":139.99,"importe_neto":139.99,"iva_pct":0.21,"importe_iva":29.4,"importe_total":169.39,"coste_unitario":84.2,"margen_bruto":55.79,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000103-01","id_venta":"VTA0000103","anio":2025,"mes_numero":5,"mes_nombre":"Mayo","fecha_venta":"2025-05-14","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Campanas extractoras","marca":"EcoWash","unidades":1,"precio_lista_unitario":469.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":469.99,"importe_bruto":469.99,"importe_neto":469.99,"iva_pct":0.21,"importe_iva":98.7,"importe_total":568.69,"coste_unitario":294.01,"margen_bruto":175.98,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000104-01","id_venta":"VTA0000104","anio":2025,"mes_numero":5,"mes_nombre":"Mayo","fecha_venta":"2025-05-16","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Campanas extractoras","marca":"KitchNova","unidades":1,"precio_lista_unitario":349.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":349.99,"importe_bruto":349.99,"importe_neto":349.99,"iva_pct":0.21,"importe_iva":73.5,"importe_total":423.49,"coste_unitario":192.67,"margen_bruto":157.32,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000105-01","id_venta":"VTA0000105","anio":2025,"mes_numero":5,"mes_nombre":"Mayo","fecha_venta":"2025-05-27","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"EcoWash","unidades":1,"precio_lista_unitario":219.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":219.99,"importe_bruto":219.99,"importe_neto":219.99,"iva_pct":0.21,"importe_iva":46.2,"importe_total":266.19,"coste_unitario":151.93,"margen_bruto":68.06,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000106-01","id_venta":"VTA0000106","anio":2025,"mes_numero":6,"mes_nombre":"Junio","fecha_venta":"2025-06-02","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Robots aspiradores","marca":"HomeTech","unidades":1,"precio_lista_unitario":479.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":479.99,"importe_bruto":479.99,"importe_neto":479.99,"iva_pct":0.21,"importe_iva":100.8,"importe_total":580.79,"coste_unitario":323.8,"margen_bruto":156.19,"metodo_pago":"Efectivo","estado_venta":"Completada"},{"id_linea_venta":"VTA0000107-01","id_venta":"VTA0000107","anio":2025,"mes_numero":6,"mes_nombre":"Junio","fecha_venta":"2025-06-07","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Campanas extractoras","marca":"Balayra","unidades":1,"precio_lista_unitario":299.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":299.99,"importe_bruto":299.99,"importe_neto":299.99,"iva_pct":0.21,"importe_iva":63,"importe_total":362.99,"coste_unitario":177.45,"margen_bruto":122.54,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000108-01","id_venta":"VTA0000108","anio":2025,"mes_numero":6,"mes_nombre":"Junio","fecha_venta":"2025-06-09","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Hornos","marca":"FrioMax","unidades":1,"precio_lista_unitario":599.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":599.99,"importe_bruto":599.99,"importe_neto":599.99,"iva_pct":0.21,"importe_iva":126,"importe_total":725.99,"coste_unitario":424.76,"margen_bruto":175.23,"metodo_pago":"Tarjeta","estado_venta":"Devuelta"},{"id_linea_venta":"VTA0000109-01","id_venta":"VTA0000109","anio":2025,"mes_numero":6,"mes_nombre":"Junio","fecha_venta":"2025-06-14","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"EcoWash","unidades":2,"precio_lista_unitario":519.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":519.99,"importe_bruto":1039.98,"importe_neto":1039.98,"iva_pct":0.21,"importe_iva":218.4,"importe_total":1258.38,"coste_unitario":353.55,"margen_bruto":332.88,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000110-01","id_venta":"VTA0000110","anio":2025,"mes_numero":6,"mes_nombre":"Junio","fecha_venta":"2025-06-24","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"EcoWash","unidades":1,"precio_lista_unitario":279.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":279.99,"importe_bruto":279.99,"importe_neto":279.99,"iva_pct":0.21,"importe_iva":58.8,"importe_total":338.79,"coste_unitario":191.55,"margen_bruto":88.44,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000111-01","id_venta":"VTA0000111","anio":2025,"mes_numero":7,"mes_nombre":"Julio","fecha_venta":"2025-07-05","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Microondas","marca":"Balayra","unidades":1,"precio_lista_unitario":279.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":279.99,"importe_bruto":279.99,"importe_neto":279.99,"iva_pct":0.21,"importe_iva":58.8,"importe_total":338.79,"coste_unitario":151.85,"margen_bruto":128.14,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000112-01","id_venta":"VTA0000112","anio":2025,"mes_numero":7,"mes_nombre":"Julio","fecha_venta":"2025-07-05","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Aspiradoras","marca":"EcoWash","unidades":1,"precio_lista_unitario":279.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":279.99,"importe_bruto":279.99,"importe_neto":279.99,"iva_pct":0.21,"importe_iva":58.8,"importe_total":338.79,"coste_unitario":182.18,"margen_bruto":97.81,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000113-01","id_venta":"VTA0000113","anio":2025,"mes_numero":7,"mes_nombre":"Julio","fecha_venta":"2025-07-05","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"HomeTech","unidades":1,"precio_lista_unitario":139.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":139.99,"importe_bruto":139.99,"importe_neto":139.99,"iva_pct":0.21,"importe_iva":29.4,"importe_total":169.39,"coste_unitario":84.2,"margen_bruto":55.79,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000114-01","id_venta":"VTA0000114","anio":2025,"mes_numero":7,"mes_nombre":"Julio","fecha_venta":"2025-07-06","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"Registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Campanas extractoras","marca":"Balayra","unidades":2,"precio_lista_unitario":209.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":209.99,"importe_bruto":419.98,"importe_neto":419.98,"iva_pct":0.21,"importe_iva":88.2,"importe_total":508.18,"coste_unitario":135.02,"margen_bruto":149.94,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000115-01","id_venta":"VTA0000115","anio":2025,"mes_numero":7,"mes_nombre":"Julio","fecha_venta":"2025-07-08","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Robots de cocina","marca":"Balayra","unidades":1,"precio_lista_unitario":269.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":269.99,"importe_bruto":269.99,"importe_neto":269.99,"iva_pct":0.21,"importe_iva":56.7,"importe_total":326.69,"coste_unitario":182.1,"margen_bruto":87.89,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000116-01","id_venta":"VTA0000116","anio":2025,"mes_numero":7,"mes_nombre":"Julio","fecha_venta":"2025-07-09","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"AquaPlus","unidades":1,"precio_lista_unitario":469.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":469.99,"importe_bruto":469.99,"importe_neto":469.99,"iva_pct":0.21,"importe_iva":98.7,"importe_total":568.69,"coste_unitario":326.68,"margen_bruto":143.31,"metodo_pago":"Tarjeta","estado_venta":"Devuelta"},{"id_linea_venta":"VTA0000117-01","id_venta":"VTA0000117","anio":2025,"mes_numero":7,"mes_nombre":"Julio","fecha_venta":"2025-07-09","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Robots aspiradores","marca":"CleanBot","unidades":1,"precio_lista_unitario":839.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":839.99,"importe_bruto":839.99,"importe_neto":839.99,"iva_pct":0.21,"importe_iva":176.4,"importe_total":1016.39,"coste_unitario":590.19,"margen_bruto":249.8,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000118-01","id_venta":"VTA0000118","anio":2025,"mes_numero":7,"mes_nombre":"Julio","fecha_venta":"2025-07-11","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"EcoWash","unidades":1,"precio_lista_unitario":559.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":559.99,"importe_bruto":559.99,"importe_neto":559.99,"iva_pct":0.21,"importe_iva":117.6,"importe_total":677.59,"coste_unitario":336.37,"margen_bruto":223.62,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000119-01","id_venta":"VTA0000119","anio":2025,"mes_numero":7,"mes_nombre":"Julio","fecha_venta":"2025-07-11","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Microondas","marca":"Balayra","unidades":1,"precio_lista_unitario":279.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":279.99,"importe_bruto":279.99,"importe_neto":279.99,"iva_pct":0.21,"importe_iva":58.8,"importe_total":338.79,"coste_unitario":151.85,"margen_bruto":128.14,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000120-01","id_venta":"VTA0000120","anio":2025,"mes_numero":7,"mes_nombre":"Julio","fecha_venta":"2025-07-14","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Microondas","marca":"CleanBot","unidades":1,"precio_lista_unitario":309.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":309.99,"importe_bruto":309.99,"importe_neto":309.99,"iva_pct":0.21,"importe_iva":65.1,"importe_total":375.09,"coste_unitario":196.36,"margen_bruto":113.63,"metodo_pago":"Tarjeta","estado_venta":"Devuelta"},{"id_linea_venta":"VTA0000121-01","id_venta":"VTA0000121","anio":2025,"mes_numero":7,"mes_nombre":"Julio","fecha_venta":"2025-07-24","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Microondas","marca":"ElectraHome","unidades":1,"precio_lista_unitario":219.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":219.99,"importe_bruto":219.99,"importe_neto":219.99,"iva_pct":0.21,"importe_iva":46.2,"importe_total":266.19,"coste_unitario":143.73,"margen_bruto":76.26,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000122-01","id_venta":"VTA0000122","anio":2025,"mes_numero":7,"mes_nombre":"Julio","fecha_venta":"2025-07-29","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"Balayra","unidades":2,"precio_lista_unitario":319.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":319.99,"importe_bruto":639.98,"importe_neto":639.98,"iva_pct":0.21,"importe_iva":134.4,"importe_total":774.38,"coste_unitario":215.11,"margen_bruto":209.76,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000123-01","id_venta":"VTA0000123","anio":2025,"mes_numero":8,"mes_nombre":"Agosto","fecha_venta":"2025-08-04","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"Registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Aspiradoras","marca":"IberHome","unidades":1,"precio_lista_unitario":309.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":309.99,"importe_bruto":309.99,"importe_neto":309.99,"iva_pct":0.21,"importe_iva":65.1,"importe_total":375.09,"coste_unitario":173.46,"margen_bruto":136.53,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000124-01","id_venta":"VTA0000124","anio":2025,"mes_numero":8,"mes_nombre":"Agosto","fecha_venta":"2025-08-07","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Aspiradoras","marca":"EcoWash","unidades":1,"precio_lista_unitario":279.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":279.99,"importe_bruto":279.99,"importe_neto":279.99,"iva_pct":0.21,"importe_iva":58.8,"importe_total":338.79,"coste_unitario":182.18,"margen_bruto":97.81,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000125-01","id_venta":"VTA0000125","anio":2025,"mes_numero":8,"mes_nombre":"Agosto","fecha_venta":"2025-08-07","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Batidoras","marca":"NovaCasa","unidades":1,"precio_lista_unitario":59.99,"descuento_pct":0.07,"importe_descuento":4.2,"precio_unitario_final":55.79,"importe_bruto":59.99,"importe_neto":55.79,"iva_pct":0.21,"importe_iva":11.72,"importe_total":67.51,"coste_unitario":32.69,"margen_bruto":23.1,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000126-01","id_venta":"VTA0000126","anio":2025,"mes_numero":8,"mes_nombre":"Agosto","fecha_venta":"2025-08-08","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"Registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Cafeteras","marca":"Nordline","unidades":2,"precio_lista_unitario":299.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":299.99,"importe_bruto":599.98,"importe_neto":599.98,"iva_pct":0.21,"importe_iva":126,"importe_total":725.98,"coste_unitario":188.84,"margen_bruto":222.3,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000127-01","id_venta":"VTA0000127","anio":2025,"mes_numero":8,"mes_nombre":"Agosto","fecha_venta":"2025-08-12","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Campanas extractoras","marca":"KitchNova","unidades":3,"precio_lista_unitario":349.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":349.99,"importe_bruto":1049.97,"importe_neto":1049.97,"iva_pct":0.21,"importe_iva":220.49,"importe_total":1270.46,"coste_unitario":192.67,"margen_bruto":471.96,"metodo_pago":"Financiacion","estado_venta":"Completada"},{"id_linea_venta":"VTA0000128-01","id_venta":"VTA0000128","anio":2025,"mes_numero":8,"mes_nombre":"Agosto","fecha_venta":"2025-08-17","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"Nordline","unidades":2,"precio_lista_unitario":179.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":179.99,"importe_bruto":359.98,"importe_neto":359.98,"iva_pct":0.21,"importe_iva":75.6,"importe_total":435.58,"coste_unitario":102.38,"margen_bruto":155.22,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000129-01","id_venta":"VTA0000129","anio":2025,"mes_numero":8,"mes_nombre":"Agosto","fecha_venta":"2025-08-23","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Hornos","marca":"CleanBot","unidades":1,"precio_lista_unitario":499.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":499.99,"importe_bruto":499.99,"importe_neto":499.99,"iva_pct":0.21,"importe_iva":105,"importe_total":604.99,"coste_unitario":295,"margen_bruto":204.99,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000130-01","id_venta":"VTA0000130","anio":2025,"mes_numero":9,"mes_nombre":"Septiembre","fecha_venta":"2025-09-05","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"IberHome","unidades":1,"precio_lista_unitario":489.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":489.99,"importe_bruto":489.99,"importe_neto":489.99,"iva_pct":0.21,"importe_iva":102.9,"importe_total":592.89,"coste_unitario":294.8,"margen_bruto":195.19,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000131-01","id_venta":"VTA0000131","anio":2025,"mes_numero":9,"mes_nombre":"Septiembre","fecha_venta":"2025-09-09","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Microondas","marca":"Balayra","unidades":1,"precio_lista_unitario":159.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":159.99,"importe_bruto":159.99,"importe_neto":159.99,"iva_pct":0.21,"importe_iva":33.6,"importe_total":193.59,"coste_unitario":95.38,"margen_bruto":64.61,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000132-01","id_venta":"VTA0000132","anio":2025,"mes_numero":9,"mes_nombre":"Septiembre","fecha_venta":"2025-09-11","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Aspiradoras","marca":"IberHome","unidades":2,"precio_lista_unitario":119.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":119.99,"importe_bruto":239.98,"importe_neto":239.98,"iva_pct":0.21,"importe_iva":50.4,"importe_total":290.38,"coste_unitario":66.3,"margen_bruto":107.38,"metodo_pago":"Transferencia","estado_venta":"Completada"},{"id_linea_venta":"VTA0000133-01","id_venta":"VTA0000133","anio":2025,"mes_numero":9,"mes_nombre":"Septiembre","fecha_venta":"2025-09-27","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"AireZen","unidades":1,"precio_lista_unitario":659.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":659.99,"importe_bruto":659.99,"importe_neto":659.99,"iva_pct":0.21,"importe_iva":138.6,"importe_total":798.59,"coste_unitario":368.11,"margen_bruto":291.88,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000134-01","id_venta":"VTA0000134","anio":2025,"mes_numero":9,"mes_nombre":"Septiembre","fecha_venta":"2025-09-30","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"AquaPlus","unidades":1,"precio_lista_unitario":469.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":469.99,"importe_bruto":469.99,"importe_neto":469.99,"iva_pct":0.21,"importe_iva":98.7,"importe_total":568.69,"coste_unitario":326.68,"margen_bruto":143.31,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000135-01","id_venta":"VTA0000135","anio":2025,"mes_numero":9,"mes_nombre":"Septiembre","fecha_venta":"2025-09-30","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Batidoras","marca":"EcoWash","unidades":1,"precio_lista_unitario":49.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":49.99,"importe_bruto":49.99,"importe_neto":49.99,"iva_pct":0.21,"importe_iva":10.5,"importe_total":60.49,"coste_unitario":33.44,"margen_bruto":16.55,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000136-01","id_venta":"VTA0000136","anio":2025,"mes_numero":10,"mes_nombre":"Octubre","fecha_venta":"2025-10-03","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"NovaCasa","unidades":1,"precio_lista_unitario":619.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":619.99,"importe_bruto":619.99,"importe_neto":619.99,"iva_pct":0.21,"importe_iva":130.2,"importe_total":750.19,"coste_unitario":445.75,"margen_bruto":174.24,"metodo_pago":"Tarjeta","estado_venta":"Devuelta"},{"id_linea_venta":"VTA0000137-01","id_venta":"VTA0000137","anio":2025,"mes_numero":10,"mes_nombre":"Octubre","fecha_venta":"2025-10-04","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"CleanBot","unidades":1,"precio_lista_unitario":489.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":489.99,"importe_bruto":489.99,"importe_neto":489.99,"iva_pct":0.21,"importe_iva":102.9,"importe_total":592.89,"coste_unitario":275.7,"margen_bruto":214.29,"metodo_pago":"Financiacion","estado_venta":"Completada"},{"id_linea_venta":"VTA0000138-01","id_venta":"VTA0000138","anio":2025,"mes_numero":10,"mes_nombre":"Octubre","fecha_venta":"2025-10-06","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Campanas extractoras","marca":"KitchNova","unidades":1,"precio_lista_unitario":349.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":349.99,"importe_bruto":349.99,"importe_neto":349.99,"iva_pct":0.21,"importe_iva":73.5,"importe_total":423.49,"coste_unitario":192.67,"margen_bruto":157.32,"metodo_pago":"Financiacion","estado_venta":"Completada"},{"id_linea_venta":"VTA0000139-01","id_venta":"VTA0000139","anio":2025,"mes_numero":10,"mes_nombre":"Octubre","fecha_venta":"2025-10-10","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Batidoras","marca":"NovaCasa","unidades":1,"precio_lista_unitario":59.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":59.99,"importe_bruto":59.99,"importe_neto":59.99,"iva_pct":0.21,"importe_iva":12.6,"importe_total":72.59,"coste_unitario":32.69,"margen_bruto":27.3,"metodo_pago":"Efectivo","estado_venta":"Completada"},{"id_linea_venta":"VTA0000140-01","id_venta":"VTA0000140","anio":2025,"mes_numero":10,"mes_nombre":"Octubre","fecha_venta":"2025-10-15","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Cafeteras","marca":"Nordline","unidades":1,"precio_lista_unitario":209.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":209.99,"importe_bruto":209.99,"importe_neto":209.99,"iva_pct":0.21,"importe_iva":44.1,"importe_total":254.09,"coste_unitario":148.76,"margen_bruto":61.23,"metodo_pago":"Financiacion","estado_venta":"Completada"},{"id_linea_venta":"VTA0000141-01","id_venta":"VTA0000141","anio":2025,"mes_numero":11,"mes_nombre":"Noviembre","fecha_venta":"2025-11-03","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"Balayra","unidades":1,"precio_lista_unitario":319.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":319.99,"importe_bruto":319.99,"importe_neto":319.99,"iva_pct":0.21,"importe_iva":67.2,"importe_total":387.19,"coste_unitario":215.11,"margen_bruto":104.88,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000142-01","id_venta":"VTA0000142","anio":2025,"mes_numero":11,"mes_nombre":"Noviembre","fecha_venta":"2025-11-04","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"Balayra","unidades":2,"precio_lista_unitario":109.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":109.99,"importe_bruto":219.98,"importe_neto":219.98,"iva_pct":0.21,"importe_iva":46.2,"importe_total":266.18,"coste_unitario":62.54,"margen_bruto":94.9,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000143-01","id_venta":"VTA0000143","anio":2025,"mes_numero":11,"mes_nombre":"Noviembre","fecha_venta":"2025-11-07","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"Nordline","unidades":3,"precio_lista_unitario":179.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":179.99,"importe_bruto":539.97,"importe_neto":539.97,"iva_pct":0.21,"importe_iva":113.39,"importe_total":653.36,"coste_unitario":102.38,"margen_bruto":232.83,"metodo_pago":"Efectivo","estado_venta":"Completada"},{"id_linea_venta":"VTA0000144-01","id_venta":"VTA0000144","anio":2025,"mes_numero":11,"mes_nombre":"Noviembre","fecha_venta":"2025-11-10","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Batidoras","marca":"KitchNova","unidades":2,"precio_lista_unitario":169.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":169.99,"importe_bruto":339.98,"importe_neto":339.98,"iva_pct":0.21,"importe_iva":71.4,"importe_total":411.38,"coste_unitario":118.23,"margen_bruto":103.52,"metodo_pago":"Efectivo","estado_venta":"Completada"},{"id_linea_venta":"VTA0000145-01","id_venta":"VTA0000145","anio":2025,"mes_numero":11,"mes_nombre":"Noviembre","fecha_venta":"2025-11-12","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"Registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"FrioMax","unidades":1,"precio_lista_unitario":599.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":599.99,"importe_bruto":599.99,"importe_neto":599.99,"iva_pct":0.21,"importe_iva":126,"importe_total":725.99,"coste_unitario":394.91,"margen_bruto":205.08,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000146-01","id_venta":"VTA0000146","anio":2025,"mes_numero":11,"mes_nombre":"Noviembre","fecha_venta":"2025-11-15","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Freidoras de aire","marca":"NovaCasa","unidades":1,"precio_lista_unitario":279.99,"descuento_pct":0.05,"importe_descuento":14,"precio_unitario_final":265.99,"importe_bruto":279.99,"importe_neto":265.99,"iva_pct":0.21,"importe_iva":55.86,"importe_total":321.85,"coste_unitario":181.61,"margen_bruto":84.38,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000147-01","id_venta":"VTA0000147","anio":2025,"mes_numero":11,"mes_nombre":"Noviembre","fecha_venta":"2025-11-18","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"IberHome","unidades":1,"precio_lista_unitario":489.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":489.99,"importe_bruto":489.99,"importe_neto":489.99,"iva_pct":0.21,"importe_iva":102.9,"importe_total":592.89,"coste_unitario":294.8,"margen_bruto":195.19,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000148-01","id_venta":"VTA0000148","anio":2025,"mes_numero":11,"mes_nombre":"Noviembre","fecha_venta":"2025-11-21","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"NovaCasa","unidades":1,"precio_lista_unitario":619.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":619.99,"importe_bruto":619.99,"importe_neto":619.99,"iva_pct":0.21,"importe_iva":130.2,"importe_total":750.19,"coste_unitario":445.75,"margen_bruto":174.24,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000149-01","id_venta":"VTA0000149","anio":2025,"mes_numero":11,"mes_nombre":"Noviembre","fecha_venta":"2025-11-23","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Microondas","marca":"ElectraHome","unidades":1,"precio_lista_unitario":219.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":219.99,"importe_bruto":219.99,"importe_neto":219.99,"iva_pct":0.21,"importe_iva":46.2,"importe_total":266.19,"coste_unitario":143.73,"margen_bruto":76.26,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000150-01","id_venta":"VTA0000150","anio":2025,"mes_numero":11,"mes_nombre":"Noviembre","fecha_venta":"2025-11-23","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Black Friday 2025","seccion":"Cocina","categoria":"Cocina","subcategoria":"Campanas extractoras","marca":"Balayra","unidades":1,"precio_lista_unitario":209.99,"descuento_pct":0.1967,"importe_descuento":41.31,"precio_unitario_final":168.68,"importe_bruto":209.99,"importe_neto":168.68,"iva_pct":0.21,"importe_iva":35.42,"importe_total":204.1,"coste_unitario":135.02,"margen_bruto":33.66,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000151-01","id_venta":"VTA0000151","anio":2025,"mes_numero":11,"mes_nombre":"Noviembre","fecha_venta":"2025-11-24","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Aspiradoras","marca":"Balayra","unidades":1,"precio_lista_unitario":169.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":169.99,"importe_bruto":169.99,"importe_neto":169.99,"iva_pct":0.21,"importe_iva":35.7,"importe_total":205.69,"coste_unitario":105.35,"margen_bruto":64.64,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000152-01","id_venta":"VTA0000152","anio":2025,"mes_numero":11,"mes_nombre":"Noviembre","fecha_venta":"2025-11-28","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Aspiradoras","marca":"IberHome","unidades":1,"precio_lista_unitario":119.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":119.99,"importe_bruto":119.99,"importe_neto":119.99,"iva_pct":0.21,"importe_iva":25.2,"importe_total":145.19,"coste_unitario":66.3,"margen_bruto":53.69,"metodo_pago":"Transferencia","estado_venta":"Completada"},{"id_linea_venta":"VTA0000153-01","id_venta":"VTA0000153","anio":2025,"mes_numero":11,"mes_nombre":"Noviembre","fecha_venta":"2025-11-28","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Aspiradoras","marca":"EcoWash","unidades":1,"precio_lista_unitario":279.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":279.99,"importe_bruto":279.99,"importe_neto":279.99,"iva_pct":0.21,"importe_iva":58.8,"importe_total":338.79,"coste_unitario":182.18,"margen_bruto":97.81,"metodo_pago":"Financiacion","estado_venta":"Completada"},{"id_linea_venta":"VTA0000154-01","id_venta":"VTA0000154","anio":2025,"mes_numero":12,"mes_nombre":"Diciembre","fecha_venta":"2025-12-04","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Hornos","marca":"CleanBot","unidades":1,"precio_lista_unitario":499.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":499.99,"importe_bruto":499.99,"importe_neto":499.99,"iva_pct":0.21,"importe_iva":105,"importe_total":604.99,"coste_unitario":295,"margen_bruto":204.99,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000155-01","id_venta":"VTA0000155","anio":2025,"mes_numero":12,"mes_nombre":"Diciembre","fecha_venta":"2025-12-09","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Campanas extractoras","marca":"KitchNova","unidades":1,"precio_lista_unitario":349.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":349.99,"importe_bruto":349.99,"importe_neto":349.99,"iva_pct":0.21,"importe_iva":73.5,"importe_total":423.49,"coste_unitario":192.67,"margen_bruto":157.32,"metodo_pago":"Efectivo","estado_venta":"Completada"},{"id_linea_venta":"VTA0000156-01","id_venta":"VTA0000156","anio":2025,"mes_numero":12,"mes_nombre":"Diciembre","fecha_venta":"2025-12-11","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"Balayra","unidades":2,"precio_lista_unitario":319.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":319.99,"importe_bruto":639.98,"importe_neto":639.98,"iva_pct":0.21,"importe_iva":134.4,"importe_total":774.38,"coste_unitario":215.11,"margen_bruto":209.76,"metodo_pago":"Financiacion","estado_venta":"Completada"},{"id_linea_venta":"VTA0000157-01","id_venta":"VTA0000157","anio":2025,"mes_numero":12,"mes_nombre":"Diciembre","fecha_venta":"2025-12-12","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Hornos","marca":"Balayra","unidades":1,"precio_lista_unitario":1029.99,"descuento_pct":0.05,"importe_descuento":51.5,"precio_unitario_final":978.49,"importe_bruto":1029.99,"importe_neto":978.49,"iva_pct":0.21,"importe_iva":205.48,"importe_total":1183.97,"coste_unitario":629.23,"margen_bruto":349.26,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000158-01","id_venta":"VTA0000158","anio":2025,"mes_numero":12,"mes_nombre":"Diciembre","fecha_venta":"2025-12-19","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Navidad hogar 2025","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"IberHome","unidades":1,"precio_lista_unitario":489.99,"descuento_pct":0.0994,"importe_descuento":48.71,"precio_unitario_final":441.28,"importe_bruto":489.99,"importe_neto":441.28,"iva_pct":0.21,"importe_iva":92.67,"importe_total":533.95,"coste_unitario":294.8,"margen_bruto":146.48,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000159-01","id_venta":"VTA0000159","anio":2025,"mes_numero":12,"mes_nombre":"Diciembre","fecha_venta":"2025-12-20","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Robots de cocina","marca":"Balayra","unidades":1,"precio_lista_unitario":269.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":269.99,"importe_bruto":269.99,"importe_neto":269.99,"iva_pct":0.21,"importe_iva":56.7,"importe_total":326.69,"coste_unitario":182.1,"margen_bruto":87.89,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000160-01","id_venta":"VTA0000160","anio":2025,"mes_numero":12,"mes_nombre":"Diciembre","fecha_venta":"2025-12-26","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Microondas","marca":"Balayra","unidades":1,"precio_lista_unitario":159.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":159.99,"importe_bruto":159.99,"importe_neto":159.99,"iva_pct":0.21,"importe_iva":33.6,"importe_total":193.59,"coste_unitario":95.38,"margen_bruto":64.61,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000161-01","id_venta":"VTA0000161","anio":2026,"mes_numero":1,"mes_nombre":"Enero","fecha_venta":"2026-01-02","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Aspiradoras","marca":"IberHome","unidades":1,"precio_lista_unitario":119.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":119.99,"importe_bruto":119.99,"importe_neto":119.99,"iva_pct":0.21,"importe_iva":25.2,"importe_total":145.19,"coste_unitario":66.3,"margen_bruto":53.69,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000162-01","id_venta":"VTA0000162","anio":2026,"mes_numero":1,"mes_nombre":"Enero","fecha_venta":"2026-01-15","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"Balayra","unidades":1,"precio_lista_unitario":109.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":109.99,"importe_bruto":109.99,"importe_neto":109.99,"iva_pct":0.21,"importe_iva":23.1,"importe_total":133.09,"coste_unitario":62.54,"margen_bruto":47.45,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000163-01","id_venta":"VTA0000163","anio":2026,"mes_numero":1,"mes_nombre":"Enero","fecha_venta":"2026-01-18","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Hornos","marca":"NovaCasa","unidades":1,"precio_lista_unitario":499.99,"descuento_pct":0.03,"importe_descuento":15,"precio_unitario_final":484.99,"importe_bruto":499.99,"importe_neto":484.99,"iva_pct":0.21,"importe_iva":101.85,"importe_total":586.84,"coste_unitario":350.26,"margen_bruto":134.73,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000164-01","id_venta":"VTA0000164","anio":2026,"mes_numero":1,"mes_nombre":"Enero","fecha_venta":"2026-01-18","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"FrioMax","unidades":1,"precio_lista_unitario":599.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":599.99,"importe_bruto":599.99,"importe_neto":599.99,"iva_pct":0.21,"importe_iva":126,"importe_total":725.99,"coste_unitario":394.91,"margen_bruto":205.08,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000165-01","id_venta":"VTA0000165","anio":2026,"mes_numero":1,"mes_nombre":"Enero","fecha_venta":"2026-01-18","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Cafeteras","marca":"KitchNova","unidades":1,"precio_lista_unitario":689.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":689.99,"importe_bruto":689.99,"importe_neto":689.99,"iva_pct":0.21,"importe_iva":144.9,"importe_total":834.89,"coste_unitario":492.29,"margen_bruto":197.7,"metodo_pago":"Tarjeta","estado_venta":"Devuelta"},{"id_linea_venta":"VTA0000166-01","id_venta":"VTA0000166","anio":2026,"mes_numero":1,"mes_nombre":"Enero","fecha_venta":"2026-01-23","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Rebajas enero 2025","seccion":"Cocina","categoria":"Cocina","subcategoria":"Hornos","marca":"NovaCasa","unidades":1,"precio_lista_unitario":769.99,"descuento_pct":0.0852,"importe_descuento":65.6,"precio_unitario_final":704.39,"importe_bruto":769.99,"importe_neto":704.39,"iva_pct":0.21,"importe_iva":147.92,"importe_total":852.31,"coste_unitario":539.67,"margen_bruto":164.72,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000167-01","id_venta":"VTA0000167","anio":2026,"mes_numero":2,"mes_nombre":"Febrero","fecha_venta":"2026-02-09","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Hornos","marca":"Balayra","unidades":1,"precio_lista_unitario":1029.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":1029.99,"importe_bruto":1029.99,"importe_neto":1029.99,"iva_pct":0.21,"importe_iva":216.3,"importe_total":1246.29,"coste_unitario":629.23,"margen_bruto":400.76,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000168-01","id_venta":"VTA0000168","anio":2026,"mes_numero":2,"mes_nombre":"Febrero","fecha_venta":"2026-02-11","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Hornos","marca":"FrioMax","unidades":2,"precio_lista_unitario":879.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":879.99,"importe_bruto":1759.98,"importe_neto":1759.98,"iva_pct":0.21,"importe_iva":369.6,"importe_total":2129.58,"coste_unitario":587.38,"margen_bruto":585.22,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000169-01","id_venta":"VTA0000169","anio":2026,"mes_numero":2,"mes_nombre":"Febrero","fecha_venta":"2026-02-12","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Robots de cocina","marca":"Nordline","unidades":1,"precio_lista_unitario":519.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":519.99,"importe_bruto":519.99,"importe_neto":519.99,"iva_pct":0.21,"importe_iva":109.2,"importe_total":629.19,"coste_unitario":335.6,"margen_bruto":184.39,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000170-01","id_venta":"VTA0000170","anio":2026,"mes_numero":2,"mes_nombre":"Febrero","fecha_venta":"2026-02-13","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Freidoras de aire","marca":"NovaCasa","unidades":2,"precio_lista_unitario":279.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":279.99,"importe_bruto":559.98,"importe_neto":559.98,"iva_pct":0.21,"importe_iva":117.6,"importe_total":677.58,"coste_unitario":181.61,"margen_bruto":196.76,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000171-01","id_venta":"VTA0000171","anio":2026,"mes_numero":2,"mes_nombre":"Febrero","fecha_venta":"2026-02-17","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Aspiradoras","marca":"IberHome","unidades":1,"precio_lista_unitario":309.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":309.99,"importe_bruto":309.99,"importe_neto":309.99,"iva_pct":0.21,"importe_iva":65.1,"importe_total":375.09,"coste_unitario":173.46,"margen_bruto":136.53,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000172-01","id_venta":"VTA0000172","anio":2026,"mes_numero":2,"mes_nombre":"Febrero","fecha_venta":"2026-02-20","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Robots aspiradores","marca":"IberHome","unidades":1,"precio_lista_unitario":429.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":429.99,"importe_bruto":429.99,"importe_neto":429.99,"iva_pct":0.21,"importe_iva":90.3,"importe_total":520.29,"coste_unitario":289.95,"margen_bruto":140.04,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000173-01","id_venta":"VTA0000173","anio":2026,"mes_numero":2,"mes_nombre":"Febrero","fecha_venta":"2026-02-24","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Robots aspiradores","marca":"CleanBot","unidades":2,"precio_lista_unitario":839.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":839.99,"importe_bruto":1679.98,"importe_neto":1679.98,"iva_pct":0.21,"importe_iva":352.8,"importe_total":2032.78,"coste_unitario":590.19,"margen_bruto":499.6,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000174-01","id_venta":"VTA0000174","anio":2026,"mes_numero":2,"mes_nombre":"Febrero","fecha_venta":"2026-02-28","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Hornos","marca":"FrioMax","unidades":1,"precio_lista_unitario":879.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":879.99,"importe_bruto":879.99,"importe_neto":879.99,"iva_pct":0.21,"importe_iva":184.8,"importe_total":1064.79,"coste_unitario":587.38,"margen_bruto":292.61,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000175-01","id_venta":"VTA0000175","anio":2026,"mes_numero":3,"mes_nombre":"Marzo","fecha_venta":"2026-03-01","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Robots aspiradores","marca":"HomeTech","unidades":2,"precio_lista_unitario":729.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":729.99,"importe_bruto":1459.98,"importe_neto":1459.98,"iva_pct":0.21,"importe_iva":306.6,"importe_total":1766.58,"coste_unitario":438.2,"margen_bruto":583.58,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000176-01","id_venta":"VTA0000176","anio":2026,"mes_numero":3,"mes_nombre":"Marzo","fecha_venta":"2026-03-03","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Robots aspiradores","marca":"KitchNova","unidades":2,"precio_lista_unitario":409.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":409.99,"importe_bruto":819.98,"importe_neto":819.98,"iva_pct":0.21,"importe_iva":172.2,"importe_total":992.18,"coste_unitario":235.87,"margen_bruto":348.24,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000177-01","id_venta":"VTA0000177","anio":2026,"mes_numero":3,"mes_nombre":"Marzo","fecha_venta":"2026-03-07","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Robots de cocina","marca":"Balayra","unidades":2,"precio_lista_unitario":269.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":269.99,"importe_bruto":539.98,"importe_neto":539.98,"iva_pct":0.21,"importe_iva":113.4,"importe_total":653.38,"coste_unitario":182.1,"margen_bruto":175.78,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000178-01","id_venta":"VTA0000178","anio":2026,"mes_numero":3,"mes_nombre":"Marzo","fecha_venta":"2026-03-12","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Campanas extractoras","marca":"CleanBot","unidades":1,"precio_lista_unitario":419.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":419.99,"importe_bruto":419.99,"importe_neto":419.99,"iva_pct":0.21,"importe_iva":88.2,"importe_total":508.19,"coste_unitario":286.63,"margen_bruto":133.36,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000179-01","id_venta":"VTA0000179","anio":2026,"mes_numero":3,"mes_nombre":"Marzo","fecha_venta":"2026-03-14","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"Registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"HomeTech","unidades":1,"precio_lista_unitario":139.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":139.99,"importe_bruto":139.99,"importe_neto":139.99,"iva_pct":0.21,"importe_iva":29.4,"importe_total":169.39,"coste_unitario":84.2,"margen_bruto":55.79,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000180-01","id_venta":"VTA0000180","anio":2026,"mes_numero":3,"mes_nombre":"Marzo","fecha_venta":"2026-03-14","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Robots de cocina","marca":"Nordline","unidades":1,"precio_lista_unitario":519.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":519.99,"importe_bruto":519.99,"importe_neto":519.99,"iva_pct":0.21,"importe_iva":109.2,"importe_total":629.19,"coste_unitario":335.6,"margen_bruto":184.39,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000181-01","id_venta":"VTA0000181","anio":2026,"mes_numero":3,"mes_nombre":"Marzo","fecha_venta":"2026-03-17","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Campanas extractoras","marca":"CleanBot","unidades":1,"precio_lista_unitario":419.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":419.99,"importe_bruto":419.99,"importe_neto":419.99,"iva_pct":0.21,"importe_iva":88.2,"importe_total":508.19,"coste_unitario":286.63,"margen_bruto":133.36,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000182-01","id_venta":"VTA0000182","anio":2026,"mes_numero":3,"mes_nombre":"Marzo","fecha_venta":"2026-03-18","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Campanas extractoras","marca":"Balayra","unidades":2,"precio_lista_unitario":209.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":209.99,"importe_bruto":419.98,"importe_neto":419.98,"iva_pct":0.21,"importe_iva":88.2,"importe_total":508.18,"coste_unitario":135.02,"margen_bruto":149.94,"metodo_pago":"Transferencia","estado_venta":"Completada"},{"id_linea_venta":"VTA0000183-01","id_venta":"VTA0000183","anio":2026,"mes_numero":3,"mes_nombre":"Marzo","fecha_venta":"2026-03-20","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Robots aspiradores","marca":"HomeTech","unidades":1,"precio_lista_unitario":729.99,"descuento_pct":0.05,"importe_descuento":36.5,"precio_unitario_final":693.49,"importe_bruto":729.99,"importe_neto":693.49,"iva_pct":0.21,"importe_iva":145.63,"importe_total":839.12,"coste_unitario":438.2,"margen_bruto":255.29,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000184-01","id_venta":"VTA0000184","anio":2026,"mes_numero":3,"mes_nombre":"Marzo","fecha_venta":"2026-03-24","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Robots aspiradores","marca":"HomeTech","unidades":1,"precio_lista_unitario":729.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":729.99,"importe_bruto":729.99,"importe_neto":729.99,"iva_pct":0.21,"importe_iva":153.3,"importe_total":883.29,"coste_unitario":438.2,"margen_bruto":291.79,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000185-01","id_venta":"VTA0000185","anio":2026,"mes_numero":3,"mes_nombre":"Marzo","fecha_venta":"2026-03-25","canal":"Marketplace","tipo_canal":"Partner","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"Balayra","unidades":1,"precio_lista_unitario":109.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":109.99,"importe_bruto":109.99,"importe_neto":109.99,"iva_pct":0.21,"importe_iva":23.1,"importe_total":133.09,"coste_unitario":62.54,"margen_bruto":47.45,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000186-01","id_venta":"VTA0000186","anio":2026,"mes_numero":4,"mes_nombre":"Abril","fecha_venta":"2026-04-16","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Aspiradoras","marca":"Balayra","unidades":2,"precio_lista_unitario":169.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":169.99,"importe_bruto":339.98,"importe_neto":339.98,"iva_pct":0.21,"importe_iva":71.4,"importe_total":411.38,"coste_unitario":105.35,"margen_bruto":129.28,"metodo_pago":"Bizum","estado_venta":"Completada"},{"id_linea_venta":"VTA0000187-01","id_venta":"VTA0000187","anio":2026,"mes_numero":4,"mes_nombre":"Abril","fecha_venta":"2026-04-16","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Robots de cocina","marca":"CleanBot","unidades":1,"precio_lista_unitario":709.99,"descuento_pct":0.03,"importe_descuento":21.3,"precio_unitario_final":688.69,"importe_bruto":709.99,"importe_neto":688.69,"iva_pct":0.21,"importe_iva":144.62,"importe_total":833.31,"coste_unitario":425.1,"margen_bruto":263.59,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000188-01","id_venta":"VTA0000188","anio":2026,"mes_numero":4,"mes_nombre":"Abril","fecha_venta":"2026-04-18","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"NovaCasa","unidades":1,"precio_lista_unitario":259.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":259.99,"importe_bruto":259.99,"importe_neto":259.99,"iva_pct":0.21,"importe_iva":54.6,"importe_total":314.59,"coste_unitario":167.02,"margen_bruto":92.97,"metodo_pago":"Financiacion","estado_venta":"Completada"},{"id_linea_venta":"VTA0000189-01","id_venta":"VTA0000189","anio":2026,"mes_numero":4,"mes_nombre":"Abril","fecha_venta":"2026-04-24","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"Nordline","unidades":1,"precio_lista_unitario":179.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":179.99,"importe_bruto":179.99,"importe_neto":179.99,"iva_pct":0.21,"importe_iva":37.8,"importe_total":217.79,"coste_unitario":102.38,"margen_bruto":77.61,"metodo_pago":"PayPal","estado_venta":"Completada"},{"id_linea_venta":"VTA0000190-01","id_venta":"VTA0000190","anio":2026,"mes_numero":4,"mes_nombre":"Abril","fecha_venta":"2026-04-24","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Batidoras","marca":"KitchNova","unidades":2,"precio_lista_unitario":169.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":169.99,"importe_bruto":339.98,"importe_neto":339.98,"iva_pct":0.21,"importe_iva":71.4,"importe_total":411.38,"coste_unitario":118.23,"margen_bruto":103.52,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000191-01","id_venta":"VTA0000191","anio":2026,"mes_numero":4,"mes_nombre":"Abril","fecha_venta":"2026-04-26","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"Registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"AireZen","unidades":1,"precio_lista_unitario":659.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":659.99,"importe_bruto":659.99,"importe_neto":659.99,"iva_pct":0.21,"importe_iva":138.6,"importe_total":798.59,"coste_unitario":368.11,"margen_bruto":291.88,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000192-01","id_venta":"VTA0000192","anio":2026,"mes_numero":5,"mes_nombre":"Mayo","fecha_venta":"2026-05-10","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Robots aspiradores","marca":"HomeTech","unidades":1,"precio_lista_unitario":519.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":519.99,"importe_bruto":519.99,"importe_neto":519.99,"iva_pct":0.21,"importe_iva":109.2,"importe_total":629.19,"coste_unitario":347.71,"margen_bruto":172.28,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000193-01","id_venta":"VTA0000193","anio":2026,"mes_numero":5,"mes_nombre":"Mayo","fecha_venta":"2026-05-10","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Limpiadoras de vapor","marca":"EcoWash","unidades":1,"precio_lista_unitario":179.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":179.99,"importe_bruto":179.99,"importe_neto":179.99,"iva_pct":0.21,"importe_iva":37.8,"importe_total":217.79,"coste_unitario":110.96,"margen_bruto":69.03,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000194-01","id_venta":"VTA0000194","anio":2026,"mes_numero":5,"mes_nombre":"Mayo","fecha_venta":"2026-05-15","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Limpieza","categoria":"Limpieza","subcategoria":"Aspiradoras","marca":"Balayra","unidades":1,"precio_lista_unitario":169.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":169.99,"importe_bruto":169.99,"importe_neto":169.99,"iva_pct":0.21,"importe_iva":35.7,"importe_total":205.69,"coste_unitario":105.35,"margen_bruto":64.64,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000195-01","id_venta":"VTA0000195","anio":2026,"mes_numero":5,"mes_nombre":"Mayo","fecha_venta":"2026-05-19","canal":"App","tipo_canal":"Mobile commerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Hornos","marca":"FrioMax","unidades":1,"precio_lista_unitario":879.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":879.99,"importe_bruto":879.99,"importe_neto":879.99,"iva_pct":0.21,"importe_iva":184.8,"importe_total":1064.79,"coste_unitario":587.38,"margen_bruto":292.61,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000196-01","id_venta":"VTA0000196","anio":2026,"mes_numero":5,"mes_nombre":"Mayo","fecha_venta":"2026-05-19","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Robots de cocina","marca":"CleanBot","unidades":1,"precio_lista_unitario":709.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":709.99,"importe_bruto":709.99,"importe_neto":709.99,"iva_pct":0.21,"importe_iva":149.1,"importe_total":859.09,"coste_unitario":425.1,"margen_bruto":284.89,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000197-01","id_venta":"VTA0000197","anio":2026,"mes_numero":5,"mes_nombre":"Mayo","fecha_venta":"2026-05-23","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Pequeno electrodomestico","categoria":"Pequeno electrodomestico","subcategoria":"Batidoras","marca":"ElectraHome","unidades":1,"precio_lista_unitario":39.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":39.99,"importe_bruto":39.99,"importe_neto":39.99,"iva_pct":0.21,"importe_iva":8.4,"importe_total":48.39,"coste_unitario":24.2,"margen_bruto":15.79,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000198-01","id_venta":"VTA0000198","anio":2026,"mes_numero":5,"mes_nombre":"Mayo","fecha_venta":"2026-05-28","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"Registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Campanas extractoras","marca":"CleanBot","unidades":1,"precio_lista_unitario":419.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":419.99,"importe_bruto":419.99,"importe_neto":419.99,"iva_pct":0.21,"importe_iva":88.2,"importe_total":508.19,"coste_unitario":286.63,"margen_bruto":133.36,"metodo_pago":"Tarjeta","estado_venta":"Completada"},{"id_linea_venta":"VTA0000199-01","id_venta":"VTA0000199","anio":2026,"mes_numero":6,"mes_nombre":"Junio","fecha_venta":"2026-06-01","canal":"Online","tipo_canal":"Ecommerce","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"FrioMax","unidades":1,"precio_lista_unitario":599.99,"descuento_pct":0,"importe_descuento":0,"precio_unitario_final":599.99,"importe_bruto":599.99,"importe_neto":599.99,"iva_pct":0.21,"importe_iva":126,"importe_total":725.99,"coste_unitario":394.91,"margen_bruto":205.08,"metodo_pago":"Transferencia","estado_venta":"Completada"},{"id_linea_venta":"VTA0000200-01","id_venta":"VTA0000200","anio":2026,"mes_numero":6,"mes_nombre":"Junio","fecha_venta":"2026-06-11","canal":"Tienda fisica","tipo_canal":"Retail","tipo_usuario":"No registrado","nombre_promocion":"Sin promocion","seccion":"Cocina","categoria":"Cocina","subcategoria":"Placas de induccion","marca":"EcoWash","unidades":1,"precio_lista_unitario":279.99,"descuento_pct":0.07,"importe_descuento":19.6,"precio_unitario_final":260.39,"importe_bruto":279.99,"importe_neto":260.39,"iva_pct":0.21,"importe_iva":54.68,"importe_total":315.07,"coste_unitario":191.55,"margen_bruto":68.84,"metodo_pago":"PayPal","estado_venta":"Completada"}];
+
+    const state = {
+      years: new Set(),
+      months: new Set(),
+      channels: new Set(),
+      userTypes: new Set(),
+      promotions: new Set()
+    };
+
+    const colors = ['#215d95', '#2f8c62', '#4c8f9f', '#7a8ea6', '#b7933e', '#4f82b8', '#6ca97d', '#88b9d6'];
+
+    const fmtCurrency = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+    const fmtCurrency2 = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 2 });
+    const fmtNumber = new Intl.NumberFormat('es-ES');
+
+    const els = {
+      qualityStatus: document.getElementById('qualityStatus'),
+      qualitySummary: document.getElementById('qualitySummary'),
+      selectionSummary: document.getElementById('selectionSummary'),
+      yearsSummary: document.getElementById('yearsSummary'),
+      monthsSummary: document.getElementById('monthsSummary'),
+      channelsSummary: document.getElementById('channelsSummary'),
+      userTypesSummary: document.getElementById('userTypesSummary'),
+      promotionsSummary: document.getElementById('promotionsSummary'),
+      yearFilters: document.getElementById('yearFilters'),
+      monthFilters: document.getElementById('monthFilters'),
+      channelFilters: document.getElementById('channelFilters'),
+      userTypeFilters: document.getElementById('userTypeFilters'),
+      promotionFilters: document.getElementById('promotionFilters'),
+      resetFilters: document.getElementById('resetFilters'),
+      kpiSalesRevenue: document.getElementById('kpiSalesRevenue'),
+      kpiSalesUnits: document.getElementById('kpiSalesUnits'),
+      kpiReturnsRevenue: document.getElementById('kpiReturnsRevenue'),
+      kpiReturnsUnits: document.getElementById('kpiReturnsUnits'),
+      kpiRegisteredShare: document.getElementById('kpiRegisteredShare'),
+      trendLegend: document.getElementById('trendLegend'),
+      trendChart: document.getElementById('trendChart'),
+      channelChart: document.getElementById('channelChart'),
+      userTypeChart: document.getElementById('userTypeChart'),
+      categoryChart: document.getElementById('categoryChart'),
+      promotionChart: document.getElementById('promotionChart')
+    };
+
+    const data = rawData.map(row => ({
+      ...row,
+      anio: Number(row.anio),
+      mes_numero: Number(row.mes_numero),
+      unidades: Number(row.unidades || 0),
+      importe_total: Number(row.importe_total || 0),
+      precio_lista_unitario: Number(row.precio_lista_unitario || 0),
+      descuento_pct: Number(row.descuento_pct || 0),
+      importe_descuento: Number(row.importe_descuento || 0),
+      precio_unitario_final: Number(row.precio_unitario_final || 0),
+      importe_bruto: Number(row.importe_bruto || 0),
+      importe_neto: Number(row.importe_neto || 0),
+      iva_pct: Number(row.iva_pct || 0),
+      importe_iva: Number(row.importe_iva || 0),
+      coste_unitario: Number(row.coste_unitario || 0),
+      margen_bruto: Number(row.margen_bruto || 0)
+    }));
+
+    const dataQuality = {
+      factRows: data.length,
+      years: [...new Set(data.map(row => row.anio))].sort((a, b) => a - b),
+      months: [...new Set(data.map(row => row.mes_numero))].sort((a, b) => a - b),
+      channels: [...new Set(data.map(row => row.canal))].sort((a, b) => a.localeCompare(b)),
+      userTypes: [...new Set(data.map(row => row.tipo_usuario))].sort((a, b) => a.localeCompare(b)),
+      promotions: [...new Set(data.map(row => row.nombre_promocion))].sort((a, b) => a.localeCompare(b))
+    };
+
+    function money(value) {
+      return fmtCurrency.format(value || 0);
+    }
+
+    function money2(value) {
+      return fmtCurrency2.format(value || 0);
+    }
+
+    function percent(value) {
+      return `${(value || 0).toFixed(1)}%`;
+    }
+
+    function createFilterOption(label, value, group, options = {}) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = options.variant === 'year' ? 'filter-option year-cell' : 'filter-option';
+      button.textContent = label;
+      button.dataset.value = String(value);
+      button.dataset.group = group;
+      button.setAttribute('aria-pressed', 'true');
+      button.setAttribute('aria-label', `${label} filter`);
+      if (options.active !== false) button.classList.add('is-active');
+      button.addEventListener('click', () => {
+        toggleSelection(group, String(value));
+      });
+      return button;
+    }
+
+    function toggleSelection(group, key) {
+      const bucket = state[group];
+      if (bucket.has(key)) bucket.delete(key);
+      else bucket.add(key);
+      syncFilters();
+      render();
+    }
+
+    function buildFilters() {
+      const groups = [
+        ['years', dataQuality.years],
+        ['months', dataQuality.months],
+        ['channels', dataQuality.channels],
+        ['userTypes', dataQuality.userTypes],
+        ['promotions', dataQuality.promotions]
+      ];
+
+      groups.forEach(([group, values]) => {
+        state[group] = new Set(values.map(String));
+      });
+
+      dataQuality.years.forEach(value => els.yearFilters.appendChild(createFilterOption(String(value), value, 'years', { variant: 'year' })));
+      dataQuality.months.forEach(value => els.monthFilters.appendChild(createFilterOption(String(value), value, 'months')));
+      dataQuality.channels.forEach(value => els.channelFilters.appendChild(createFilterOption(value, value, 'channels')));
+      dataQuality.userTypes.forEach(value => els.userTypeFilters.appendChild(createFilterOption(value === 'Registrado' ? 'Registered' : 'Guest', value, 'userTypes')));
+      dataQuality.promotions.forEach(value => els.promotionFilters.appendChild(createFilterOption(value, value, 'promotions')));
+
+      syncFilters();
+    }
+
+    function selectionSummaryText(group, total) {
+      const selected = state[group]?.size || 0;
+      if (selected === total) return 'All selected';
+      if (selected === 0) return 'None selected';
+      return `${selected} of ${total} selected`;
+    }
+
+    function syncFilters() {
+      document.querySelectorAll('.filter-option[data-group]').forEach(button => {
+        const group = button.dataset.group;
+        const active = state[group]?.has(button.dataset.value);
+        button.classList.toggle('is-active', !!active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+
+      els.yearsSummary.textContent = selectionSummaryText('years', dataQuality.years.length);
+      els.monthsSummary.textContent = selectionSummaryText('months', dataQuality.months.length);
+      els.channelsSummary.textContent = selectionSummaryText('channels', dataQuality.channels.length);
+      els.userTypesSummary.textContent = selectionSummaryText('userTypes', dataQuality.userTypes.length);
+      els.promotionsSummary.textContent = selectionSummaryText('promotions', dataQuality.promotions.length);
+    }
+
+    function filteredData() {
+      return data.filter(row => {
+        return state.years.has(String(row.anio)) &&
+          state.months.has(String(row.mes_numero)) &&
+          state.channels.has(row.canal) &&
+          state.userTypes.has(row.tipo_usuario) &&
+          state.promotions.has(row.nombre_promocion);
+      });
+    }
+
+    function summarize(rows) {
+      const completed = rows.filter(row => row.estado_venta === 'Completada');
+      const returned = rows.filter(row => row.estado_venta === 'Devuelta');
+      const cancelled = rows.filter(row => row.estado_venta === 'Cancelada');
+      const registered = completed.filter(row => row.tipo_usuario === 'Registrado');
+      const totalSalesRevenue = completed.reduce((sum, row) => sum + row.importe_total, 0);
+      const totalSalesUnits = completed.reduce((sum, row) => sum + row.unidades, 0);
+      const returnsRevenue = returned.reduce((sum, row) => sum + row.importe_total, 0);
+      const returnsUnits = returned.reduce((sum, row) => sum + row.unidades, 0);
+      const registeredRevenue = registered.reduce((sum, row) => sum + row.importe_total, 0);
+      const registeredShare = totalSalesRevenue ? (registeredRevenue / totalSalesRevenue) * 100 : 0;
+      return { completed, returned, cancelled, totalSalesRevenue, totalSalesUnits, returnsRevenue, returnsUnits, registeredShare };
+    }
+
+    function aggregate(rows, keyFn, valueFn = row => row.importe_total) {
+      const map = new Map();
+      rows.forEach(row => {
+        const key = keyFn(row);
+        map.set(key, (map.get(key) || 0) + valueFn(row));
+      });
+      return [...map.entries()].map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value);
+    }
+
+    function renderTrend(completed) {
+      const years = [...state.years].map(Number).sort((a, b) => a - b);
+      const series = years.map((year, index) => {
+        const values = Array.from({ length: 12 }, (_, monthIndex) => {
+          const total = completed
+            .filter(row => row.anio === year && row.mes_numero === monthIndex + 1)
+            .reduce((sum, row) => sum + row.importe_total, 0);
+          return total;
+        });
+        return { year, values, color: colors[index % colors.length] };
+      });
+
+      const legendHTML = series.map(item => `<span class="legend-item"><span class="legend-swatch" style="background:${item.color}"></span>${item.year}</span>`).join('');
+      els.trendLegend.innerHTML = legendHTML || '<span class="legend-item">No series selected</span>';
+      els.trendChart.innerHTML = series.length ? renderLineSVG(series) : emptyState('No trend data for the current selection.');
+    }
+
+    function renderLineSVG(series) {
+      const width = 860;
+      const height = 320;
+      const padding = { top: 18, right: 20, bottom: 38, left: 58 };
+      const xStep = (width - padding.left - padding.right) / 11;
+      const allValues = series.flatMap(item => item.values);
+      const max = Math.max(...allValues, 1);
+      const min = 0;
+      const innerHeight = height - padding.top - padding.bottom;
+
+      const yFor = value => padding.top + innerHeight - ((value - min) / (max - min || 1)) * innerHeight;
+      const xFor = index => padding.left + xStep * index;
+
+      const gridLines = Array.from({ length: 5 }, (_, index) => {
+        const value = max / 4 * index;
+        const y = yFor(value);
+        return `<line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" stroke="#e4ebf3" stroke-width="1" />
+          <text x="${padding.left - 10}" y="${y + 4}" text-anchor="end" fill="#6a7786" font-size="12">${money2(value)}</text>`;
+      }).join('');
+
+      const monthLabelsSVG = Array.from({ length: 12 }, (_, index) => {
+        const x = xFor(index);
+        return `<text x="${x}" y="${height - 12}" text-anchor="middle" fill="#6a7786" font-size="12">${index + 1}</text>`;
+      }).join('');
+
+      const paths = series.map(item => {
+        const points = item.values.map((value, index) => `${xFor(index)},${yFor(value)}`).join(' ');
+        const path = item.values.map((value, index) => `${index === 0 ? 'M' : 'L'} ${xFor(index)} ${yFor(value)}`).join(' ');
+        return `
+          <polyline fill="none" stroke="${item.color}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" points="${points}"></polyline>
+          <path d="${path}" fill="none" stroke="transparent"></path>
+          ${item.values.map((value, index) => `<circle cx="${xFor(index)}" cy="${yFor(value)}" r="3.7" fill="#fff" stroke="${item.color}" stroke-width="2"></circle>`).join('')}
+        `;
+      }).join('');
+
+      return `
+        <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Monthly completed sales revenue by year">
+          ${gridLines}
+          <line x1="${padding.left}" y1="${height - padding.bottom}" x2="${width - padding.right}" y2="${height - padding.bottom}" stroke="#c9d5e1" stroke-width="1.2" />
+          ${monthLabelsSVG}
+          ${paths}
+        </svg>
+      `;
+    }
+
+    function renderDonut(container, items, options = {}) {
+      if (!items.length) {
+        container.innerHTML = emptyState('No data for the current selection.');
+        return;
+      }
+
+      const width = 360;
+      const height = 280;
+      const cx = 140;
+      const cy = 130;
+      const outer = 88;
+      const inner = 56;
+      const total = items.reduce((sum, item) => sum + item.value, 0) || 1;
+      let start = -Math.PI / 2;
+
+      const slices = items.map((item, index) => {
+        const angle = (item.value / total) * Math.PI * 2;
+        const end = start + angle;
+        const path = donutArc(cx, cy, outer, inner, start, end);
+        const slice = `<path d="${path}" fill="${item.color || colors[index % colors.length]}" stroke="#fff" stroke-width="1.5"></path>`;
+        start = end;
+        return slice;
+      });
+
+      const centerLabel = options.centerLabel || 'Total';
+      const centerValue = options.centerValue || money(total);
+      const legend = items.map((item, index) => {
+        const pct = ((item.value / total) * 100).toFixed(1);
+        return `<div class="legend-item"><span class="legend-swatch" style="background:${item.color || colors[index % colors.length]}"></span>${item.label}: ${money(item.value)} (${pct}%)</div>`;
+      }).join('');
+
+      container.innerHTML = `
+        <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Donut chart">
+          ${slices.join('')}
+          <circle cx="${cx}" cy="${cy}" r="${inner - 2}" fill="#fff"></circle>
+          <text x="${cx}" y="${cy - 2}" text-anchor="middle" font-size="14" fill="#6a7786">${centerLabel}</text>
+          <text x="${cx}" y="${cy + 22}" text-anchor="middle" font-size="20" font-weight="700" fill="#122033">${centerValue}</text>
+        </svg>
+        <div class="legend">${legend}</div>
+      `;
+    }
+
+    function donutArc(cx, cy, outer, inner, start, end) {
+      const large = end - start > Math.PI ? 1 : 0;
+      const x1 = cx + Math.cos(start) * outer;
+      const y1 = cy + Math.sin(start) * outer;
+      const x2 = cx + Math.cos(end) * outer;
+      const y2 = cy + Math.sin(end) * outer;
+      const x3 = cx + Math.cos(end) * inner;
+      const y3 = cy + Math.sin(end) * inner;
+      const x4 = cx + Math.cos(start) * inner;
+      const y4 = cy + Math.sin(start) * inner;
+      return [
+        `M ${x1} ${y1}`,
+        `A ${outer} ${outer} 0 ${large} 1 ${x2} ${y2}`,
+        `L ${x3} ${y3}`,
+        `A ${inner} ${inner} 0 ${large} 0 ${x4} ${y4}`,
+        'Z'
+      ].join(' ');
+    }
+
+    function renderHorizontalBars(container, items) {
+      if (!items.length) {
+        container.innerHTML = emptyState('No categories for the current selection.');
+        return;
+      }
+
+      const width = 860;
+      const rowHeight = 34;
+      const height = Math.max(180, items.length * rowHeight + 48);
+      const padding = { top: 16, right: 18, bottom: 18, left: 220 };
+      const max = Math.max(...items.map(item => item.value), 1);
+
+      const bars = items.map((item, index) => {
+        const y = 22 + index * rowHeight;
+        const barWidth = ((width - padding.left - padding.right) * item.value) / max;
+        return `
+          <text x="${padding.left - 12}" y="${y + 14}" text-anchor="end" fill="#122033" font-size="13">${item.label}</text>
+          <rect x="${padding.left}" y="${y}" width="${barWidth}" height="18" rx="9" fill="${colors[index % colors.length]}"></rect>
+          <text x="${padding.left + barWidth + 10}" y="${y + 14}" fill="#5d6b7b" font-size="12">${money(item.value)}</text>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Horizontal bar chart">
+          ${bars}
+        </svg>
+      `;
+    }
+
+    function renderVerticalBars(container, items) {
+      if (!items.length) {
+        container.innerHTML = emptyState('No promotions for the current selection.');
+        return;
+      }
+
+      const width = 860;
+      const height = 320;
+      const padding = { top: 18, right: 16, bottom: 88, left: 38 };
+      const innerWidth = width - padding.left - padding.right;
+      const innerHeight = height - padding.top - padding.bottom;
+      const max = Math.max(...items.map(item => item.value), 1);
+      const barWidth = innerWidth / items.length * 0.68;
+      const gap = innerWidth / items.length;
+
+      const bars = items.map((item, index) => {
+        const x = padding.left + index * gap + (gap - barWidth) / 2;
+        const barHeight = (item.value / max) * innerHeight;
+        const y = padding.top + innerHeight - barHeight;
+        return `
+          <rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" rx="12" fill="${colors[index % colors.length]}"></rect>
+          <text x="${x + barWidth / 2}" y="${y - 8}" text-anchor="middle" fill="#5d6b7b" font-size="12">${money(item.value)}</text>
+          <text x="${x + barWidth / 2}" y="${height - 54}" text-anchor="middle" fill="#122033" font-size="12" transform="rotate(-28 ${x + barWidth / 2} ${height - 54})">${item.label}</text>
+        `;
+      }).join('');
+
+      const axis = `<line x1="${padding.left}" y1="${padding.top + innerHeight}" x2="${width - padding.right}" y2="${padding.top + innerHeight}" stroke="#c9d5e1" stroke-width="1.2"></line>`;
+
+      container.innerHTML = `
+        <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Vertical bar chart">
+          ${axis}
+          ${bars}
+        </svg>
+      `;
+    }
+
+    function emptyState(message) {
+      return `<div class="empty">${message}</div>`;
+    }
+
+    function render() {
+      const rows = filteredData();
+      const summary = summarize(rows);
+
+      els.kpiSalesRevenue.textContent = money(summary.totalSalesRevenue);
+      els.kpiSalesUnits.textContent = fmtNumber.format(summary.totalSalesUnits);
+      els.kpiReturnsRevenue.textContent = money(summary.returnsRevenue);
+      els.kpiReturnsUnits.textContent = fmtNumber.format(summary.returnsUnits);
+      els.kpiRegisteredShare.textContent = percent(summary.registeredShare);
+
+      els.qualityStatus.textContent = `PASS - ${dataQuality.factRows} embedded sales rows, ${dataQuality.years.length} years, ${dataQuality.months.length} months`;
+      els.qualitySummary.textContent = `Validated snapshot loaded with ${dataQuality.channels.length} channels, ${dataQuality.userTypes.length} user types, and ${dataQuality.promotions.length} promotions.`;
+
+      els.selectionSummary.textContent = `${rows.length} lines match the current filters.`;
+
+      const completed = summary.completed;
+      renderTrend(completed);
+
+      const channelItems = aggregate(completed, row => row.canal).slice(0, 6).map((item, index) => ({ ...item, color: colors[index % colors.length] }));
+      renderDonut(els.channelChart, channelItems, { centerLabel: 'Channels', centerValue: money(completed.reduce((sum, row) => sum + row.importe_total, 0)) });
+
+      const userTypeItems = aggregate(completed, row => row.tipo_usuario === 'Registrado' ? 'Registered' : 'Guest').map((item, index) => ({ ...item, color: item.label === 'Registered' ? '#215d95' : '#2f8c62' }));
+      renderDonut(els.userTypeChart, userTypeItems, { centerLabel: 'Users', centerValue: money(completed.reduce((sum, row) => sum + row.importe_total, 0)) });
+
+      const categoryItems = aggregate(completed, row => row.categoria).slice(0, 8).map((item, index) => ({ ...item, color: colors[index % colors.length] }));
+      renderHorizontalBars(els.categoryChart, categoryItems);
+
+      const promoItems = aggregate(completed, row => row.nombre_promocion).slice(0, 8).map((item, index) => ({ ...item, color: colors[index % colors.length] }));
+      renderVerticalBars(els.promotionChart, promoItems);
+    }
+
+    function init() {
+      if (!data.length) {
+        els.qualityStatus.textContent = 'Data quality: no embedded data available';
+        els.qualitySummary.textContent = 'The dashboard template loaded, but the validated snapshot still needs to be injected.';
+        document.getElementById('trendChart').innerHTML = emptyState('No data has been embedded in the dashboard yet.');
+        return;
+      }
+
+      buildFilters();
+      render();
+      els.resetFilters.addEventListener('click', () => {
+        state.years = new Set(dataQuality.years.map(String));
+        state.months = new Set(dataQuality.months.map(String));
+        state.channels = new Set(dataQuality.channels.map(String));
+        state.userTypes = new Set(dataQuality.userTypes.map(String));
+        state.promotions = new Set(dataQuality.promotions.map(String));
+        syncFilters();
+        render();
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>

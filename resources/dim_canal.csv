@@ -1,7 +1,0 @@
-﻿id_canal;canal;tipo_canal;tienda;pais;provincia;ciudad;zona_venta
-CAN001;Online;Ecommerce;Web Espana;Espana;Madrid;Madrid;Digital
-CAN002;App;Mobile commerce;App Espana;Espana;Madrid;Madrid;Digital
-CAN003;Tienda fisica;Retail;Madrid Norte;Espana;Madrid;Madrid;Centro
-CAN004;Tienda fisica;Retail;Barcelona Diagonal;Espana;Barcelona;Barcelona;Noreste
-CAN005;Tienda fisica;Retail;Valencia Centro;Espana;Valencia;Valencia;Este
-CAN007;Marketplace;Partner;Marketplace Iberia;Espana;Madrid;Madrid;Digital

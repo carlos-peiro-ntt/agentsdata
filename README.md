@@ -194,22 +194,25 @@ npx --version
 
 **Windows — PowerShell**
 
-```powershell
-winget install --id astral-sh.uv -e
-```
+1. Ejecuta en la terminal:
 
-**macOS, Linux o WSL — Bash/Zsh**
+   ```console
+   powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+   ```
 
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
+2. Añade temporalmente `uv` y `uvx` al `PATH` de la sesión actual:
 
-Reinicia la terminal y valida en cualquier sistema:
+   ```console
+   $env:Path = "$HOME\.local\bin;$env:Path"
+   ```
 
-```bash
-uv --version
-uvx --version
-```
+3. Comprueba que `uvx` está disponible:
+
+   ```console
+   uvx mcp-atlassian --help
+   ```
+
+4. Cierra y vuelve a abrir Visual Studio Code para aplicar la instalación en una nueva sesión.
 
 ### 0.8 Instalar las extensiones de VS Code
 
@@ -360,14 +363,14 @@ py -m http.server 8000
 python3 -m http.server 8000
 ```
 
-8. Abre `http://localhost:8000/index.html`.
+8. Abre `http://localhost:8000/{name}.html`.
 9. Detén el servidor con `Ctrl+C` al terminar.
 
 ### Validación del ejercicio
 
 Comprueba que:
 
-- se ha creado `index.html`;
+- se ha creado `{name}.html`;
 - los datos proceden de `resources`;
 - el dashboard carga mediante HTTP;
 - no se muestran datos personales;
@@ -477,11 +480,11 @@ Comprueba que:
 
 ---
 
-## 4. Ejercicio 3 — Skills, MCP y modo Plan
+## 4. Ejercicio 3 — Skills, MCP, planificación e implementación
 
 ### Objetivo
 
-Añadir conocimiento especializado, conectar fuentes externas y planificar una entrega completa antes de implementarla.
+Añadir conocimiento especializado, conectar fuentes externas y recorrer el ciclo completo de planificación, gobierno, implementación y validación del dashboard.
 
 ### Parte 1 — Instalar las skills
 
@@ -605,9 +608,156 @@ Update AGENTS.md so it:
 
 Revisa el resultado antes de aceptarlo. `AGENTS.md` debe actuar como punto de entrada y enlazar los recursos, no copiar todo su contenido.
 
-### Parte 4 — Crear el plan
+```markdown
+# AGENTS.md
 
-1. Cambia al modo **Plan**.
+## Project Overview
+
+This repository contains a standalone retail sales dashboard in html that loads data from the Supabase MCP. The main goal is to build and iterate on a business-facing sales dashboard without introducing unnecessary dependencies.
+
+## Business Context
+
+This project is a retail sales analytics dashboard for business users.
+
+The primary goal is to help business stakeholders understand sales performance through reliable KPIs, interactive visualizations, and actionable insights.
+
+## Agent Guidance
+
+When working on this project:
+
+- Prioritize business insights over visual complexity.
+- Validate data quality before calculating or presenting KPIs.
+- Clearly identify the Supabase tables used for each metric.
+- Report data-quality limitations before making recommendations.
+- Prefer simple, business-readable dashboards with interactive filtering.
+- Keep the current standalone HTML architecture unless a different technical approach is explicitly requested.
+- Avoid introducing external dependencies unless explicitly approved.
+
+## Business KPIs
+
+When relevant, prioritize metrics such as:
+
+- Revenue
+- Margin %
+- Average Ticket
+- Sales by Channel
+- Sales by Category
+- Conversion
+- Units Sold
+
+## Data Quality
+
+Before presenting results:
+
+- Validate null or missing values.
+- Check referential integrity across dimension tables.
+- Detect anomalous values, including unusual price drops and potential stock issues.
+- Explain any limitations that may affect the reliability of the analysis.
+
+## Local Validation
+
+- For browser-only changes, validate by serving the repo with a local HTTP server and opening the dashboard in a browser.
+- If JavaScript is edited, check the browser console for snapshot loading, parsing, or rendering errors.
+- There are no project build or test scripts in this repository by default.
+
+## Agent Ecosystem
+
+This repository includes lightweight agent **skills** for design and dashboard guidance, plus configured **MCP servers** that provide external capabilities. Use this page as the single entry point when deciding how an agent should act on the project.
+
+### Available Skills
+
+- **frontend-design**: Visual and interaction design guidance for distinctive UIs. See [.agents/skills/frontend-design/SKILL.md](.agents/skills/frontend-design/SKILL.md) for full instructions and examples. Use this skill when making aesthetic, typographic, or layout decisions for HTML/CSS/JS changes.
+- **kpi-dashboard-design**: Patterns and best practices for selecting KPIs, layout, and metric governance. See [.agents/skills/kpi-dashboard-design/SKILL.md](.agents/skills/kpi-dashboard-design/SKILL.md) for details. Use this skill when choosing metrics, designing dashboard cards, or documenting calculation methodology.
+
+Notes:
+- The skills contain the canonical, detailed guidance — prefer reading the related `SKILL.md` before applying design or KPI changes.
+- A skills list and locks are available in `skills-lock.json` at the repository root.
+
+### Configured MCP Servers
+
+The repository configures the following MCP servers in `.vscode/mcp.json`:
+
+- **confluence** (Atlassian MCP server): provides Confluence access for creating/updating documentation and pages. Configuration and credentials are in [.vscode/mcp.json](.vscode/mcp.json).
+- **supabase** (Supabase MCP endpoint): provides read-only database capabilities (project-specific) for querying data and inspecting schemas. See [.vscode/mcp.json](.vscode/mcp.json) for the configured endpoints and auth inputs.
+
+Notes:
+- The `.vscode/mcp.json` file contains the authoritative server connection settings and input prompts; do not duplicate those details here — follow the MCP configuration when using servers.
+
+### When to Use a Skill vs an MCP
+
+- Use a **skill** when the task is domain knowledge or pattern-based and can be satisfied by local guidance (design choices, KPI selection, dashboard UX, writing copy, small code examples). Skills hold curated best-practices and should be the first stop for project-specific guidance.
+- Use an **MCP server** when you need external system capabilities the workspace can't provide locally: publishing or updating Confluence pages, executing SQL against the project's Supabase instance, or other networked services defined in `.vscode/mcp.json`.
+- Prefer skills for thinking, pattern selection, and small code edits; prefer MCPs for authoritative actions (publish, update, run queries) and for accessing remote data or services.
+
+### Linking Out
+
+- Skills (full docs): [.agents/skills/](.agents/skills/)
+- MCP configuration: [.vscode/mcp.json](.vscode/mcp.json)
+- Lockfile for skills: [skills-lock.json](skills-lock.json)
+
+Keep `AGENTS.md` as the human-friendly overview and starting point; do not duplicate long how-to content that already exists in the `SKILL.md` files or the MCP configuration. If you add new skills or servers, update this file with a short summary and a link to the authoritative resource.
+```
+
+### Parte 4 — Añadir las reglas del dashboard
+
+> En este taller, `AGENTS.md` es el punto de entrada de instrucciones persistentes del proyecto. Las reglas detalladas del dashboard se mantienen en `rules/dashboard.md` para que sean reutilizables y fáciles de mantener.
+
+1. Crea `rules/dashboard.md` e incorpora este contenido:
+
+```markdown
+# Dashboard Privacy and Data Governance
+
+These rules are mandatory for every dashboard, analysis, and generated document.
+
+## Dashboard Data Source
+
+- Do not use the `resources/` directory or any CSV file as a data source. Those files are no longer available at this stage of the workshop.
+- Retrieve all data required by the dashboard from the configured Supabase MCP in read-only mode.
+- Inspect and validate the Supabase schemas and tables before downloading the required data and embedding the validated snapshot in the self-contained HTML dashboard.
+- Never include Supabase credentials or a runtime database connection in the generated HTML.
+- If the Supabase MCP is unavailable or the required data cannot be retrieved, stop and report the limitation. Do not fall back to CSV files, sample data, or invented values.
+
+## Privacy and GDPR
+
+- Never display or expose first name, last name, email address, date of birth, postal code, or any field that can identify a natural person.
+- This prohibition applies to charts, KPIs, tooltips, labels, legends, filters, tables, embedded HTML/JavaScript data, source-code examples, and Confluence documentation.
+- User-profile analysis may use only anonymized attributes such as `segmento_cliente`, `genero`, and `comunidad_autonoma`.
+- Document in the dashboard source code why first and last names are intentionally excluded from the analysis.
+
+## Data-Quality Gate
+
+- Validate every required source table separately before generating dashboard or documentation output.
+- Record a clear `PASS` or `FAIL` result for every table.
+- Check join cardinality by comparing row counts before and after each join.
+- Abort generation if a join unexpectedly increases the row count or duplicates sales records.
+- Report failed checks and limitations instead of producing potentially misleading KPIs.
+
+## Confluence Publishing
+
+- Always create dashboard documentation as a child page of Confluence page ID `1430576442`, space_key `IADEIADATAENGINEERS`.
+- Use exactly this title pattern: `{creator name} - Informe ventas`.
+- Never create the report at the Confluence root or under another parent page.
+```
+
+2. Añade a `AGENTS.md` una referencia obligatoria y un resumen de las restricciones no negociables:
+
+```markdown
+## Mandatory Dashboard Rules
+
+All dashboard, analysis, and documentation work must follow [rules/dashboard.md](rules/dashboard.md). Read that file completely before generating or modifying any dashboard output.
+
+Non-negotiable constraints:
+
+- Use the configured Supabase MCP in read-only mode as the only data source; never use CSVs, sample data, or invented values.
+- Never expose personal or identifying information.
+- Apply the required table-level data-quality checks and join-cardinality gate before calculating KPIs.
+- Follow the required Confluence parent page, space, and title pattern.
+- Stop and report the limitation if data retrieval or validation fails.
+```
+
+### Parte 5 — Generar el plan
+
+1. Modo **Plan**.
 2. Envía:
 
 ```text
@@ -617,7 +767,7 @@ Generate an interactive HTML sales dashboard for the business, reading data from
 
 ## Exercise Deliverables
 
-- Update the current HTML dashboard in `index.html`.
+- Update the current HTML dashboard {name}.html.
 - Create a Confluence page documenting the dashboard.
 
 ## Required MCP Sources and Destinations
@@ -632,8 +782,8 @@ Generate an interactive HTML sales dashboard for the business, reading data from
   - `dim_promociones`
   - `fact_promociones_articulos`
 - Inspect the table schemas and relationships before defining joins or calculating KPIs. Do not invent columns, relationships, or values.
-- Use the configured **Confluence MCP** to create the documentation as a **child page of the existing page with ID `1430576442`**. Do not create it at the Confluence root or under a different parent.
-- Title the new child page using exactly this pattern: `{creator name} - Informe venta`. If the creator name is not available from the repository or conversation, ask for it before implementation.
+- Use the configured **Confluence MCP** to create the documentation as a **child page of the existing page with ID `1430576442`**, space_key `IADEIADATAENGINEERS`. Do not create it at the Confluence root or under a different parent.
+- Title the new child page using exactly this pattern: `{creator name} - Informe ventas`. If the creator name is not available from the repository or conversation, ask for it before implementation.
 - The Confluence page must document the data sources and joins, KPI definitions, filters, data-quality findings, assumptions, and known limitations.
 
 ## Dashboard Technical Requirements
@@ -698,94 +848,56 @@ Include:
 - Include a visible **Data Quality Status** banner in the dashboard.
 ```
 
-3. Revisa el plan generado.
-4. Confirma que incluye:
-   - consulta de las tablas de Supabase;
-   - validación de datos antes de calcular KPIs;
-   - uso de las skills instaladas;
-   - actualización de `index.html`;
-   - creación de la documentación en Confluence;
-   - protección de datos personales.
-5. No pases a implementación hasta que el plan sea correcto.
-
-### Parte 5 — Ejecutar el plan
-
-1. Cambia de Plan a **Agent**.
-2. Pide al agente que implemente el plan aprobado.
-3. Revisa y autoriza los accesos a Supabase y Confluence.
-4. Revisa los cambios realizados en `index.html`.
-5. Ejecuta el dashboard:
-
-**Windows — PowerShell**
-
-```powershell
-py -m http.server 8000
-```
-
-**macOS, Linux o WSL — Bash/Zsh**
-
-```bash
-python3 -m http.server 8000
-```
-
-6. Abre `http://localhost:8000/index.html`.
-7. Abre la página generada en Confluence.
-
-### Validación del ejercicio
+### Parte 6 — Validar el plan
 
 Comprueba que:
 
-- Supabase se ha utilizado en modo de solo lectura;
-- todos los filtros actualizan todos los KPIs y gráficos;
-- existen los cinco KPIs solicitados;
-- están presentes los cinco gráficos solicitados;
-- el banner de calidad es visible;
-- no aparecen identificadores personales;
-- `index.html` es autocontenido;
-- la página de Confluence documenta fuentes, métricas y limitaciones.
+- `AGENTS.md` obliga a leer y seguir `rules/dashboard.md`;
+- `rules/dashboard.md` contiene las reglas detalladas de privacidad, calidad y Confluence;
+- los campos personales prohibidos están enumerados explícitamente en `rules/dashboard.md`;
+- cada tabla debe obtener `PASS` o `FAIL`;
+- un join que duplique ventas obliga a abortar;
+- Confluence usa el padre `1430576442`, space_key `IADEIADATAENGINEERS` y el título `{creator name} - Informe ventas`;
+- el plan regenerado usa solo `segmento_cliente`, `genero` y `comunidad_autonoma` para el perfil;
+- el plan incluye el comentario que justifica excluir nombre y apellidos;
+- el plan mantiene `{name}.html` como archivo autocontenido;
+- el plan actualiza Confluence con controles y limitaciones;
+- el plan regenerado todavía no se ha implementado.
 
----
+### Parte 7 — Ejecutar el plan
 
-## 5. Cierre del taller
-
-Revisa los archivos creados durante los ejercicios:
-
-```bash
-git status --short
-```
-
-El recorrido esperado es:
+1. Vuelve al modo **Agent**.
+2. Comprueba que los MCP de `supabase` y `confluence` siguen iniciados.
+3. Mantén disponible el plan revisado y envía:
 
 ```text
-README.md
-   ↓
-resources/ + index.html
-   ↓
-AGENTS.md
-   ↓
-.agents/skills/ + skills-lock.json
-   ↓
-.vscode/mcp.json
-   ↓
-Dashboard final + documentación en Confluence
+Implement the approved revised plan now.
+
+Follow every instruction in AGENTS.md and rules/dashboard.md, and use the configured skills and MCP servers. Apply the data-quality gate before generating any dashboard or Confluence output. If a required table fails validation or a join unexpectedly increases the sales row count, stop the implementation and report the failure and its limitations instead of producing misleading KPIs.
+
+If all required checks pass:
+
+- Update the standalone, self-contained dashboard file {name}.html.
+- Use only anonymized user attributes and do not expose personal data anywhere in the HTML, JavaScript, visualizations, filters, tooltips, source examples, or documentation.
+- Add the source-code comment required by rules/dashboard.md explaining why first and last names are excluded.
+- Create the Confluence report as a child of page 1430576442, space_key IADEIADATAENGINEERS with the exact title `{creator name} - Informe ventas`.
+- Document the source tables, joins, KPI definitions, PASS/FAIL results, filters, assumptions, data-quality findings, and known limitations.
+- Validate the completed dashboard locally and report the files and external resources created or updated.
 ```
 
-Antes de compartir o subir cambios, confirma que ningún archivo contiene tokens, credenciales o datos personales.
+4. Si el agente no conoce el nombre del creador, indícaselo cuando lo solicite. No permitas que invente ese valor.
+5. Revisa las consultas, los resultados de calidad y las solicitudes de uso de herramientas antes de aprobar cambios.
+6. Si alguna tabla obtiene `FAIL` o un join duplica ventas, detén el ejercicio y conserva el informe del error. No pidas al agente que omita el control para terminar el dashboard.
+7. Si todos los controles obtienen `PASS`, revisa que el agente haya actualizado `{name}.html` y creado la página de Confluence en la ubicación requerida.
 
-## Resolución rápida de problemas
+### Parte 8 — Validar la implementación
 
-### Un comando no se reconoce
-
-Cierra VS Code y la terminal, abre una nueva y vuelve a probar. Las instalaciones modifican `PATH` y una terminal abierta no siempre recoge los cambios.
-
-### El dashboard no carga los CSV
-
-No abras `index.html` con doble clic. Ejecútalo mediante:
+Sirve el repositorio desde una terminal local.
 
 **Windows — PowerShell**
 
 ```powershell
-py -m http.server 8000
+python -m http.server 8000
 ```
 
 **macOS, Linux o WSL — Bash/Zsh**
@@ -794,10 +906,391 @@ py -m http.server 8000
 python3 -m http.server 8000
 ```
 
-### Un MCP devuelve `401` o `403`
+Abre `http://localhost:8000/{name}.html` en el navegador y comprueba que:
 
-Reinicia el servidor desde **MCP: List Servers** y vuelve a introducir el token. Si el error continúa, comprueba que el token no haya caducado y que tengas permisos en el entorno correspondiente.
+- los cinco KPIs y los cinco gráficos se muestran sin errores;
+- todos los filtros actualizan simultáneamente KPIs y gráficos;
+- el banner de **Data Quality Status** refleja los resultados reales;
+- no aparecen datos personales en la interfaz, tooltips ni código fuente;
+- el diseño es responsive y mantiene una lectura clara;
+- la consola del navegador no muestra errores de carga, parsing o JavaScript.
 
-### Confluence tarda en arrancar
+Después, abre la página creada en Confluence y verifica que:
 
-La primera ejecución de `uvx mcp-atlassian` puede tardar mientras descarga la herramienta. Consulta la salida del servidor desde **MCP: List Servers**.
+- es hija de la página `1430576442`, space_key `IADEIADATAENGINEERS`;
+- usa exactamente el título `{creator name} - Informe ventas`;
+- documenta fuentes, joins, KPIs, filtros, resultados `PASS`/`FAIL` y limitaciones;
+- no contiene datos personales.
+
+Detén el servidor local con `Ctrl+C` cuando termines.
+
+### Validación final del ejercicio
+
+Comprueba que:
+
+- la implementación corresponde al plan revisado, no al plan inicial;
+- todas las tablas requeridas tienen un resultado `PASS` antes de calcular KPIs;
+- ningún join aumenta inesperadamente el número de ventas;
+- `{name}.html` sigue siendo un único archivo autocontenido;
+- el dashboard utiliza únicamente atributos de usuario anonimizados;
+- el código explica por qué se excluyen nombre y apellidos;
+- la página de Confluence está bajo el padre y con el título obligatorios;
+- el dashboard funciona al servirse por HTTP y no genera errores en la consola.
+
+---
+
+## 5. Ejercicio 4 — De plan a especificación con SDD
+
+### Objetivo
+
+Introducir **Specification-Driven Development (SDD)** para que una idea no pase directamente del plan a la implementación. La especificación aprobada se convierte en el contrato verificable entre ambos.
+
+**Antes**
+
+```text
+Idea
+  ↓
+Plan
+  ↓
+Implementación
+```
+
+**Ahora**
+
+```text
+Idea
+  ↓
+Plan
+  ↓
+Spec
+  ↓
+Implementación
+  ↓
+Evaluación (Harness/Evals)
+```
+
+> En este ejercicio se trabajará únicamente hasta la aprobación de la spec. La implementación, el harness y los evals se incorporarán en el siguiente ejercicio.
+
+### Parte 1 — Definir la idea
+
+Elige una evolución concreta del dashboard existente y descríbela en una sola frase. Debe expresar una necesidad de negocio, no una solución técnica.
+
+Ejemplo:
+
+```text
+Como responsable comercial, quiero comparar el rendimiento del periodo seleccionado con un periodo anterior para detectar cambios relevantes en ventas.
+```
+
+Antes de continuar, comprueba que la idea:
+
+- identifica quién necesita el cambio;
+- explica qué problema de negocio quiere resolver;
+- no presupone tablas, columnas ni tecnologías que todavía no se hayan validado;
+- es lo bastante pequeña para implementarse y revisarse durante el taller.
+
+### Parte 2 — Generar y revisar el plan
+
+En modo **Plan**, envía:
+
+```text
+Plan the next evolution of the retail sales dashboard based on this business idea:
+
+{idea}
+
+Read AGENTS.md and rules/dashboard.md before planning. Inspect the existing dashboard and, when authoritative data context is required, use the configured Supabase MCP in read-only mode. Do not invent tables, columns, relationships, calculations, or values.
+
+Produce an implementation-oriented plan, but do not modify files and do not implement the change yet. Identify assumptions, open questions, affected areas, data-quality checks, privacy implications, and validation needs.
+```
+
+Revisa el plan y resuelve las preguntas abiertas que puedan cambiar el alcance. El plan explica **cómo abordar el trabajo**, pero todavía no es el contrato de implementación.
+
+### Parte 3 — Generar la spec
+
+Con el plan revisado disponible, pide al agente que cree `specs/dashboard-evolution.md`:
+
+```text
+Create specs/dashboard-evolution.md for the approved dashboard evolution.
+
+Use the business idea, the approved plan, the current repository, AGENTS.md, and rules/dashboard.md as inputs. The spec must describe required behavior and observable outcomes, not implementation steps. Do not modify the dashboard or publish anything to Confluence yet.
+
+Write the specification with exactly these sections:
+
+1. Metadata
+   - Title
+   - Status: Draft
+   - Version: 0.1.0
+   - Owner role or team (no personal identifiers)
+   - Last updated
+2. Problem
+   - Who is affected
+   - Current pain or limitation
+   - Business impact
+3. Context
+   - Current dashboard behavior
+   - Relevant validated data sources and dependencies
+   - Privacy and data-quality considerations
+4. Goals and Non-goals
+5. Scope
+   - In scope
+   - Out of scope
+6. Requirements
+   - Assign stable IDs: REQ-001, REQ-002, ...
+   - State observable behavior without prescribing code structure
+7. Acceptance Criteria
+   - Assign stable IDs: AC-001, AC-002, ...
+   - Use Given/When/Then where applicable
+   - Map every criterion to at least one requirement
+8. Constraints
+   - Architecture, data source, privacy, data quality, UX, compatibility, and publishing constraints
+9. Evolution
+   - Expected extension points
+   - Backward-compatibility expectations
+   - Versioning and change-log policy
+   - Explicitly deferred capabilities
+10. Open Questions and Decisions
+    - Separate unresolved questions from confirmed decisions
+    - Mark any question that blocks implementation
+11. Traceability
+    - Table mapping Problem → Goal → Requirement → Acceptance Criterion → Validation method
+
+Rules for the spec:
+
+- Do not invent data, schema fields, KPI formulas, or business rules.
+- Mark unknown information as TBD and state how it must be resolved.
+- A blocking TBD prevents the spec from moving to Approved.
+- Make every acceptance criterion objectively verifiable.
+- Include failure and empty-state behavior, not only the happy path.
+- Keep future ideas in Evolution or Out of scope; do not silently expand the current scope.
+- End with a short "Readiness for approval" summary listing blockers, if any.
+```
+
+### Parte 4 — Revisar y aprobar la spec
+
+Revisa `specs/dashboard-evolution.md` con esta lista:
+
+- el problema describe una necesidad y su impacto, no una solución;
+- el contexto coincide con el repositorio y con los datos realmente validados;
+- el alcance separa claramente lo incluido de lo excluido;
+- cada requisito tiene un identificador estable;
+- cada criterio de aceptación es observable y medible;
+- todos los requisitos están cubiertos por criterios de aceptación;
+- se documentan errores, estados vacíos y limitaciones de datos;
+- las restricciones de `AGENTS.md` y `rules/dashboard.md` están reflejadas;
+- la sección **Evolution** permite cambios futuros sin ampliar el alcance actual;
+- no quedan preguntas bloqueantes ni valores `TBD` sin resolver.
+
+Si la spec cumple la lista, cambia su estado de `Draft` a `Approved` y su versión de `0.1.0` a `1.0.0`. Este cambio debe ser explícito; no se considera aprobada solo porque exista el archivo.
+
+### Resultado del ejercicio
+
+Este ejercicio termina antes de implementar. Debe producir:
+
+- una idea de negocio acotada;
+- un plan revisado;
+- `specs/dashboard-evolution.md` con estado `Approved` y versión `1.0.0`;
+- requisitos y criterios de aceptación trazables;
+- cero preguntas bloqueantes y cero valores `TBD` sin resolver.
+
+La implementación no comienza hasta el siguiente ejercicio. Separar ambos momentos permite revisar el contrato sin que el código existente condicione la definición del resultado esperado.
+
+---
+
+## 6. Ejercicio 5 — Implementación guiada y Harness/Evals
+
+### Objetivo
+
+Implementar la spec aprobada y cerrar el ciclo SDD con un **evaluation harness** reproducible.
+
+- El **harness** es el mecanismo que carga el dashboard, ejecuta comprobaciones y recopila resultados.
+- Los **evals** son las comprobaciones concretas y sus oráculos: qué se observa, qué se esperaba y qué significa `PASS`, `FAIL` o `BLOCKED`.
+
+El flujo completo queda así:
+
+```text
+Idea
+  ↓
+Plan aprobado
+  ↓
+Spec aprobada
+  ↓
+Plan de evaluación derivado de la spec
+  ↓
+Implementación
+  ↓
+Harness + Evals
+  ↓
+Evidencia → Corrección → Regresión
+```
+
+> Para respetar la arquitectura del repositorio, el harness será HTML y JavaScript nativo, sin paquetes ni servicios externos. Se ejecutará desde el mismo servidor HTTP local que el dashboard.
+
+### Parte 1 — Diseñar los evals antes de implementar
+
+Antes de modificar el dashboard, crea el contrato de evaluación a partir de la spec aprobada:
+
+```text
+Read the approved specification in specs/dashboard-evolution.md and create evals/eval-plan.md.
+
+Create the simplest reproducible evaluation mechanism for this repository.
+
+Automate every acceptance criterion that can be verified deterministically.
+Leave external or subjective validations as MANUAL.
+
+Report:
+- coverage
+- PASS / FAIL
+- remaining MANUAL checks
+- evidence
+```
+
+Revisa que ningún criterio de aceptación quede sin cobertura. El objetivo es definir los oráculos antes de ver la implementación y reducir evaluaciones diseñadas para confirmar el código ya escrito.
+
+### Parte 2 — Implementar la spec aprobada
+
+Vuelve al modo **Agent** y envía:
+
+```text
+Implement the approved specification in specs/dashboard-evolution.md.
+
+Treat the approved specification as the single source of truth for scope and acceptance. Follow AGENTS.md and rules/dashboard.md. Do not implement out-of-scope or deferred capabilities.
+
+Before editing:
+
+- Confirm that the specification status is Approved.
+- Confirm that there are no blocking TBD items or unresolved decisions.
+- Stop and report any conflict between the specification, repository, validated data, or project rules. Do not reinterpret requirements.
+
+During implementation:
+
+- Implement only the approved scope.
+- Preserve {name}.html as the single self-contained production artifact.
+- Apply the required privacy and data-quality gates before calculating KPIs or publishing documentation.
+- Ensure the implementation exposes enough observable behaviour for the evaluation step (for example, stable identifiers or predictable UI elements where appropriate).
+- Do not expose raw records, personal data, credentials, or a runtime Supabase connection.
+- Do not modify the approved requirements or acceptance criteria to simplify the implementation.
+
+Do not create the evaluation mechanism in this step.
+
+At the end, report:
+
+- Implemented REQ identifiers.
+- Modified files.
+- Data-quality results.
+- Any deviations or implementation limitations.
+```
+
+### Parte 3 — Crear el harness sin dependencias
+
+Con la implementación disponible, envía:
+
+```text
+Create the simplest reproducible evaluation mechanism for the implemented dashboard.
+
+Use specs/dashboard-evolution.md, the current implementation, evals/eval-plan.md, AGENTS.md, and rules/dashboard.md as authoritative inputs.
+
+Do not modify the approved specification or weaken acceptance criteria.
+
+Create the files needed to run the evaluation locally. Prefer a zero-dependency browser-based solution if it fits the repository, but use the simplest reliable mechanism.
+
+The evaluation must:
+
+- Check every acceptance criterion that can be verified deterministically.
+- Mark as MANUAL any check that depends on Supabase, Confluence, visual judgment, business interpretation, or external evidence.
+- Mark as BLOCKED any check that cannot be evaluated because the spec is ambiguous or the implementation lacks observable behavior.
+- Report PASS, FAIL, BLOCKED, or MANUAL for every evaluation.
+- Capture concise evidence for each result.
+- Export or document the results in a reusable way.
+- Avoid exposing credentials, raw records, personal data, or runtime service connections.
+
+Automate only reliable checks, such as:
+
+- required KPI elements exist;
+- required chart containers exist;
+- required filters exist;
+- filter interactions update observable dashboard state;
+- the data-quality banner exists;
+- rendered content does not expose obvious personal data patterns;
+- the dashboard does not load prohibited external scripts or styles.
+
+After creating the evaluation mechanism, report:
+
+- files created;
+- how to run the evaluation locally;
+- automated checks;
+- manual checks;
+- blocked checks;
+- coverage against the approved acceptance criteria.
+```
+
+### Parte 4 — Ejecutar el harness
+
+Sirve el repositorio desde su raíz:
+
+**Windows — PowerShell**
+
+```powershell
+python -m http.server 8000
+```
+
+**macOS, Linux o WSL — Bash/Zsh**
+
+```bash
+python3 -m http.server 8000
+```
+
+Abre `http://localhost:8000/evals/harness.html` y ejecuta **Run all**.
+
+Comprueba que:
+
+- el iframe carga `/{name}.html` sin errores de origen o de ruta;
+- cada resultado conserva sus identificadores `EVAL-*` y `AC-*`;
+- ningún error interno del evaluador aparece como `PASS`;
+- los resultados manuales se muestran como `MANUAL`, no como aprobados automáticamente;
+- el JSON exportado no contiene datos personales, credenciales ni registros de venta;
+- la consola del navegador no muestra errores no controlados.
+
+Guarda el resultado exportado como evidencia del intento de evaluación. No edites manualmente un `FAIL` para convertirlo en `PASS`.
+
+### Parte 5 — Corregir y ejecutar regresión
+
+Si algún eval obtiene `FAIL`:
+
+1. Determina si falla la implementación, el harness o la propia spec.
+2. Si falla la implementación, corrige únicamente el comportamiento necesario y ejecuta **Run failed**.
+3. Después de corregir los fallos, ejecuta de nuevo **Run all** para detectar regresiones.
+4. Si el problema está en un oráculo, corrige `evals/eval-plan.md` y el harness sin rebajar el requisito.
+5. Si debe cambiar el comportamiento esperado, actualiza primero la spec, incrementa su versión y vuelve a aprobarla antes de modificar la implementación o el eval.
+
+Un criterio no pasa porque “parezca correcto”; pasa únicamente cuando existe evidencia que satisface el oráculo aprobado.
+
+### Parte 6 — Completar las evaluaciones manuales
+
+Completa los evals marcados como `MANUAL` y registra evidencia suficiente para revisarlos:
+
+- ubicación, título y contenido obligatorio de la página de Confluence;
+- legibilidad, jerarquía visual y comportamiento responsive;
+- resultados `PASS`/`FAIL` de cada tabla consultada mediante Supabase MCP;
+- cardinalidad antes y después de cada join;
+- cualquier criterio que dependa de un sistema externo o de juicio humano.
+
+No copies datos personales ni credenciales en la evidencia. Un eval manual sin evidencia permanece `BLOCKED`, no `PASS`.
+
+### Validación final del curso
+
+Comprueba que:
+
+- `specs/dashboard-evolution.md` continúa en estado `Approved` y refleja el comportamiento implementado;
+- todos los `AC-*` están cubiertos por uno o más `EVAL-*`;
+- todos los evals tienen un resultado explícito: `PASS`, `FAIL` o `BLOCKED`;
+- no queda ningún `FAIL`, `BLOCKED` ni `MANUAL` pendiente para dar la evolución por aceptada;
+- los evals manuales aprobados incluyen evidencia revisable;
+- el harness puede ejecutarse de nuevo desde un repositorio limpio siguiendo `evals/README.md`;
+- `{name}.html` sigue siendo autocontenido y no depende del harness para funcionar;
+- no se han expuesto datos personales, credenciales ni conexiones runtime a Supabase;
+- cualquier cambio de alcance quedó versionado y aprobado primero en la spec.
+
+La cadena final del curso es:
+
+```text
+Idea → Plan → Spec aprobada → Eval plan → Implementación → Harness/Evals → Evidencia → Regresión
+```

@@ -1,8 +1,0 @@
-﻿id_promocion;nombre_promocion;tipo_promocion;fecha_inicio;fecha_fin;descuento_base_pct;descripcion;activa
-SIN_PROMO;Sin promocion;No aplica;;;0.0;Venta sin promocion comercial;Si
-PMO202401;Rebajas enero 2024;Rebajas;2024-01-07;2024-01-31;0.1;Descuentos de inicio de ano;No
-PMO202411;Black Friday 2024;Black Friday;2024-11-20;2024-12-02;0.18;Promocion transversal de noviembre;No
-PMO202412;Navidad hogar 2024;Navidad;2024-12-10;2024-12-24;0.08;Cocina y pequeno electrodomestico;No
-PMO202501;Rebajas enero 2025;Rebajas;2025-01-07;2025-01-31;0.1;Descuentos de inicio de ano;No
-PMO202511;Black Friday 2025;Black Friday;2025-11-20;2025-12-02;0.19;Promocion transversal de noviembre;No
-PMO202512;Navidad hogar 2025;Navidad;2025-12-10;2025-12-24;0.08;Cocina y pequeno electrodomestico;No
