@@ -1,0 +1,21 @@
+AGENTS.md
+  s_15ecbb3db16945::t_c3c1b77cbac9df 5,19,49-99
+rules/dashboard.md
+  s_15ecbb3db16945::t_3b4ba424a7f356 1-32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "40d4d0bbf077fd1d830dcdcddeb358a557d9c640",
+  "prompts": {},
+  "sessions": {
+    "s_15ecbb3db16945": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f695a-9e27-7e11-a6eb-fecf920d3328",
+        "model": "unknown"
+      },
+      "human_author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}
