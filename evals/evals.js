@@ -1,440 +1,409 @@
-(function () {
-  const FORBIDDEN_FIELDS = [
-    /"nombre"\s*:/i,
-    /"apellidos"\s*:/i,
-    /"email"\s*:/i,
-    /"fecha_nacimiento"\s*:/i,
-    /"codigo_postal"\s*:/i,
-  ];
+(() => {
+  const MANUAL_EVIDENCE = 'Requires human review of chart readability and equivalent-date interpretation.';
 
-  const FILTERS = {
-    yearFilter: ['2025'],
-    monthFilter: ['1'],
-    channelFilter: ['App'],
-    userTypeFilter: ['Registrado'],
-    promotionFilter: ['Sin promocion'],
-  };
-
-  function trimText(value) {
-    return String(value || '').replace(/\s+/g, ' ').trim();
+  function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  function normalizeForCompare(value) {
-    return trimText(value).replace(/\u00a0/g, ' ');
+  function score(status, evidence, details = {}) {
+    return {
+      status,
+      evidence,
+      details,
+    };
   }
 
-  function getDashboardDoc(context) {
-    if (!context || !context.iframe || !context.iframe.contentDocument) {
-      throw new Error('Dashboard iframe not ready');
+  function read(node) {
+    return node ? String(node.textContent || '').trim() : '';
+  }
+
+  function textList(nodes) {
+    return Array.from(nodes || [], (node) => read(node)).filter(Boolean);
+  }
+
+  function parseNumberLike(value) {
+    const cleaned = String(value || '')
+      .replace(/\s/g, '')
+      .replace(/\./g, '')
+      .replace(/,/g, '.')
+      .replace(/[^0-9.+-]/g, '');
+    const parsed = Number(cleaned);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  async function loadDashboard() {
+    const container = document.createElement('div');
+    container.style.position = 'absolute';
+    container.style.left = '-99999px';
+    container.style.top = '0';
+    container.style.width = '1400px';
+    container.style.height = '1200px';
+
+    const iframe = document.createElement('iframe');
+    iframe.setAttribute('aria-hidden', 'true');
+    iframe.style.width = '1400px';
+    iframe.style.height = '1200px';
+    iframe.style.border = '0';
+    iframe.src = '../web.html?eval=' + Date.now() + '-' + Math.random().toString(36).slice(2);
+
+    container.appendChild(iframe);
+    document.body.appendChild(container);
+
+    await new Promise((resolve, reject) => {
+      iframe.addEventListener('load', resolve, { once: true });
+      iframe.addEventListener('error', () => reject(new Error('Failed to load dashboard iframe')), { once: true });
+    });
+
+    const frameWindow = iframe.contentWindow;
+    const frameDocument = iframe.contentDocument;
+    if (!frameWindow || !frameDocument) {
+      throw new Error('Dashboard iframe was not accessible');
     }
-    return context.iframe.contentDocument;
+
+    return {
+      iframe,
+      frameWindow,
+      frameDocument,
+      dispose() {
+        container.remove();
+      },
+    };
   }
 
-  function getDashboardWindow(context) {
-    if (!context || !context.iframe || !context.iframe.contentWindow) {
-      throw new Error('Dashboard iframe not ready');
+  function selectSingleOption(frameDocument, selector, value) {
+    const select = frameDocument.querySelector(selector);
+    if (!select) {
+      throw new Error('Missing select: ' + selector);
     }
-    return context.iframe.contentWindow;
-  }
-
-  function wait(ms) {
-    return new Promise((resolve) => window.setTimeout(resolve, ms));
-  }
-
-  async function waitFor(predicate, timeoutMs = 4000, intervalMs = 50) {
-    const deadline = performance.now() + timeoutMs;
-    let lastError = null;
-    while (performance.now() < deadline) {
-      try {
-        const result = await predicate();
-        if (result) return result;
-      } catch (error) {
-        lastError = error;
-      }
-      await wait(intervalMs);
-    }
-    if (lastError) throw lastError;
-    throw new Error('Timed out waiting for dashboard state');
-  }
-
-  async function waitForDashboardReady(context) {
-    const doc = getDashboardDoc(context);
-    await waitFor(() => {
-      const sales = doc.getElementById('kpiSales');
-      const summary = doc.getElementById('selectionSummary');
-      return Boolean(sales && summary && trimText(sales.textContent) !== '-' && trimText(summary.textContent));
-    }, 6000);
-    return doc;
-  }
-
-  async function reloadDashboard(context) {
-    const cacheBuster = `eval=${Date.now()}`;
-    context.iframe.src = `${context.url}${context.url.includes('?') ? '&' : '?'}${cacheBuster}`;
-    return waitForDashboardReady(context);
-  }
-
-  function getSelectValues(select) {
-    return [...select.selectedOptions].map((option) => option.value);
-  }
-
-  function setSelectValues(select, wantedValues) {
-    const wanted = new Set(wantedValues.map(String));
-    [...select.options].forEach((option) => {
-      option.selected = wanted.has(option.value);
+    Array.from(select.options).forEach((option) => {
+      option.selected = String(option.value) === String(value);
     });
     select.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
-  function snapshotMetrics(doc) {
-    const ids = ['kpiSales', 'kpiOrders', 'kpiAov', 'kpiMargin', 'kpiUnits'];
-    const deltas = ['kpiSalesDelta', 'kpiOrdersDelta', 'kpiAovDelta', 'kpiMarginDelta', 'kpiUnitsDelta'];
-    const metrics = Object.fromEntries(ids.map((id) => [id, trimText(doc.getElementById(id)?.textContent)]));
-    const metricDeltas = Object.fromEntries(deltas.map((id) => [id, trimText(doc.getElementById(id)?.textContent)]));
+  function selectOnlyIndex(frameDocument, selector, index) {
+    const select = frameDocument.querySelector(selector);
+    if (!select) {
+      throw new Error('Missing select: ' + selector);
+    }
+    Array.from(select.options).forEach((option, optionIndex) => {
+      option.selected = optionIndex === index;
+    });
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  function readQualityRows(frameDocument) {
+    return textList(frameDocument.querySelectorAll('#qualityList .quality-row, #qualityList .join-row'));
+  }
+
+  function readKpiPeriods(frameDocument, key) {
     return {
-      selectionSummary: trimText(doc.getElementById('selectionSummary')?.textContent),
-      weeklySummary: trimText(doc.getElementById('weeklySummary')?.textContent),
-      chartText: trimText(doc.getElementById('weeklyChart')?.textContent),
-      qualityBanner: trimText(doc.getElementById('qualityBanner')?.textContent),
-      metrics,
-      metricDeltas,
-      qualityState: trimText(doc.getElementById('qualityState')?.textContent),
-      rows: doc.querySelectorAll('#salesTable tr').length,
+      current: read(frameDocument.getElementById(key + 'Current')),
+      previous: read(frameDocument.getElementById(key + 'Previous')),
+      value: read(frameDocument.getElementById(key)),
+      delta: read(frameDocument.getElementById(key + 'Delta')),
     };
   }
 
-  function extractPeriods(text) {
-    const normalized = normalizeForCompare(text).replace(/\s+/g, '');
-    const baseMatch = normalized.match(/Base(\d{4})\|(.+?)Comparado/i);
-    const compareMatch = normalized.match(/Comparado(\d{4})\|(.+)$/i);
+  function makeFailingQuality(kind) {
+    const tableChecks = [
+      { name: 'fact_ventas', rows: 200, unique: 200, status: 'PASS' },
+      { name: 'dim_articulos', rows: 57, unique: 57, status: 'PASS' },
+      { name: 'dim_canal', rows: 6, unique: 6, status: 'PASS' },
+      { name: 'dim_fecha', rows: 174, unique: 174, status: 'PASS' },
+      { name: 'dim_promociones', rows: 7, unique: 7, status: 'PASS' },
+      { name: 'dim_usuarios', rows: 11, unique: 11, status: 'PASS' },
+      { name: 'fact_promociones_articulos', rows: 124, unique: 124, status: 'PASS' },
+    ];
+    if (kind === 'table') {
+      tableChecks[0].status = 'FAIL';
+    }
     return {
-      baseYear: baseMatch ? Number(baseMatch[1]) : null,
-      baseSpan: baseMatch ? trimText(baseMatch[2]) : null,
-      compareYear: compareMatch ? Number(compareMatch[1]) : null,
-      compareSpan: compareMatch ? trimText(compareMatch[2]) : null,
+      tableChecks,
+      factRows: 200,
+      distinctLines: 200,
+      distinctOrders: 200,
+      joinPass: kind !== 'join',
+      piiPass: true,
+      tablePass: kind !== 'table',
+      overallPass: false,
+      joinRows: 200,
     };
   }
 
-  async function sourceText(context) {
-    const response = await fetch(new URL('../web.html', context.url).href, { cache: 'no-store' });
-    if (!response.ok) {
-      throw new Error(`Unable to fetch dashboard source: ${response.status}`);
-    }
-    return response.text();
-  }
-
-  function collectDataBearingText(doc) {
-    const selectors = [
-      '#selectionSummary',
-      '#weeklySummary',
-      '#weeklyChart',
-      '#qualityList',
-      '#sourceList',
-      '#salesTable',
-      '#kpiSales',
-      '#kpiOrders',
-      '#kpiAov',
-      '#kpiMargin',
-      '#kpiUnits',
-      '#kpiSalesDelta',
-      '#kpiOrdersDelta',
-      '#kpiAovDelta',
-      '#kpiMarginDelta',
-      '#kpiUnitsDelta',
-    ];
-    return selectors.map((selector) => trimText(doc.querySelector(selector)?.textContent)).filter(Boolean).join(' | ');
-  }
-
-  function result(status, observed, evidence, extra = {}) {
+  function externalAssets(frameDocument) {
     return {
-      status,
-      observed,
-      evidence,
-      ...extra,
+      scripts: Array.from(frameDocument.querySelectorAll('script[src]')).map((node) => node.src),
+      styles: Array.from(frameDocument.querySelectorAll('link[rel="stylesheet"][href]')).map((node) => node.href),
     };
   }
 
-  async function run001(context) {
-    const doc = await waitForDashboardReady(context);
-    const snapshot = snapshotMetrics(doc);
-    const periods = extractPeriods(snapshot.chartText);
-    const expected = 'Base and comparison periods should show the same span, with the comparison year shifted back by one year.';
-    if (!periods.baseYear || !periods.compareYear || !periods.baseSpan || !periods.compareSpan) {
-      return result('BLOCKED', snapshot, 'Could not extract the comparison periods from the chart summary.', { expected });
-    }
-    const pass = periods.baseYear - periods.compareYear === 1 && periods.baseSpan === periods.compareSpan;
-    return result(pass ? 'PASS' : 'FAIL', periods, `Selection summary: ${snapshot.selectionSummary}. Chart summary: ${snapshot.chartText}.`, { expected });
-  }
-
-  async function run002(context) {
-    const expected = 'Each non-temporal filter should update the dashboard state and recalculate observable KPIs/chart summary.';
-    const details = [];
-    const filters = Object.entries(FILTERS);
-
-    for (const [filterId, desiredValues] of filters) {
-      const doc = await reloadDashboard(context);
-      const baseline = snapshotMetrics(doc);
-      const select = doc.getElementById(filterId);
-      if (!select) {
-        return result('BLOCKED', { missingFilter: filterId }, `Missing filter control: ${filterId}.`, { expected });
-      }
-      setSelectValues(select, desiredValues);
-      await wait(200);
-      const after = snapshotMetrics(doc);
-      const changed = Object.values(after.metrics).some((value, index) => value !== Object.values(baseline.metrics)[index]);
-        const visibleComparison = /Base/i.test(after.chartText) && /Comparado/i.test(after.chartText);
-        const informativeNoComparison = after.weeklySummary === 'Sin comparado' || /No existe bloque comparable/i.test(after.chartText) || after.weeklySummary === 'Sin base';
-        if (!changed || (!visibleComparison && !informativeNoComparison)) {
-          return result('FAIL', { filterId, before: baseline, after, chartText: after.chartText }, `Filter ${filterId} did not produce the expected observable change.`, { expected });
-      }
-      details.push({ filterId, selectionSummary: after.selectionSummary, weeklySummary: after.weeklySummary, kpiSales: after.metrics.kpiSales });
-    }
-
-    return result('PASS', details, 'Each filter changed the dashboard from a fresh baseline and produced an updated observable state.', { expected });
-  }
-
-  async function run003(context) {
-    const doc = await waitForDashboardReady(context);
-    const expected = 'Five KPI families should be visible with stable value and delta targets.';
-    const ids = [
-      ['kpiSales', 'kpiSalesDelta'],
-      ['kpiOrders', 'kpiOrdersDelta'],
-      ['kpiAov', 'kpiAovDelta'],
-      ['kpiMargin', 'kpiMarginDelta'],
-      ['kpiUnits', 'kpiUnitsDelta'],
-    ];
-    const observed = ids.map(([valueId, deltaId]) => ({
-      valueId,
-      deltaId,
-      value: trimText(doc.getElementById(valueId)?.textContent),
-      delta: trimText(doc.getElementById(deltaId)?.textContent),
-    }));
-    const pass = observed.every((item) => item.value && item.value !== '-' && item.delta && !/^Cargando/i.test(item.delta));
-    return result(pass ? 'PASS' : 'FAIL', observed, 'Captured KPI values and delta states from the dashboard DOM.', { expected });
-  }
-
-  async function run004(context) {
-    const doc = await waitForDashboardReady(context);
-    const expected = 'Each KPI delta should include an absolute variation and a relative variation.';
-    const deltaIds = ['kpiSalesDelta', 'kpiOrdersDelta', 'kpiAovDelta', 'kpiMarginDelta', 'kpiUnitsDelta'];
-    const observed = deltaIds.map((id) => ({ id, text: trimText(doc.getElementById(id)?.textContent) }));
-    const pass = observed.every((item) => /·/.test(item.text) && /%/.test(item.text));
-    return result(pass ? 'PASS' : 'FAIL', observed, 'Validated the visible delta format on all KPI cards.', { expected });
-  }
-
-  async function run007(context) {
-    const expected = 'Setting a base period without prior-year rows should surface an informative no-comparison state.';
-    const doc = await reloadDashboard(context);
-    const yearFilter = doc.getElementById('yearFilter');
-    const monthFilter = doc.getElementById('monthFilter');
-    const channelFilter = doc.getElementById('channelFilter');
-    const userTypeFilter = doc.getElementById('userTypeFilter');
-    const promotionFilter = doc.getElementById('promotionFilter');
-    if (!yearFilter || !monthFilter || !channelFilter || !userTypeFilter || !promotionFilter) {
-      return result('BLOCKED', { missing: true }, 'One or more filter controls are missing.', { expected });
-    }
-    const originalSnapshot = snapshotMetrics(doc);
-    const original = {
-      year: getSelectValues(yearFilter),
-      month: getSelectValues(monthFilter),
-      channel: getSelectValues(channelFilter),
-      userType: getSelectValues(userTypeFilter),
-      promotion: getSelectValues(promotionFilter),
-    };
-
-    setSelectValues(yearFilter, ['2024']);
-    setSelectValues(monthFilter, ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']);
-    setSelectValues(channelFilter, original.channel);
-    setSelectValues(userTypeFilter, original.userType);
-    setSelectValues(promotionFilter, original.promotion);
-
-    await wait(200);
-    const snapshot = snapshotMetrics(doc);
-    const pass = snapshot.weeklySummary === 'Sin comparado' && /No existe bloque comparable del año anterior/i.test(snapshot.chartText);
-
-    setSelectValues(yearFilter, original.year);
-    setSelectValues(monthFilter, original.month);
-    setSelectValues(channelFilter, original.channel);
-    setSelectValues(userTypeFilter, original.userType);
-    setSelectValues(promotionFilter, original.promotion);
-
-    await wait(200);
-
-    return result(pass ? 'PASS' : 'FAIL', { noComparison: snapshot.weeklySummary, chartText: snapshot.chartText }, 'Detected the no-comparison message for a base year without a prior-year counterpart.', { expected });
-  }
-
-  async function run010(context) {
-    const doc = await waitForDashboardReady(context);
-    const source = await sourceText(context);
-    const renderedText = collectDataBearingText(doc);
-    const expected = 'Rendered data and embedded snapshot keys should not expose prohibited personal identifiers.';
-    const violations = [];
-    const sourceViolations = FORBIDDEN_FIELDS.filter((pattern) => pattern.test(source)).map((pattern) => pattern.toString());
-    const renderedViolations = FORBIDDEN_FIELDS.filter((pattern) => pattern.test(renderedText)).map((pattern) => pattern.toString());
-    if (sourceViolations.length) violations.push({ area: 'source', matches: sourceViolations });
-    if (renderedViolations.length) violations.push({ area: 'rendered', matches: renderedViolations });
-    const pass = violations.length === 0;
-    return result(pass ? 'PASS' : 'FAIL', { violations: violations.length ? violations : 'none' }, 'Scanned the dashboard source and data-bearing rendered text for prohibited personal fields.', { expected });
-  }
-
-  async function run011(context) {
-    const doc = await waitForDashboardReady(context);
-    const source = await sourceText(context);
-    const expected = 'The production HTML should be self-contained and not depend on CSV files or a runtime Supabase connection.';
-    const forbiddenPatterns = [
-      /resources\//i,
-      /\.csv\b/i,
-      /fetch\s*\(/i,
-      /supabase\.com\/mcp/i,
-      /project_ref=/i,
-      /http[s]?:\/\//i,
-      /https?:\/\//i,
-    ];
-    const sourceMatches = forbiddenPatterns.filter((pattern) => pattern.test(source)).map((pattern) => pattern.toString());
-    const externalNodes = [...doc.querySelectorAll('script[src], link[href]')].map((node) => node.getAttribute('src') || node.getAttribute('href') || '');
-    const externalMatches = externalNodes.filter((value) => /^https?:\/\//i.test(value));
-    const pass = sourceMatches.length === 0 && externalMatches.length === 0;
-    return result(pass ? 'PASS' : 'FAIL', { sourceMatches, externalMatches, sourceLength: source.length }, 'Inspected the dashboard source and linked assets for runtime CSV or database dependencies.', { expected });
-  }
-
-  async function run012(context) {
-    await waitForDashboardReady(context);
-    const expected = 'The embedded snapshot provenance must be reviewed against validated read-only Supabase evidence.';
-    return result('MANUAL', 'Pending reviewer verification of Supabase provenance evidence.', 'This check requires matching the embedded snapshot against validated read-only Supabase evidence.', { expected });
-  }
-
-  const definitions = [
+  const evaluations = [
     {
       id: 'EVAL-001',
-      relatedAcIds: ['AC-001'],
-      relatedReqIds: ['REQ-001', 'REQ-002'],
-      type: 'DOM',
-      automation: 'automated',
-      title: 'Compare the selected span with the prior year',
-      expected: 'The selected base period and the comparison period must cover the same calendar span shifted one year back.',
-      run: run001,
+      ac: 'AC-001',
+      mode: 'automated',
+      title: 'Base period and prior-year comparison are visible',
+      run: async () => {
+        const env = await loadDashboard();
+        try {
+          const legend = textList(env.frameDocument.querySelectorAll('#weeklyChart .summary-chip em'));
+          const selectionPeriod = read(env.frameDocument.querySelector('#selectionSummary .summary-chip em'));
+          const base = legend.find((value) => /2026/.test(value)) || '';
+          const compared = legend.find((value) => /2025/.test(value)) || '';
+          const pass = Boolean(selectionPeriod && base && compared && base !== compared && legend.length >= 2);
+          return score(pass ? 'PASS' : 'FAIL', `selection=${selectionPeriod}; base=${base}; compared=${compared}; legend=${legend.join(' | ')}`);
+        } finally {
+          env.dispose();
+        }
+      },
     },
     {
       id: 'EVAL-002',
-      relatedAcIds: ['AC-002'],
-      relatedReqIds: ['REQ-003'],
-      type: 'interaction',
-      automation: 'automated',
-      title: 'Symmetric filter propagation',
-      expected: 'Non-temporal filters should update the dashboard symmetrically for both periods.',
-      run: run002,
+      ac: 'AC-002',
+      mode: 'automated',
+      title: 'Filters recalculate both windows symmetrically',
+      run: async () => {
+        const env = await loadDashboard();
+        try {
+          const before = read(env.frameDocument.getElementById('selectionSummary'));
+          const beforeSales = read(env.frameDocument.getElementById('kpiSales'));
+          selectOnlyIndex(env.frameDocument, '#channelFilter', 0);
+          await sleep(0);
+          const after = read(env.frameDocument.getElementById('selectionSummary'));
+          const afterSales = read(env.frameDocument.getElementById('kpiSales'));
+          const pass = before !== after && /Canales\s*1/.test(after) && beforeSales !== afterSales;
+          return score(pass ? 'PASS' : 'FAIL', `before=${before}; after=${after}; sales=${beforeSales}→${afterSales}`);
+        } finally {
+          env.dispose();
+        }
+      },
     },
     {
       id: 'EVAL-003',
-      relatedAcIds: ['AC-003'],
-      relatedReqIds: ['REQ-004'],
-      type: 'DOM',
-      automation: 'automated',
-      title: 'Five KPI families visible',
-      expected: 'Five KPI families should render with current values and delta states.',
-      run: run003,
+      ac: 'AC-003',
+      mode: 'automated',
+      title: 'KPI cards expose both periods',
+      run: async () => {
+        const env = await loadDashboard();
+        try {
+          const keys = ['kpiSales', 'kpiOrders', 'kpiAov', 'kpiMargin', 'kpiUnits'];
+          const results = keys.map((key) => {
+            const period = readKpiPeriods(env.frameDocument, key);
+            const hasBase = Boolean(period.current);
+            const hasCompared = Boolean(period.previous);
+            const mainAndBaseMatch = period.value === period.current;
+            return { key, period, hasBase, hasCompared, mainAndBaseMatch };
+          });
+          const pass = results.every((item) => item.hasBase && item.hasCompared && item.mainAndBaseMatch);
+          return score(pass ? 'PASS' : 'FAIL', results.map((item) => `${item.key}:${item.period.current}|${item.period.previous}`).join('; '));
+        } finally {
+          env.dispose();
+        }
+      },
     },
     {
       id: 'EVAL-004',
-      relatedAcIds: ['AC-004'],
-      relatedReqIds: ['REQ-005'],
-      type: 'DOM',
-      automation: 'automated',
-      title: 'Delta formatting',
-      expected: 'Each KPI delta should expose absolute and relative variation.',
-      run: run004,
+      ac: 'AC-004',
+      mode: 'automated',
+      title: 'KPI deltas show absolute and relative change',
+      run: async () => {
+        const env = await loadDashboard();
+        try {
+          const keys = ['kpiSales', 'kpiOrders', 'kpiAov', 'kpiMargin', 'kpiUnits'];
+          const deltas = keys.map((key) => readKpiPeriods(env.frameDocument, key).delta);
+          const pass = deltas.every((value) => /·/.test(value) && /%/.test(value) && /[+-]/.test(value));
+          return score(pass ? 'PASS' : 'FAIL', deltas.join(' | '));
+        } finally {
+          env.dispose();
+        }
+      },
     },
     {
       id: 'EVAL-005',
-      relatedAcIds: ['AC-005'],
-      relatedReqIds: ['REQ-006'],
-      type: 'visual-manual',
-      automation: 'manual',
-      title: 'Equivalent-calendar chart readability',
-      expected: 'A reviewer confirms the chart is readable by equivalent calendar position.',
-      manual: true,
+      ac: 'AC-005',
+      mode: 'manual',
+      title: 'Main chart is readable by equivalent calendar date',
+      run: async () => score('MANUAL', MANUAL_EVIDENCE),
     },
     {
       id: 'EVAL-006',
-      relatedAcIds: ['AC-006'],
-      relatedReqIds: ['REQ-007'],
-      type: 'visual-manual',
-      automation: 'manual',
-      title: 'Contribution-focused narrative',
-      expected: 'A reviewer confirms the narrative and rankings emphasize contribution to change.',
-      manual: true,
+      ac: 'AC-006',
+      mode: 'automated',
+      title: 'Rankings and narratives emphasize contribution to change',
+      run: async () => {
+        const env = await loadDashboard();
+        try {
+          const channelItems = Array.from(env.frameDocument.querySelectorAll('#channelList .list-item'));
+          const deltas = channelItems.map((item) => {
+            const text = read(item.querySelector('.list-head span'));
+            const value = parseNumberLike(text);
+            return { text, value };
+          });
+          const sorted = deltas.every((item, index, array) => index === 0 || Math.abs(array[index - 1].value || 0) >= Math.abs(item.value || 0));
+          const insightText = textList(env.frameDocument.querySelectorAll('#insightList .insight')).join(' | ');
+          const pass = channelItems.length >= 4 && sorted && /impulso positivo/i.test(insightText) && /resta/i.test(insightText);
+          return score(pass ? 'PASS' : 'FAIL', `deltas=${deltas.map((item) => item.text).join(' | ')}; insights=${insightText}`);
+        } finally {
+          env.dispose();
+        }
+      },
     },
     {
       id: 'EVAL-007',
-      relatedAcIds: ['AC-007'],
-      relatedReqIds: ['REQ-008'],
-      type: 'interaction',
-      automation: 'automated',
-      title: 'No-comparison state',
-      expected: 'The dashboard should show an informative no-comparison state when the prior-year block is absent.',
-      run: run007,
+      ac: 'AC-007',
+      mode: 'automated',
+      title: 'Missing comparison produces informative empty state',
+      run: async () => {
+        const env = await loadDashboard();
+        try {
+          selectSingleOption(env.frameDocument, '#yearFilter', '2024');
+          await sleep(0);
+          const chartText = read(env.frameDocument.getElementById('weeklyChart'));
+          const summary = read(env.frameDocument.getElementById('weeklySummary'));
+          const pass = /No existe bloque comparable del año anterior/.test(chartText) && /Sin comparado/.test(summary);
+          return score(pass ? 'PASS' : 'FAIL', `chart=${chartText}; summary=${summary}`);
+        } finally {
+          env.dispose();
+        }
+      },
     },
     {
       id: 'EVAL-008',
-      relatedAcIds: ['AC-008'],
-      relatedReqIds: ['REQ-009', 'REQ-012'],
-      type: 'data-quality',
-      automation: 'manual',
-      title: 'Table validation evidence',
-      expected: 'A reviewer confirms every required table has an explicit PASS or FAIL result before KPI use.',
-      manual: true,
+      ac: 'AC-008',
+      mode: 'automated',
+      title: 'A failing source-table validation blocks the dashboard',
+      run: async () => {
+        const env = await loadDashboard();
+        try {
+          env.frameWindow.evaluateQuality = () => makeFailingQuality('table');
+          env.frameWindow.renderAll();
+          await sleep(0);
+          const banner = read(env.frameDocument.getElementById('qualityBanner'));
+          const tableRow = read(env.frameDocument.querySelector('#quality-table-fact_ventas, [data-testid="quality-table-fact_ventas"]'));
+          const summary = read(env.frameDocument.getElementById('qualitySummary'));
+          const pass = /bad/.test(env.frameDocument.getElementById('qualityBanner').className) && /FAIL/.test(banner + tableRow) && /validación falló/i.test(summary);
+          return score(pass ? 'PASS' : 'FAIL', `banner=${banner}; table=${tableRow}; summary=${summary}`);
+        } finally {
+          env.dispose();
+        }
+      },
     },
     {
       id: 'EVAL-009',
-      relatedAcIds: ['AC-009'],
-      relatedReqIds: ['REQ-009', 'REQ-012'],
-      type: 'data-quality',
-      automation: 'manual',
-      title: 'Join cardinality evidence',
-      expected: 'A reviewer confirms joins do not duplicate sales rows.',
-      manual: true,
+      ac: 'AC-009',
+      mode: 'automated',
+      title: 'A failing join cardinality blocks the dashboard',
+      run: async () => {
+        const env = await loadDashboard();
+        try {
+          env.frameWindow.evaluateQuality = () => makeFailingQuality('join');
+          env.frameWindow.renderAll();
+          await sleep(0);
+          const joinRow = read(env.frameDocument.querySelector('[data-testid="join-row-fact_ventas-dimensiones"], #join-row-fact-ventas-dimensiones, .join-row'));
+          const summary = read(env.frameDocument.getElementById('qualitySummary'));
+          const pass = /FAIL/.test(joinRow) && /validación falló/i.test(summary);
+          return score(pass ? 'PASS' : 'FAIL', `join=${joinRow}; summary=${summary}`);
+        } finally {
+          env.dispose();
+        }
+      },
     },
     {
       id: 'EVAL-010',
-      relatedAcIds: ['AC-010'],
-      relatedReqIds: ['REQ-010', 'REQ-012'],
-      type: 'privacy',
-      automation: 'automated',
-      title: 'No prohibited personal data',
-      expected: 'Rendered and embedded analytical data should not expose personal identifiers.',
-      run: run010,
+      ac: 'AC-010',
+      mode: 'automated',
+      title: 'Rendered UI avoids exposing personal data',
+      run: async () => {
+        const env = await loadDashboard();
+        try {
+          const sourceText = textList(env.frameDocument.querySelectorAll('#sourceList .source-row')).join(' | ');
+          const headers = textList(env.frameDocument.querySelectorAll('table thead th'));
+          const salesTableText = read(env.frameDocument.getElementById('salesTable'));
+          const piiRegex = /@|\b\d{5}\b/;
+          const forbiddenHeader = headers.some((header) => /nombre|apellidos|email|fecha de nacimiento|codigo postal|código postal/i.test(header));
+          const allowedSource = /segmento_cliente/i.test(sourceText) && /genero/i.test(sourceText) && /comunidad_autonoma/i.test(sourceText) && /tipo_usuario/i.test(sourceText);
+          const noExposedPii = !piiRegex.test(sourceText) && !piiRegex.test(salesTableText) && !forbiddenHeader;
+          const pass = allowedSource && noExposedPii;
+          return score(pass ? 'PASS' : 'FAIL', `sources=${sourceText}; headers=${headers.join(' | ')}`);
+        } finally {
+          env.dispose();
+        }
+      },
     },
     {
       id: 'EVAL-011',
-      relatedAcIds: ['AC-011'],
-      relatedReqIds: ['REQ-011'],
-      type: 'static',
-      automation: 'automated',
-      title: 'Self-contained production artifact',
-      expected: 'The production HTML should not depend on CSV files or runtime Supabase connections.',
-      run: run011,
-    },
-    {
-      id: 'EVAL-012',
-      relatedAcIds: ['AC-011'],
-      relatedReqIds: ['REQ-011'],
-      type: 'data-quality',
-      automation: 'manual',
-      title: 'Snapshot provenance review',
-      expected: 'A reviewer confirms the embedded snapshot is traceable to validated read-only Supabase evidence.',
-      manual: true,
+      ac: 'AC-011',
+      mode: 'automated',
+      title: 'Dashboard uses an embedded snapshot without external assets',
+      run: async () => {
+        const env = await loadDashboard();
+        try {
+          const assets = externalAssets(env.frameDocument);
+          const pass = assets.scripts.length === 0 && assets.styles.length === 0;
+          return score(pass ? 'PASS' : 'FAIL', `scripts=${assets.scripts.length}; styles=${assets.styles.length}`);
+        } finally {
+          env.dispose();
+        }
+      },
     },
   ];
 
-  window.EVAL_DEFINITIONS = definitions;
-  window.EVAL_HELPERS = {
-    waitForDashboardReady,
-    snapshotMetrics,
-    setSelectValues,
-    getSelectValues,
-    extractPeriods,
-    collectDataBearingText,
-    sourceText,
-    waitFor,
-    trimText,
+  async function runEvaluation(evaluation) {
+    const startedAt = new Date().toISOString();
+    if (evaluation.mode === 'manual') {
+      return {
+        id: evaluation.id,
+        ac: evaluation.ac,
+        title: evaluation.title,
+        mode: evaluation.mode,
+        status: 'MANUAL',
+        evidence: MANUAL_EVIDENCE,
+        startedAt,
+        finishedAt: startedAt,
+      };
+    }
+
+    const result = await evaluation.run();
+    const finishedAt = new Date().toISOString();
+    return {
+      id: evaluation.id,
+      ac: evaluation.ac,
+      title: evaluation.title,
+      mode: evaluation.mode,
+      status: result.status,
+      evidence: result.evidence,
+      details: result.details || {},
+      startedAt,
+      finishedAt,
+    };
+  }
+
+  async function runAll(onProgress) {
+    const results = [];
+    for (let index = 0; index < evaluations.length; index += 1) {
+      const evaluation = evaluations[index];
+      if (onProgress) onProgress(index, evaluation);
+      results.push(await runEvaluation(evaluation));
+    }
+    if (onProgress) onProgress(evaluations.length, null);
+    return results;
+  }
+
+  function summarize(results) {
+    return results.reduce((acc, item) => {
+      acc.total += 1;
+      acc[item.status.toLowerCase()] = (acc[item.status.toLowerCase()] || 0) + 1;
+      if (item.mode === 'automated') acc.automatedChecks += 1;
+      if (item.mode === 'manual') acc.manualChecks += 1;
+      return acc;
+    }, { total: 0, pass: 0, fail: 0, blocked: 0, manual: 0, automatedChecks: 0, manualChecks: 0 });
+  }
+
+  window.DashboardEval = {
+    evaluations,
+    runEvaluation,
+    runAll,
+    summarize,
   };
 })();

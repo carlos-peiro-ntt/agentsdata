@@ -1131,27 +1131,16 @@ Antes de modificar el dashboard, crea el contrato de evaluación a partir de la 
 ```text
 Read the approved specification in specs/dashboard-evolution.md and create evals/eval-plan.md.
 
-Do not implement the dashboard and do not write the harness yet. Derive the evaluation plan only from approved REQ and AC identifiers. Follow AGENTS.md and rules/dashboard.md.
+Create the simplest reproducible evaluation mechanism for this repository.
 
-For every acceptance criterion, record:
+Automate every acceptance criterion that can be verified deterministically.
+Leave external or subjective validations as MANUAL.
 
-- Eval ID: EVAL-001, EVAL-002, ...
-- Related REQ and AC identifiers
-- Evaluation type: static, DOM, interaction, data-quality, privacy, visual-manual, or external-manual
-- Preconditions and fixture/state required
-- Action performed
-- Observable result
-- Oracle: the exact rule for PASS, FAIL, or BLOCKED
-- Evidence to capture
-- Automation status: automated or manual, with justification
-
-Include a coverage matrix with one row per AC. Every AC must map to at least one eval. Do not convert unknown behavior into an assumption. If an AC is ambiguous or impossible to evaluate, mark the eval BLOCKED and stop before implementation so the spec can be corrected and re-approved.
-
-The plan must distinguish:
-
-- Browser-automatable checks: document structure, KPI presence, filter behavior, empty/error states, responsive hooks, and absence of prohibited personal data in rendered or embedded analytical data.
-- Tool-evidence checks: Supabase table PASS/FAIL results, join cardinality, and validated KPI inputs.
-- External/manual checks: Confluence parent, space, title, documentation content, and visual judgments that do not yet have a reliable automated oracle.
+Report:
+- coverage
+- PASS / FAIL
+- remaining MANUAL checks
+- evidence
 ```
 
 Revisa que ningún criterio de aceptación quede sin cobertura. El objetivo es definir los oráculos antes de ver la implementación y reducir evaluaciones diseñadas para confirmar el código ya escrito.
@@ -1161,69 +1150,76 @@ Revisa que ningún criterio de aceptación quede sin cobertura. El objetivo es d
 Vuelve al modo **Agent** y envía:
 
 ```text
-Implement the approved specification in specs/dashboard-evolution.md using evals/eval-plan.md as the evaluation contract.
+Implement the approved specification in specs/dashboard-evolution.md.
 
-Treat the approved spec as the source of truth for scope and acceptance. Follow AGENTS.md and rules/dashboard.md. Do not implement out-of-scope or deferred capabilities.
+Treat the approved specification as the single source of truth for scope and acceptance. Follow AGENTS.md and rules/dashboard.md. Do not implement out-of-scope or deferred capabilities.
 
 Before editing:
 
-- Confirm that the spec status is Approved and that no blocking TBD or open question remains.
-- Confirm that every AC is covered by at least one EVAL and that none is BLOCKED.
-- Stop and report the blocker if the repository, validated data, or evaluation plan conflicts with the spec. Do not silently reinterpret a requirement.
+- Confirm that the specification status is Approved.
+- Confirm that there are no blocking TBD items or unresolved decisions.
+- Stop and report any conflict between the specification, repository, validated data, or project rules. Do not reinterpret requirements.
 
 During implementation:
 
 - Implement only the approved scope.
 - Preserve {name}.html as the single self-contained production artifact.
 - Apply the required privacy and data-quality gates before calculating KPIs or publishing documentation.
-- Add stable, non-visible data-testid attributes to filters, KPI values, chart containers, the data-quality banner, and empty/error states where needed by approved evals.
-- Expose only non-sensitive observable state needed for testing. Do not expose raw records, personal fields, credentials, or a Supabase runtime connection.
-- Do not weaken an oracle or change an acceptance criterion merely to make the implementation pass.
+- Ensure the implementation exposes enough observable behaviour for the evaluation step (for example, stable identifiers or predictable UI elements where appropriate).
+- Do not expose raw records, personal data, credentials, or a runtime Supabase connection.
+- Do not modify the approved requirements or acceptance criteria to simplify the implementation.
 
-Do not create the harness in this step. Report the implemented REQ identifiers, modified files, data-quality results, and any conflict with the approved spec.
+Do not create the evaluation mechanism in this step.
+
+At the end, report:
+
+- Implemented REQ identifiers.
+- Modified files.
+- Data-quality results.
+- Any deviations or implementation limitations.
 ```
-
-Los atributos `data-testid` forman un contrato de observabilidad para las pruebas, pero no deben alterar el contenido visible ni incluir datos de negocio sensibles.
 
 ### Parte 3 — Crear el harness sin dependencias
 
 Con la implementación disponible, envía:
 
 ```text
-Create a zero-dependency browser evaluation harness for the implemented dashboard.
+Create the simplest reproducible evaluation mechanism for the implemented dashboard.
 
-Use specs/dashboard-evolution.md and evals/eval-plan.md as the authoritative inputs. Create:
+Use specs/dashboard-evolution.md, the current implementation, evals/eval-plan.md, AGENTS.md, and rules/dashboard.md as authoritative inputs.
 
-- evals/harness.html — runner UI and result summary
-- evals/evals.js — eval definitions and execution logic
-- evals/README.md — run instructions, coverage, limitations, and evidence workflow
-- evals/results/.gitkeep — placeholder for exported evaluation evidence
+Do not modify the approved specification or weaken acceptance criteria.
 
-Harness requirements:
+Create the files needed to run the evaluation locally. Prefer a zero-dependency browser-based solution if it fits the repository, but use the simplest reliable mechanism.
 
-- Run from the same local HTTP origin as the dashboard.
-- Load ../{name}.html in an iframe; do not duplicate or embed the dashboard implementation in the harness.
-- Provide Run all and Run failed controls.
-- Show totals for PASS, FAIL, BLOCKED, and MANUAL.
-- For every result show EVAL ID, related AC IDs, expected result, observed result, duration, and concise evidence.
-- Keep eval definitions independent so a new EVAL can be added without changing the runner.
-- Catch evaluator exceptions and report them as BLOCKED, never as PASS.
-- Keep manual evals as MANUAL until a reviewer records PASS, FAIL, or BLOCKED with evidence in the harness UI; never default them to PASS.
-- Allow results to be copied or exported as JSON without sending them to a remote service.
-- Use only native HTML, CSS, and JavaScript. Do not add npm packages, CDNs, analytics, or runtime database connections.
+The evaluation must:
 
-Implement the automated evals defined in evals/eval-plan.md, including where applicable:
+- Check every acceptance criterion that can be verified deterministically.
+- Mark as MANUAL any check that depends on Supabase, Confluence, visual judgment, business interpretation, or external evidence.
+- Mark as BLOCKED any check that cannot be evaluated because the spec is ambiguous or the implementation lacks observable behavior.
+- Report PASS, FAIL, BLOCKED, or MANUAL for every evaluation.
+- Capture concise evidence for each result.
+- Export or document the results in a reusable way.
+- Avoid exposing credentials, raw records, personal data, or runtime service connections.
 
-- Static checks for a self-contained production HTML artifact and prohibited external dependencies.
-- DOM checks using stable data-testid selectors.
-- Interaction checks that change each available filter and verify the expected observable KPI/chart state changes.
-- Empty and error-state checks when the eval plan defines a safe reproducible fixture or state.
-- Privacy checks against rendered content and embedded analytical data keys/values. Avoid treating explanatory source comments as leaked records.
-- Data-quality banner checks against the validated status recorded during implementation.
+Automate only reliable checks, such as:
 
-Do not fake automation. Keep visual, Confluence, Supabase query, and other external checks marked MANUAL unless the harness has a deterministic local oracle and evidence. Do not expose credentials or personal data in fixtures, logs, errors, or exported results.
+- required KPI elements exist;
+- required chart containers exist;
+- required filters exist;
+- filter interactions update observable dashboard state;
+- the data-quality banner exists;
+- rendered content does not expose obvious personal data patterns;
+- the dashboard does not load prohibited external scripts or styles.
 
-After creating the files, report the automated coverage ratio as automated AC / total AC and list every remaining manual or blocked eval with its reason.
+After creating the evaluation mechanism, report:
+
+- files created;
+- how to run the evaluation locally;
+- automated checks;
+- manual checks;
+- blocked checks;
+- coverage against the approved acceptance criteria.
 ```
 
 ### Parte 4 — Ejecutar el harness

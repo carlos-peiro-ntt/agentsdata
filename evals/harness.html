@@ -1,164 +1,118 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard Evaluation Harness</title>
+  <title>Dashboard Eval Harness</title>
   <style>
     :root {
-      color-scheme: light;
-      --bg: #f4f7fb;
-      --panel: #ffffff;
-      --panel-alt: #eef3f9;
-      --line: #d9e2ef;
-      --text: #122033;
-      --muted: #5d6c82;
-      --accent: #2457d6;
-      --accent-2: #0b8a6f;
-      --warn: #c47b00;
-      --fail: #c43f3f;
-      --manual: #6f5bd2;
-      --shadow: 0 12px 34px rgba(15, 30, 52, 0.08);
-      --radius: 18px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      --sans: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      --bg: #0b1220;
+      --panel: #121c2e;
+      --line: rgba(159, 175, 206, 0.16);
+      --text: #eef4ff;
+      --muted: #98a8c0;
+      --pass: #46d7b2;
+      --fail: #ff6b8a;
+      --warn: #ffd38b;
+      --shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+      --radius: 20px;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
     }
 
     * { box-sizing: border-box; }
-    html, body { height: 100%; }
     body {
       margin: 0;
-      font-family: var(--sans);
-      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:
-        radial-gradient(circle at top left, rgba(36, 87, 214, 0.10), transparent 24%),
-        radial-gradient(circle at top right, rgba(11, 138, 111, 0.10), transparent 22%),
-        linear-gradient(180deg, #f7f9fc 0%, #eef3f8 100%);
+        radial-gradient(circle at top left, rgba(70, 215, 178, 0.14), transparent 24%),
+        linear-gradient(160deg, #06101c 0%, #091422 48%, #070d16 100%);
+      color: var(--text);
     }
 
-    .page {
-      max-width: 1600px;
+    .wrap {
+      max-width: 1440px;
       margin: 0 auto;
       padding: 24px;
       display: grid;
-      gap: 18px;
+      gap: 16px;
     }
 
-    .shell {
-      display: grid;
-      grid-template-columns: minmax(340px, 1.05fr) minmax(0, 1.6fr);
-      gap: 18px;
-      align-items: start;
-    }
-
-    .card {
-      background: var(--panel);
+    .hero,
+    .panel {
       border: 1px solid var(--line);
       border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(18, 28, 46, 0.95), rgba(18, 28, 46, 0.82));
       box-shadow: var(--shadow);
+      overflow: hidden;
     }
 
     .hero {
-      padding: 22px;
+      padding: 20px;
       display: grid;
-      gap: 14px;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 0.84rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--accent);
+      gap: 12px;
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(2rem, 3vw, 3.4rem);
-      line-height: 1.02;
-      letter-spacing: -0.05em;
-      max-width: 12ch;
-    }
-
-    .hero p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.55;
-      max-width: 62ch;
-    }
-
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .summary {
-      padding: 14px 16px;
-      border-radius: 16px;
-      background: var(--panel-alt);
-      border: 1px solid var(--line);
-    }
-
-    .summary span {
-      display: block;
-      color: var(--muted);
-      font-size: 0.8rem;
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    .summary strong {
-      display: block;
-      font-size: 1.4rem;
+      font-size: clamp(1.7rem, 2.8vw, 2.7rem);
       letter-spacing: -0.04em;
+      line-height: 1.05;
     }
+
+    .muted { color: var(--muted); line-height: 1.5; }
 
     .toolbar {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-top: 4px;
+      align-items: center;
     }
 
-    button, .button {
-      appearance: none;
+    button {
       border: 1px solid var(--line);
-      background: #fff;
       color: var(--text);
+      background: rgba(15, 23, 42, 0.72);
       border-radius: 999px;
-      padding: 11px 16px;
+      padding: 11px 15px;
       font: inherit;
       cursor: pointer;
-      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
     }
 
-    button:hover, .button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 18px rgba(16, 34, 61, 0.08);
-      border-color: #b9c8da;
+    button:hover { border-color: rgba(70, 215, 178, 0.45); }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
     }
 
-    button.primary {
-      background: linear-gradient(180deg, #2c67ff, #204ec8);
-      color: #fff;
-      border-color: #2c67ff;
+    .metric {
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(13, 20, 34, 0.6);
     }
 
-    .muted {
+    .metric span {
+      display: block;
       color: var(--muted);
-      font-size: 0.92rem;
+      font-size: 0.85rem;
+      margin-bottom: 8px;
     }
 
-    .frame-card {
-      overflow: hidden;
+    .metric strong {
+      font-size: 1.4rem;
+      letter-spacing: -0.04em;
     }
 
-    .frame-header {
+    .layout {
+      display: grid;
+      grid-template-columns: 1.2fr 0.95fr;
+      gap: 16px;
+    }
+
+    .panel-head {
       padding: 16px 18px;
       border-bottom: 1px solid var(--line);
       display: flex;
@@ -166,647 +120,275 @@
       gap: 12px;
       align-items: center;
       flex-wrap: wrap;
-      background: linear-gradient(180deg, #ffffff, #f7faff);
     }
 
-    .frame-title {
-      display: grid;
-      gap: 4px;
-    }
+    .panel-body { padding: 16px 18px; }
 
-    .frame-title strong {
-      font-size: 1rem;
-    }
-
-    .frame-title span {
-      color: var(--muted);
-      font-size: 0.88rem;
-    }
-
-    iframe {
-      display: block;
-      width: 100%;
-      min-height: 920px;
-      border: 0;
-      background: #fff;
-    }
-
-    .list-card {
-      padding: 18px;
-    }
-
-    .eval-list {
-      display: grid;
-      gap: 12px;
-    }
-
-    .eval {
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: #fff;
-      overflow: hidden;
-    }
-
-    .eval-head {
-      display: grid;
-      gap: 10px;
-      grid-template-columns: 1.2fr 1fr auto;
-      align-items: center;
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .eval-id {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .eval-id strong {
-      font-family: var(--mono);
-      font-size: 0.93rem;
-    }
-
-    .pill {
+    .badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      border-radius: 999px;
-      padding: 6px 10px;
-      border: 1px solid var(--line);
-      background: #f8fbff;
-      font-size: 0.8rem;
-      color: var(--muted);
-      white-space: nowrap;
-    }
-
-    .status {
-      font-family: var(--mono);
-      font-size: 0.78rem;
-      letter-spacing: 0.04em;
-      padding: 6px 10px;
-      border-radius: 999px;
-      color: #fff;
-      width: fit-content;
-    }
-
-    .status.pass { background: #1c8c63; }
-    .status.fail { background: var(--fail); }
-    .status.blocked { background: #b66b00; }
-    .status.manual { background: var(--manual); }
-    .status.pending { background: #7f8ba0; }
-
-    .eval-body {
-      padding: 14px 16px 16px;
-      display: grid;
-      gap: 12px;
-    }
-
-    .meta-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .meta {
-      padding: 10px 12px;
-      background: #f8fbff;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-    }
-
-    .meta span {
-      display: block;
-      color: var(--muted);
-      font-size: 0.75rem;
-      margin-bottom: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    .meta strong, .meta code, .field code {
-      font-family: var(--mono);
-      font-size: 0.84rem;
-      line-height: 1.45;
-    }
-
-    .field {
-      display: grid;
-      gap: 6px;
-    }
-
-    .field label {
-      color: var(--muted);
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    textarea, select.input {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 10px 12px;
-      background: #fff;
-      font: inherit;
-      color: var(--text);
-    }
-
-    textarea {
-      min-height: 76px;
-      resize: vertical;
-      font-family: var(--mono);
-      font-size: 0.84rem;
-    }
-
-    .row-actions {
-      display: flex;
       gap: 8px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .results-shell {
-      display: grid;
-      gap: 12px;
-    }
-
-    .foot {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: center;
-      padding: 14px 16px;
-      border-top: 1px solid var(--line);
-      background: #f8fbff;
-      border-radius: 0 0 var(--radius) var(--radius);
-    }
-
-    .totals {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .total {
-      padding: 8px 12px;
-      background: #fff;
-      border: 1px solid var(--line);
+      padding: 7px 10px;
       border-radius: 999px;
-      font-family: var(--mono);
-      font-size: 0.82rem;
-    }
-
-    .small {
+      border: 1px solid var(--line);
+      background: rgba(15, 23, 42, 0.7);
       font-size: 0.85rem;
     }
 
-    .helper {
-      color: var(--muted);
-      line-height: 1.5;
+    .badge.pass { color: var(--pass); }
+    .badge.fail { color: var(--fail); }
+    .badge.blocked { color: var(--warn); }
+    .badge.manual { color: #9bd0ff; }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      flex: 0 0 auto;
     }
 
-    .json-output {
-      width: 100%;
-      min-height: 160px;
-      font-family: var(--mono);
-      font-size: 0.78rem;
-      border-radius: 14px;
+    .results {
+      display: grid;
+      gap: 10px;
+    }
+
+    .result {
       border: 1px solid var(--line);
-      padding: 12px;
-      background: #fff;
-      resize: vertical;
+      border-radius: 16px;
+      padding: 12px 14px;
+      background: rgba(13, 20, 34, 0.52);
     }
 
-    @media (max-width: 1180px) {
-      .shell { grid-template-columns: 1fr; }
-      iframe { min-height: 840px; }
-      .meta-grid, .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .eval-head { grid-template-columns: 1fr; }
+    .result-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .result h2 {
+      margin: 0;
+      font-size: 0.98rem;
+      letter-spacing: -0.01em;
+    }
+
+    .result p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+    }
+
+    .sandbox {
+      min-height: 720px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 12px;
+    }
+
+    iframe {
+      width: 100%;
+      min-height: 640px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+    }
+
+    pre {
+      margin: 0;
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(6, 12, 22, 0.7);
+      overflow: auto;
+      max-height: 320px;
+      color: #d7e7ff;
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 1100px) {
+      .metrics,
+      .layout { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <section class="card hero">
-      <div class="eyebrow">Zero-dependency browser harness</div>
-      <h1>Evaluate the interannual dashboard without leaving the browser.</h1>
-      <p>
-        This runner loads <strong>../web.html</strong> in an iframe, executes the approved eval plan, and keeps manual checks in MANUAL until a reviewer records evidence. Results stay local and can be exported as JSON.
-      </p>
-      <div class="summary-grid" id="summaryGrid"></div>
-      <div class="toolbar">
-        <button class="primary" id="runAllBtn">Run all</button>
-        <button id="runFailedBtn">Run failed</button>
-        <button id="copyJsonBtn">Copy JSON</button>
-        <button id="exportJsonBtn">Export JSON</button>
-        <button id="resetReviewsBtn">Reset manual reviews</button>
+  <div class="wrap">
+    <section class="hero">
+      <div>
+        <h1>Evaluation Harness</h1>
+        <div class="muted">Runs the deterministic checks for the approved year-over-year dashboard against the local static HTML. Open this page through the local HTTP server and use Run all to generate a reusable JSON report.</div>
       </div>
-      <div class="muted small" id="coverageLine"></div>
+      <div class="toolbar">
+        <button id="runAllBtn" type="button">Run all</button>
+        <button id="downloadBtn" type="button" disabled>Download JSON</button>
+        <button id="clearBtn" type="button">Clear results</button>
+      </div>
+      <div class="metrics" id="summaryMetrics">
+        <div class="metric"><span>Total</span><strong id="metricTotal">0</strong></div>
+        <div class="metric"><span>PASS</span><strong id="metricPass">0</strong></div>
+        <div class="metric"><span>FAIL</span><strong id="metricFail">0</strong></div>
+        <div class="metric"><span>MANUAL</span><strong id="metricManual">0</strong></div>
+      </div>
     </section>
 
-    <section class="shell">
-      <div class="card frame-card">
-        <div class="frame-header">
-          <div class="frame-title">
-            <strong>Dashboard preview</strong>
-            <span>Loaded from the same local HTTP origin as the harness.</span>
+    <section class="layout">
+      <div class="panel sandbox">
+        <div class="panel-head">
+          <div>
+            <div style="font-size:0.98rem;font-weight:600;letter-spacing:-0.01em;">Dashboard under test</div>
+            <div class="muted" style="font-size:0.88rem;">The iframe loads ../web.html from the same local server.</div>
           </div>
-          <div class="pill" id="frameState">Waiting for iframe</div>
+          <div class="badge pass" id="sandboxStatus"><span class="dot"></span><span>Ready</span></div>
         </div>
-        <iframe id="dashboardFrame" title="Dashboard de Ventas" src="../web.html"></iframe>
+        <div class="panel-body" style="padding-top:0;">
+          <iframe id="dashboardFrame" title="Dashboard under test" src="../web.html"></iframe>
+        </div>
       </div>
 
-      <div class="card list-card">
-        <div class="results-shell">
-          <div class="helper">
-            Every result row shows the eval id, related AC ids, expected result, observed result, duration, and evidence. Manual rows remain MANUAL until a reviewer records a status and evidence in the row controls.
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div style="font-size:0.98rem;font-weight:600;letter-spacing:-0.01em;">Results</div>
+            <div class="muted" style="font-size:0.88rem;">PASS / FAIL / BLOCKED / MANUAL with concise evidence.</div>
           </div>
-          <div id="evalList" class="eval-list"></div>
-          <textarea id="jsonOutput" class="json-output" readonly aria-label="JSON export output"></textarea>
+          <div class="badge manual" id="coverageBadge"><span class="dot"></span><span>0 / 0</span></div>
         </div>
-        <div class="foot">
-          <div class="totals" id="totals"></div>
-          <div class="pill" id="lastRunState">No runs yet</div>
+        <div class="panel-body">
+          <div class="results" id="resultsList"></div>
+          <div style="height:12px"></div>
+          <pre id="exportPreview">[]</pre>
         </div>
       </div>
     </section>
   </div>
 
-  <script src="./evals.js?v=2"></script>
+  <script src="./evals.js"></script>
   <script>
-    const STORAGE_KEY = 'agentsdata-eval-results-v1';
-    const REVIEW_KEY = 'agentsdata-eval-reviews-v1';
-    const dashboardUrl = new URL('../web.html', window.location.href).href;
-    const frame = document.getElementById('dashboardFrame');
-    const evalList = document.getElementById('evalList');
-    const jsonOutput = document.getElementById('jsonOutput');
-    const totals = document.getElementById('totals');
-    const summaryGrid = document.getElementById('summaryGrid');
-    const coverageLine = document.getElementById('coverageLine');
-    const frameState = document.getElementById('frameState');
-    const lastRunState = document.getElementById('lastRunState');
+    (() => {
+      const runBtn = document.getElementById('runAllBtn');
+      const downloadBtn = document.getElementById('downloadBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const resultsList = document.getElementById('resultsList');
+      const preview = document.getElementById('exportPreview');
+      const sandboxStatus = document.getElementById('sandboxStatus');
+      const coverageBadge = document.getElementById('coverageBadge');
 
-    const store = {
-      results: loadJson(STORAGE_KEY, {}),
-      reviews: loadJson(REVIEW_KEY, {}),
-    };
+      let lastRun = null;
 
-    function loadJson(key, fallback) {
-      try {
-        const raw = localStorage.getItem(key);
-        return raw ? JSON.parse(raw) : fallback;
-      } catch {
-        return fallback;
+      function renderSummary(results) {
+        const summary = window.DashboardEval.summarize(results);
+        document.getElementById('metricTotal').textContent = summary.total;
+        document.getElementById('metricPass').textContent = summary.pass;
+        document.getElementById('metricFail').textContent = summary.fail;
+        document.getElementById('metricManual').textContent = summary.manual;
+        coverageBadge.innerHTML = '<span class="dot"></span><span>' + summary.automatedChecks + ' automated / ' + summary.manualChecks + ' manual</span>';
+        coverageBadge.className = 'badge manual';
       }
-    }
 
-    function saveJson(key, value) {
-      localStorage.setItem(key, JSON.stringify(value));
-    }
-
-    function formatDuration(ms) {
-      return `${Math.round(ms)} ms`;
-    }
-
-    function statusLabel(status) {
-      return (status || 'PENDING').toString().toUpperCase();
-    }
-
-    function statusClass(status) {
-      return statusLabel(status).toLowerCase();
-    }
-
-    function allDefs() {
-      return Array.isArray(window.EVAL_DEFINITIONS) ? window.EVAL_DEFINITIONS : [];
-    }
-
-    function automatedDefs() {
-      return allDefs().filter((definition) => definition.automation === 'automated');
-    }
-
-    function countStatuses(results) {
-      return allDefs().reduce((acc, definition) => {
-        const status = statusLabel(results[definition.id]?.status || (definition.automation === 'manual' ? 'MANUAL' : 'PENDING'));
-        acc[status] = (acc[status] || 0) + 1;
-        return acc;
-      }, { PASS: 0, FAIL: 0, BLOCKED: 0, MANUAL: 0, PENDING: 0 });
-    }
-
-    function buildContext() {
-      return {
-        iframe: frame,
-        url: dashboardUrl,
-      };
-    }
-
-    async function waitForFrame() {
-      await new Promise((resolve) => {
-        if (frame.contentDocument && frame.contentDocument.readyState === 'complete') {
-          resolve();
-          return;
-        }
-        frame.addEventListener('load', () => resolve(), { once: true });
-      });
-      frameState.textContent = 'Dashboard loaded';
-    }
-
-    function defaultManualResult(definition) {
-      return {
-        status: 'MANUAL',
-        observed: 'Waiting for reviewer evidence.',
-        evidence: store.reviews[definition.id]?.evidence || '',
-        expected: definition.expected,
-        durationMs: 0,
-        checkedAt: store.reviews[definition.id]?.checkedAt || '',
-      };
-    }
-
-    function mergeResult(definition, result) {
-      if (!result) return defaultManualResult(definition);
-      return {
-        status: statusLabel(result.status),
-        observed: stringifyObserved(result.observed),
-        evidence: result.evidence || '',
-        expected: result.expected || definition.expected,
-        durationMs: Number(result.durationMs || 0),
-        checkedAt: result.checkedAt || new Date().toISOString(),
-      };
-    }
-
-    function stringifyObserved(observed) {
-      if (typeof observed === 'string') return observed;
-      try {
-        return JSON.stringify(observed, null, 2);
-      } catch {
-        return String(observed);
-      }
-    }
-
-    function render() {
-      const definitions = allDefs();
-      const counts = countStatuses(store.results);
-      const totalAutomated = definitions.filter((definition) => definition.automation === 'automated').length;
-      const totalAc = new Set(definitions.flatMap((definition) => definition.relatedAcIds || [])).size;
-      const automatedAc = new Set(definitions.filter((definition) => definition.automation === 'automated').flatMap((definition) => definition.relatedAcIds || [])).size;
-      summaryGrid.innerHTML = '';
-      [
-        ['PASS', counts.PASS],
-        ['FAIL', counts.FAIL],
-        ['BLOCKED', counts.BLOCKED],
-        ['MANUAL', counts.MANUAL],
-      ].forEach(([label, value]) => {
-        const node = document.createElement('div');
-        node.className = 'summary';
-        node.innerHTML = `<span>${label}</span><strong>${value}</strong>`;
-        summaryGrid.appendChild(node);
-      });
-      coverageLine.textContent = `Automated coverage: ${automatedAc} / ${totalAc} ACs covered by automated evals. Total evals: ${totalAutomated} automated, ${definitions.length - totalAutomated} manual.`;
-      buildEvalRows();
-      renderTotals();
-      renderJson();
-    }
-
-    function buildEvalRows() {
-      const definitions = allDefs();
-      evalList.innerHTML = '';
-      definitions.forEach((definition) => {
-        const existing = store.results[definition.id];
-        const current = mergeResult(definition, existing);
-        if (definition.automation === 'manual' && !existing) {
-          store.results[definition.id] = current;
-        }
-
-        const row = document.createElement('article');
-        row.className = 'eval';
-        row.dataset.evalId = definition.id;
-        row.innerHTML = `
-          <div class="eval-head">
-            <div class="eval-id">
-              <strong>${definition.id}</strong>
-              <span class="pill">${definition.type}</span>
-              <span class="pill">${definition.automation}</span>
-              <span class="pill">AC ${definition.relatedAcIds.join(', ')}</span>
+      function renderResults(results) {
+        resultsList.innerHTML = '';
+        results.forEach((result) => {
+          const row = document.createElement('article');
+          row.className = 'result';
+          const statusClass = String(result.status || '').toLowerCase();
+          row.innerHTML = `
+            <div class="result-top">
+              <h2>${result.id} ${result.ac} · ${result.title}</h2>
+              <span class="badge ${statusClass}"><span class="dot"></span><span>${result.status}</span></span>
             </div>
-            <div class="helper">${definition.title}</div>
-            <div class="status ${statusClass(current.status)}" data-status>${statusLabel(current.status)}</div>
-          </div>
-          <div class="eval-body">
-            <div class="meta-grid">
-              <div class="meta"><span>Expected result</span><strong data-expected>${definition.expected}</strong></div>
-              <div class="meta"><span>Observed result</span><code data-observed>${current.observed || 'Not run yet.'}</code></div>
-              <div class="meta"><span>Duration</span><strong data-duration>${current.durationMs ? formatDuration(current.durationMs) : '—'}</strong></div>
-              <div class="meta"><span>Evidence</span><code data-evidence>${current.evidence || '—'}</code></div>
-            </div>
-            ${definition.automation === 'manual' ? renderManualControls(definition, current) : renderAutomationControls(definition)}
-          </div>
-        `;
-        evalList.appendChild(row);
-        if (definition.automation === 'automated') {
-          const runBtn = row.querySelector('[data-run-single]');
-          if (runBtn) {
-            runBtn.addEventListener('click', async () => {
-              lastRunState.textContent = `Running ${definition.id}...`;
-              await runEvaluation(definition);
-              render();
-              lastRunState.textContent = `${definition.id} completed.`;
-            });
-          }
+            <p>${escapeHtml(result.evidence || '')}</p>
+          `;
+          resultsList.appendChild(row);
+        });
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function buildReport(results) {
+        const summary = window.DashboardEval.summarize(results);
+        return {
+          generatedAt: new Date().toISOString(),
+          coverage: summary,
+          results,
+        };
+      }
+
+      async function runAll() {
+        runBtn.disabled = true;
+        downloadBtn.disabled = true;
+        sandboxStatus.className = 'badge manual';
+        sandboxStatus.innerHTML = '<span class="dot"></span><span>Running</span>';
+        preview.textContent = '{\n  "status": "running"\n}';
+
+        try {
+          const results = await window.DashboardEval.runAll((index, evaluation) => {
+            if (!evaluation) {
+              sandboxStatus.className = 'badge pass';
+              sandboxStatus.innerHTML = '<span class="dot"></span><span>Done</span>';
+              return;
+            }
+            sandboxStatus.className = 'badge manual';
+            sandboxStatus.innerHTML = '<span class="dot"></span><span>' + evaluation.id + ' · ' + evaluation.ac + '</span>';
+          });
+
+          lastRun = buildReport(results);
+          renderSummary(results);
+          renderResults(results);
+          preview.textContent = JSON.stringify(lastRun, null, 2);
+          downloadBtn.disabled = false;
+          sandboxStatus.className = 'badge pass';
+          sandboxStatus.innerHTML = '<span class="dot"></span><span>Done</span>';
+        } catch (error) {
+          sandboxStatus.className = 'badge fail';
+          sandboxStatus.innerHTML = '<span class="dot"></span><span>Failed</span>';
+          resultsList.innerHTML = '<div class="result"><div class="result-top"><h2>Harness error</h2><span class="badge fail"><span class="dot"></span><span>BLOCKED</span></span></div><p>' + escapeHtml(error && error.message ? error.message : String(error)) + '</p></div>';
+        } finally {
+          runBtn.disabled = false;
         }
-        if (definition.automation === 'manual') {
-          wireManualControls(row, definition);
-        }
-      });
-    }
-
-    function renderManualControls(definition, current) {
-      return `
-        <div class="field">
-          <label>Manual review status</label>
-          <div class="row-actions">
-            <select class="input" data-review-status>
-              <option value="MANUAL" ${current.status === 'MANUAL' ? 'selected' : ''}>MANUAL</option>
-              <option value="PASS" ${current.status === 'PASS' ? 'selected' : ''}>PASS</option>
-              <option value="FAIL" ${current.status === 'FAIL' ? 'selected' : ''}>FAIL</option>
-              <option value="BLOCKED" ${current.status === 'BLOCKED' ? 'selected' : ''}>BLOCKED</option>
-            </select>
-            <button type="button" data-save-review>Save review</button>
-          </div>
-        </div>
-        <div class="field">
-          <label>Reviewer evidence</label>
-          <textarea data-review-evidence placeholder="Add concise evidence, e.g. screenshot notes, Confluence page id, or Supabase query reference.">${current.evidence || ''}</textarea>
-        </div>
-      `;
-    }
-
-    function renderAutomationControls(definition) {
-      return `
-        <div class="row-actions">
-          <button type="button" data-run-single>Run</button>
-          <span class="pill">Automated eval</span>
-        </div>
-      `;
-    }
-
-    function wireManualControls(row, definition) {
-      const statusSelect = row.querySelector('[data-review-status]');
-      const evidence = row.querySelector('[data-review-evidence]');
-      const saveBtn = row.querySelector('[data-save-review]');
-      saveBtn.addEventListener('click', () => {
-        store.results[definition.id] = {
-          status: statusLabel(statusSelect.value),
-          observed: 'Reviewer-entered manual result.',
-          evidence: evidence.value.trim(),
-          expected: definition.expected,
-          durationMs: 0,
-          checkedAt: new Date().toISOString(),
-        };
-        store.reviews[definition.id] = {
-          status: statusLabel(statusSelect.value),
-          evidence: evidence.value.trim(),
-          checkedAt: new Date().toISOString(),
-        };
-        saveJson(STORAGE_KEY, store.results);
-        saveJson(REVIEW_KEY, store.reviews);
-        render();
-      });
-    }
-
-    function renderTotals() {
-      const definitions = allDefs();
-      const counts = countStatuses(store.results);
-      totals.innerHTML = '';
-      [
-        ['ACs', new Set(definitions.flatMap((definition) => definition.relatedAcIds || [])).size],
-        ['Automated', definitions.filter((definition) => definition.automation === 'automated').length],
-        ['Manual', definitions.filter((definition) => definition.automation === 'manual').length],
-        ['PASS', counts.PASS],
-        ['FAIL', counts.FAIL],
-        ['BLOCKED', counts.BLOCKED],
-        ['MANUAL', counts.MANUAL],
-      ].forEach(([label, value]) => {
-        const item = document.createElement('div');
-        item.className = 'total';
-        item.textContent = `${label}: ${value}`;
-        totals.appendChild(item);
-      });
-    }
-
-    function renderJson() {
-      const payload = {
-        generatedAt: new Date().toISOString(),
-        dashboardUrl,
-        results: Object.values(store.results),
-      };
-      jsonOutput.value = JSON.stringify(payload, null, 2);
-    }
-
-    async function runEvaluation(definition) {
-      if (definition.automation !== 'automated') {
-        return;
       }
-      const context = buildContext();
-      const start = performance.now();
-      try {
-        const output = await definition.run(context);
-        const durationMs = performance.now() - start;
-        const result = mergeResult(definition, output);
-        result.durationMs = durationMs;
-        result.checkedAt = new Date().toISOString();
-        store.results[definition.id] = result;
-        saveJson(STORAGE_KEY, store.results);
-        return result;
-      } catch (error) {
-        const durationMs = performance.now() - start;
-        const result = {
-          status: 'BLOCKED',
-          observed: String(error && error.message ? error.message : error),
-          evidence: 'Evaluator exception caught by harness.',
-          expected: definition.expected,
-          durationMs,
-          checkedAt: new Date().toISOString(),
-        };
-        store.results[definition.id] = result;
-        saveJson(STORAGE_KEY, store.results);
-        return result;
+
+      function downloadJson() {
+        if (!lastRun) return;
+        const blob = new Blob([JSON.stringify(lastRun, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = 'dashboard-eval-results.json';
+        anchor.click();
+        setTimeout(() => URL.revokeObjectURL(url), 0);
       }
-    }
 
-    async function runAll() {
-      lastRunState.textContent = 'Running all automated evals...';
-      for (const definition of automatedDefs()) {
-        await runEvaluation(definition);
-        render();
+      function clearResults() {
+        lastRun = null;
+        resultsList.innerHTML = '';
+        preview.textContent = '[]';
+        downloadBtn.disabled = true;
+        document.getElementById('metricTotal').textContent = '0';
+        document.getElementById('metricPass').textContent = '0';
+        document.getElementById('metricFail').textContent = '0';
+        document.getElementById('metricManual').textContent = '0';
+        coverageBadge.innerHTML = '<span class="dot"></span><span>0 / 0</span>';
       }
-      lastRunState.textContent = 'Completed run all.';
-      renderJson();
-    }
 
-    async function runFailed() {
-      lastRunState.textContent = 'Running failed automated evals...';
-      const failed = automatedDefs().filter((definition) => {
-        const status = statusLabel(store.results[definition.id]?.status || 'PENDING');
-        return status === 'FAIL' || status === 'BLOCKED' || status === 'PENDING';
-      });
-      for (const definition of failed) {
-        await runEvaluation(definition);
-        render();
-      }
-      lastRunState.textContent = `Completed run failed (${failed.length}).`;
-      renderJson();
-    }
+      runBtn.addEventListener('click', runAll);
+      downloadBtn.addEventListener('click', downloadJson);
+      clearBtn.addEventListener('click', clearResults);
 
-    async function copyJson() {
-      const payload = jsonOutput.value || JSON.stringify({ generatedAt: new Date().toISOString(), results: Object.values(store.results) }, null, 2);
-      await navigator.clipboard.writeText(payload);
-      lastRunState.textContent = 'JSON copied to clipboard.';
-    }
-
-    function exportJson() {
-      const blob = new Blob([jsonOutput.value], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = `eval-results-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
-      anchor.click();
-      URL.revokeObjectURL(url);
-      lastRunState.textContent = 'JSON export started.';
-    }
-
-    function resetReviews() {
-      store.results = Object.fromEntries(allDefs().map((definition) => [definition.id, definition.automation === 'manual' ? defaultManualResult(definition) : undefined]).filter(([, value]) => value));
-      store.reviews = {};
-      saveJson(STORAGE_KEY, store.results);
-      saveJson(REVIEW_KEY, store.reviews);
-      render();
-      lastRunState.textContent = 'Manual reviews reset.';
-    }
-
-    document.getElementById('runAllBtn').addEventListener('click', runAll);
-    document.getElementById('runFailedBtn').addEventListener('click', runFailed);
-    document.getElementById('copyJsonBtn').addEventListener('click', copyJson);
-    document.getElementById('exportJsonBtn').addEventListener('click', exportJson);
-    document.getElementById('resetReviewsBtn').addEventListener('click', resetReviews);
-
-    async function init() {
-      frame.src = dashboardUrl;
-      await waitForFrame();
-      store.results = Object.fromEntries(allDefs().map((definition) => {
-        if (store.results[definition.id]) return [definition.id, store.results[definition.id]];
-        return [definition.id, definition.automation === 'manual' ? defaultManualResult(definition) : { status: 'PENDING', observed: 'Not run yet.', evidence: '', expected: definition.expected, durationMs: 0, checkedAt: '' }];
-      }));
-      saveJson(STORAGE_KEY, store.results);
-      render();
-      lastRunState.textContent = 'Harness ready.';
-    }
-
-    init().catch((error) => {
-      frameState.textContent = `Harness error: ${error.message}`;
-      lastRunState.textContent = 'Initialization failed.';
-    });
+      renderSummary([]);
+    })();
   </script>
 </body>
 </html>

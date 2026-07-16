@@ -192,6 +192,118 @@
       font-size: 0.85rem;
     }
 
+    .kpi-periods {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .kpi-period {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+      font-size: 0.84rem;
+      color: var(--muted);
+    }
+
+    .kpi-period strong {
+      color: var(--text);
+      font-size: 0.98rem;
+      letter-spacing: -0.02em;
+    }
+
+    .quality-banner {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(13, 20, 34, 0.72);
+      padding: 16px 18px;
+      margin-bottom: 16px;
+    }
+
+    .quality-banner strong,
+    .quality-banner span {
+      display: block;
+    }
+
+    .quality-banner strong {
+      margin-bottom: 6px;
+      font-size: 1.02rem;
+    }
+
+    .quality-banner.ok {
+      border-color: rgba(70, 215, 178, 0.22);
+      box-shadow: inset 0 0 0 1px rgba(70, 215, 178, 0.05);
+    }
+
+    .quality-banner.warning,
+    .quality-banner.bad {
+      border-color: rgba(255, 107, 138, 0.28);
+      box-shadow: inset 0 0 0 1px rgba(255, 107, 138, 0.08);
+    }
+
+    .status-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(15, 23, 42, 0.65);
+      color: var(--text);
+      font-size: 0.82rem;
+    }
+
+    .status-pill.fail {
+      border-color: rgba(255, 107, 138, 0.35);
+      color: #ffb0c0;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex: 0 0 auto;
+    }
+
+    .status-pill.fail .status-dot {
+      background: var(--danger);
+    }
+
+    .quality-row,
+    .join-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 11px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(13, 20, 34, 0.42);
+      font-size: 0.9rem;
+    }
+
+    .quality-row.fail,
+    .join-row.fail {
+      border-color: rgba(255, 107, 138, 0.3);
+      background: rgba(41, 15, 24, 0.4);
+    }
+
+    .quality-row b,
+    .join-row b { font-weight: 600; }
+    .quality-row span,
+    .join-row span { color: var(--muted); }
+
     .layout {
       display: grid;
       grid-template-columns: 1.55fr 1fr;
@@ -519,26 +631,46 @@
         <div class="label"><span class="dot"></span>Ventas netas</div>
         <div class="value" id="kpiSales">-</div>
         <div class="delta" id="kpiSalesDelta">Cargando datos</div>
+        <div class="kpi-periods">
+          <div class="kpi-period"><span>Periodo base</span><strong id="kpiSalesCurrent">-</strong></div>
+          <div class="kpi-period"><span>Periodo comparado</span><strong id="kpiSalesPrevious">-</strong></div>
+        </div>
       </div>
       <div class="card kpi">
         <div class="label"><span class="dot" style="background: var(--accent-2);"></span>Pedidos</div>
         <div class="value" id="kpiOrders">-</div>
         <div class="delta" id="kpiOrdersDelta">Cargando datos</div>
+        <div class="kpi-periods">
+          <div class="kpi-period"><span>Periodo base</span><strong id="kpiOrdersCurrent">-</strong></div>
+          <div class="kpi-period"><span>Periodo comparado</span><strong id="kpiOrdersPrevious">-</strong></div>
+        </div>
       </div>
       <div class="card kpi">
         <div class="label"><span class="dot" style="background: var(--accent-3);"></span>Ticket medio</div>
         <div class="value" id="kpiAov">-</div>
         <div class="delta" id="kpiAovDelta">Cargando datos</div>
+        <div class="kpi-periods">
+          <div class="kpi-period"><span>Periodo base</span><strong id="kpiAovCurrent">-</strong></div>
+          <div class="kpi-period"><span>Periodo comparado</span><strong id="kpiAovPrevious">-</strong></div>
+        </div>
       </div>
       <div class="card kpi">
         <div class="label"><span class="dot" style="background: var(--danger);"></span>Margen bruto</div>
         <div class="value" id="kpiMargin">-</div>
         <div class="delta" id="kpiMarginDelta">Cargando datos</div>
+        <div class="kpi-periods">
+          <div class="kpi-period"><span>Periodo base</span><strong id="kpiMarginCurrent">-</strong></div>
+          <div class="kpi-period"><span>Periodo comparado</span><strong id="kpiMarginPrevious">-</strong></div>
+        </div>
       </div>
       <div class="card kpi">
         <div class="label"><span class="dot" style="background: #a78bfa;"></span>Unidades</div>
         <div class="value" id="kpiUnits">-</div>
         <div class="delta" id="kpiUnitsDelta">Cargando datos</div>
+        <div class="kpi-periods">
+          <div class="kpi-period"><span>Periodo base</span><strong id="kpiUnitsCurrent">-</strong></div>
+          <div class="kpi-period"><span>Periodo comparado</span><strong id="kpiUnitsPrevious">-</strong></div>
+        </div>
       </div>
     </section>
 
@@ -676,6 +808,7 @@ const dateFmt = new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short
 const rawUserTypes = ['Registrado', 'No registrado'];
 const displayUserTypes = { Registrado: 'Registrado', 'No registrado': 'Invitado' };
 const state = { years: new Set(), months: new Set(), channels: new Set(), userTypes: new Set(), promotions: new Set(), defaults: null };
+const PROHIBITED_PII_KEYS = new Set(['nombre', 'apellidos', 'email', 'fecha_nacimiento', 'codigo_postal']);
 
 function setText(selector, value) {
   const node = document.querySelector(selector);
@@ -748,6 +881,29 @@ function selectedBaseRows() {
 function selectedComparisonRows(base) {
   const shiftedDates = new Set(base.map((row) => shiftYear(row.fecha, -1)));
   return SNAPSHOT.filter((row) => shiftedDates.has(row.fecha) && state.channels.has(row.canal) && state.userTypes.has(row.tipoUsuario) && state.promotions.has(row.nombrePromocion));
+}
+
+function evaluateQuality() {
+  const tableChecks = QUALITY.tableChecks.map((item) => ({
+    ...item,
+    status: item.status === 'PASS' ? 'PASS' : 'FAIL',
+  }));
+  const factRows = SNAPSHOT.length;
+  const distinctLines = countDistinct(SNAPSHOT, (row) => row.idLineaVenta);
+  const distinctOrders = countDistinct(SNAPSHOT, (row) => row.idVenta);
+  const joinPass = QUALITY.joinRows === factRows && factRows === distinctLines && distinctOrders === factRows;
+  const piiPass = SNAPSHOT.every((row) => ![...PROHIBITED_PII_KEYS].some((key) => Object.prototype.hasOwnProperty.call(row, key)));
+  const tablePass = tableChecks.every((item) => item.status === 'PASS');
+  return {
+    tableChecks,
+    factRows,
+    distinctLines,
+    distinctOrders,
+    joinPass,
+    piiPass,
+    tablePass,
+    overallPass: tablePass && joinPass && piiPass,
+  };
 }
 function buildChart(base, comp) {
   const width = 1000;
@@ -885,19 +1041,29 @@ function renderSelectionSummary() {
 }
 function renderKpis(base, comp) {
   const cards = [
-    ['sales', 'kpiSales', 'kpiSalesDelta', base.revenue, comp.revenue, false],
-    ['orders', 'kpiOrders', 'kpiOrdersDelta', base.orders, comp.orders, true],
-    ['ticket', 'kpiAov', 'kpiAovDelta', base.averageTicket, comp.averageTicket, false],
-    ['margin', 'kpiMargin', 'kpiMarginDelta', base.margin, comp.margin, false],
-    ['units', 'kpiUnits', 'kpiUnitsDelta', base.units, comp.units, true],
+    ['sales', 'kpiSales', 'kpiSalesDelta', 'kpiSalesCurrent', 'kpiSalesPrevious', base.revenue, comp.revenue, false],
+    ['orders', 'kpiOrders', 'kpiOrdersDelta', 'kpiOrdersCurrent', 'kpiOrdersPrevious', base.orders, comp.orders, true],
+    ['ticket', 'kpiAov', 'kpiAovDelta', 'kpiAovCurrent', 'kpiAovPrevious', base.averageTicket, comp.averageTicket, false],
+    ['margin', 'kpiMargin', 'kpiMarginDelta', 'kpiMarginCurrent', 'kpiMarginPrevious', base.margin, comp.margin, false],
+    ['units', 'kpiUnits', 'kpiUnitsDelta', 'kpiUnitsCurrent', 'kpiUnitsPrevious', base.units, comp.units, true],
   ];
-  cards.forEach(([id, valueId, deltaId, current, previous, numeric]) => {
+  cards.forEach(([id, valueId, deltaId, currentId, previousId, current, previous, numeric]) => {
     const d = diff(current, previous);
     const valueNode = document.getElementById(valueId);
     const deltaNode = document.getElementById(deltaId);
+    const currentNode = document.getElementById(currentId);
+    const previousNode = document.getElementById(previousId);
     if (valueNode) {
       valueNode.textContent = numeric ? fmtNumber(current) : fmtMoney(current);
       valueNode.setAttribute('data-testid', 'kpi-' + id + '-current');
+    }
+    if (currentNode) {
+      currentNode.textContent = numeric ? fmtNumber(current) : fmtMoney(current);
+      currentNode.setAttribute('data-testid', 'kpi-' + id + '-base-value');
+    }
+    if (previousNode) {
+      previousNode.textContent = numeric ? fmtNumber(previous) : fmtMoney(previous);
+      previousNode.setAttribute('data-testid', 'kpi-' + id + '-comparison-value');
     }
     if (deltaNode) {
       deltaNode.textContent = (numeric ? fmtNumber(d.absolute) : fmtSignedMoney(d.absolute)) + ' · ' + fmtSignedPct(d.relative);
@@ -975,34 +1141,38 @@ function renderInsights(base, comp) {
     root.appendChild(el);
   });
 }
-function renderQuality() {
-  setText('#qualitySummary', 'Todas las tablas requeridas están en PASS, el join principal conserva las 200 filas de ventas y el snapshot está validado con Supabase en modo lectura.');
+function renderQuality(quality) {
+  const overallLabel = quality.overallPass ? 'PASS general' : 'FAIL general';
+  const summaryLabel = quality.overallPass
+    ? 'Todas las tablas requeridas están en PASS, el join principal conserva las ' + quality.factRows + ' filas de ventas y el snapshot está validado con Supabase en modo lectura.'
+    : 'La validación detectó un problema y el dashboard se degrada para evitar mostrar KPIs no confiables.';
+  setText('#qualitySummary', summaryLabel);
   const badges = document.getElementById('qualityBadges');
   badges.innerHTML = '';
   const overall = document.createElement('span');
-  overall.className = 'status-pill';
-  overall.innerHTML = '<span class="status-dot"></span><span>PASS general</span>';
+  overall.className = 'status-pill' + (quality.overallPass ? '' : ' fail');
+  overall.innerHTML = '<span class="status-dot"></span><span>' + overallLabel + '</span>';
   badges.appendChild(overall);
-  QUALITY.tableChecks.forEach((item) => {
+  quality.tableChecks.forEach((item) => {
     const chip = document.createElement('span');
-    chip.className = 'status-pill';
+    chip.className = 'status-pill' + (item.status === 'PASS' ? '' : ' fail');
     chip.setAttribute('data-testid', 'quality-table-' + item.name);
-    chip.innerHTML = '<span class="status-dot"></span><span>' + escapeHtml(item.name) + ' · PASS</span>';
+    chip.innerHTML = '<span class="status-dot"></span><span>' + escapeHtml(item.name) + ' · ' + escapeHtml(item.status) + '</span>';
     badges.appendChild(chip);
   });
   const qualityList = document.getElementById('qualityList');
   qualityList.innerHTML = '';
-  QUALITY.tableChecks.forEach((item) => {
+  quality.tableChecks.forEach((item) => {
     const row = document.createElement('div');
-    row.className = 'quality-row';
+    row.className = 'quality-row' + (item.status === 'PASS' ? '' : ' fail');
     row.setAttribute('data-testid', 'quality-row-' + item.name);
-    row.innerHTML = '<b>' + escapeHtml(item.name) + '</b><span>' + escapeHtml(item.rows + ' filas | ' + item.unique + ' claves únicas | PASS') + '</span>';
+    row.innerHTML = '<b>' + escapeHtml(item.name) + '</b><span>' + escapeHtml(item.rows + ' filas | ' + item.unique + ' claves únicas | ' + item.status) + '</span>';
     qualityList.appendChild(row);
   });
   const joinRow = document.createElement('div');
-  joinRow.className = 'join-row';
+  joinRow.className = 'join-row' + (quality.joinPass ? '' : ' fail');
   joinRow.setAttribute('data-testid', 'join-row-fact-ventas-dimensiones');
-  joinRow.innerHTML = '<b>fact_ventas → dimensiones</b><span>200 → 200 filas | PASS</span>';
+  joinRow.innerHTML = '<b>fact_ventas → dimensiones</b><span>' + escapeHtml(quality.factRows + ' → ' + QUALITY.joinRows + ' filas | ' + (quality.joinPass ? 'PASS' : 'FAIL')) + '</span>';
   qualityList.appendChild(joinRow);
   const sourceList = document.getElementById('sourceList');
   sourceList.innerHTML = '';
@@ -1021,6 +1191,26 @@ function renderQuality() {
     row.className = 'source-row';
     row.innerHTML = '<b>' + escapeHtml(label) + '</b><span>' + escapeHtml(value) + '</span>';
     sourceList.appendChild(row);
+  });
+}
+
+function renderBlockedState(quality) {
+  const banner = document.getElementById('qualityBanner');
+  if (banner) banner.className = 'quality-banner bad';
+  setText('#qualityState', 'FAIL');
+  setText('#loadState', 'Validación bloqueada');
+  setText('#qualitySummary', 'La validación falló; se ocultan los KPIs para evitar una lectura incorrecta.');
+  const chart = document.getElementById('weeklyChart');
+  if (chart) {
+    chart.innerHTML = '<div class="chart-empty"><div><strong>Validación bloqueada</strong><div>No se calcularon KPIs porque la calidad de datos no es confiable.</div></div></div>';
+  }
+  ['kpiSales', 'kpiOrders', 'kpiAov', 'kpiMargin', 'kpiUnits', 'kpiSalesCurrent', 'kpiSalesPrevious', 'kpiOrdersCurrent', 'kpiOrdersPrevious', 'kpiAovCurrent', 'kpiAovPrevious', 'kpiMarginCurrent', 'kpiMarginPrevious', 'kpiUnitsCurrent', 'kpiUnitsPrevious', 'kpiSalesDelta', 'kpiOrdersDelta', 'kpiAovDelta', 'kpiMarginDelta', 'kpiUnitsDelta'].forEach((id) => {
+    const node = document.getElementById(id);
+    if (node) node.textContent = 'Validación fallida';
+  });
+  ['channelList', 'categoryList', 'promoList', 'segmentList', 'insightList', 'salesTable'].forEach((id) => {
+    const node = document.getElementById(id);
+    if (node) node.innerHTML = '';
   });
 }
 function updateHero(base, comp, baseLen, compLen) {
@@ -1054,6 +1244,12 @@ function renderTitles() {
   setText('.hero-copy', 'El dashboard compara el periodo seleccionado con el mismo tramo del año anterior, aplica los filtros no temporales de forma simétrica y bloquea cualquier lectura si la calidad de datos deja de ser confiable.');
 }
 function renderAll() {
+  const quality = evaluateQuality();
+  renderQuality(quality);
+  if (!quality.overallPass) {
+    renderBlockedState(quality);
+    return;
+  }
   const base = selectedBaseRows();
   const comp = selectedComparisonRows(base);
   const bm = metrics(base);
@@ -1064,7 +1260,6 @@ function renderAll() {
   renderChart(base, comp);
   renderDrivers(base, comp);
   renderInsights(base, comp);
-  renderQuality();
   renderRecent(base);
   document.getElementById('qualityBanner').className = 'quality-banner ok';
 }
