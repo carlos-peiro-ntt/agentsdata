@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monthly Sales Comparison Evals</title>
+  <style>
+    :root {
+      --ink: #18324a;
+      --muted: #60748a;
+      --surface: #ffffff;
+      --canvas: #eaf1f6;
+      --line: #cbd9e5;
+      --blue: #1474b8;
+      --green: #16734e;
+      --green-bg: #e2f3ea;
+      --red: #b23547;
+      --red-bg: #fce9ed;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; color: var(--ink); background: var(--canvas); font-family: Georgia, 'Times New Roman', serif; }
+    .shell { max-width: 1440px; margin: 0 auto; padding: 28px; }
+    header { display: flex; align-items: end; justify-content: space-between; gap: 20px; border-bottom: 2px solid var(--ink); padding-bottom: 18px; }
+    h1, h2, p { margin: 0; }
+    h1 { font-size: 30px; letter-spacing: 0; }
+    .eyebrow { margin-bottom: 7px; color: var(--muted); font: 700 12px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; }
+    .summary { font: 700 15px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--blue); white-space: nowrap; }
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
+    button { appearance: none; border: 1px solid var(--blue); border-radius: 5px; padding: 10px 14px; background: var(--blue); color: #fff; cursor: pointer; font: 700 14px/1 Georgia, 'Times New Roman', serif; }
+    button.secondary { background: var(--surface); color: var(--blue); }
+    button:disabled { opacity: .55; cursor: wait; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(360px, .75fr); gap: 20px; align-items: start; }
+    .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 7px; }
+    .eval-list { display: grid; gap: 0; }
+    .eval { padding: 17px; border-bottom: 1px solid var(--line); }
+    .eval:last-child { border-bottom: 0; }
+    .eval-head { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+    h2 { font-size: 17px; }
+    .tag, .status { border-radius: 999px; padding: 4px 8px; font: 700 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .04em; }
+    .tag { color: var(--muted); background: #edf3f8; }
+    .status { margin-left: auto; color: var(--muted); background: #edf3f8; }
+    .status.pass { color: var(--green); background: var(--green-bg); }
+    .status.fail { color: var(--red); background: var(--red-bg); }
+    .criterion { margin-top: 8px; color: var(--muted); font-size: 14px; line-height: 1.35; }
+    .evidence { margin-top: 12px; padding: 10px; min-height: 40px; border-left: 3px solid var(--line); background: #f7fafc; color: #39536a; font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .right-column { display: grid; gap: 20px; }
+    .panel-title { padding: 14px 16px; border-bottom: 1px solid var(--line); font-size: 16px; }
+    #history { margin: 0; padding: 0; list-style: none; max-height: 280px; overflow: auto; }
+    #history li { padding: 11px 16px; border-bottom: 1px solid var(--line); color: var(--muted); font: 12px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    #history li:last-child { border-bottom: 0; }
+    iframe { display: block; width: 100%; height: 560px; border: 0; background: #fff; }
+    .frame-note { padding: 10px 16px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); }
+    @media (max-width: 960px) { .shell { padding: 16px; } header { align-items: start; flex-direction: column; } .layout { grid-template-columns: 1fr; } iframe { height: 500px; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div><p class="eyebrow">ACCEPTANCE EVALUATION HARNESS</p><h1>Monthly Total Sales comparison</h1></div>
+      <p class="summary" id="summary" aria-live="polite">0/4 PASS</p>
+    </header>
+    <div class="toolbar">
+      <button id="runAll" type="button">Run all</button>
+      <button id="retryFailed" class="secondary" type="button">Retry failed</button>
+    </div>
+    <div class="layout">
+      <section class="panel eval-list" aria-label="Evaluation results">
+        <article class="eval" data-eval="EVAL-001"><div class="eval-head"><h2>EVAL-001</h2><span class="tag">REQ-001</span><span class="tag">AC-001</span><span class="status">NOT RUN</span></div><p class="criterion">Current-month Total Sales is shown in euros.</p><pre class="evidence">Awaiting attempt.</pre></article>
+        <article class="eval" data-eval="EVAL-002"><div class="eval-head"><h2>EVAL-002</h2><span class="tag">REQ-002</span><span class="tag">AC-002</span><span class="status">NOT RUN</span></div><p class="criterion">Previous calendar-month Total Sales is shown in euros with the same non-date filters.</p><pre class="evidence">Awaiting attempt.</pre></article>
+        <article class="eval" data-eval="EVAL-003"><div class="eval-head"><h2>EVAL-003</h2><span class="tag">REQ-003</span><span class="tag">AC-003</span><span class="status">NOT RUN</span></div><p class="criterion">Euro difference equals current-month sales minus previous-month sales.</p><pre class="evidence">Awaiting attempt.</pre></article>
+        <article class="eval" data-eval="EVAL-004"><div class="eval-head"><h2>EVAL-004</h2><span class="tag">REQ-004</span><span class="tag">AC-004</span><span class="status">NOT RUN</span></div><p class="criterion">Percentage change uses the defined formula or `N/A` when previous sales are zero.</p><pre class="evidence">Awaiting attempt.</pre></article>
+      </section>
+      <aside class="right-column">
+        <section class="panel"><h2 class="panel-title">Attempt history</h2><ol id="history"><li>No attempts yet.</li></ol></section>
+        <section class="panel"><h2 class="panel-title">Dashboard under test</h2><iframe id="dashboard" src="../dashboard.html" title="Dashboard under test"></iframe><p class="frame-note" id="scenario">Loading dashboard snapshot...</p></section>
+      </aside>
+    </div>
+  </main>
+  <script>
+    const EVALUATIONS = [
+      { id: 'EVAL-001', output: 'kpiRevenue', expected: result => result.currentRevenue, format: formatMoney },
+      { id: 'EVAL-002', output: 'kpiRevenuePrevious', expected: result => result.previousRevenue, format: formatMoney },
+      { id: 'EVAL-003', output: 'kpiRevenueDifference', expected: result => result.difference, format: formatMoney },
+      { id: 'EVAL-004', output: 'kpiRevenueChange', expected: result => result.change, format: value => value }
+    ];
+    const attempts = [];
+    let running = false;
+
+    function formatMoney(value) {
+      return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(value || 0);
+    }
+
+    function formatPercent(value) {
+      return `${(value || 0).toFixed(1)}%`;
+    }
+
+    function getDashboardDocument() {
+      const frame = document.querySelector('#dashboard');
+      if (!frame.contentDocument || frame.contentDocument.readyState !== 'complete') throw new Error('Dashboard iframe is not ready.');
+      return frame.contentDocument;
+    }
+
+    function readSnapshot(documentUnderTest) {
+      const source = [...documentUnderTest.scripts].map(script => script.textContent).find(text => text.includes('const SNAPSHOT ='));
+      const match = source && source.match(/const SNAPSHOT = (\[[\s\S]*?\]);\s*const SNAPSHOT_FIELDS/);
+      if (!match) throw new Error('Embedded dashboard snapshot could not be read.');
+      return Function(`"use strict"; return (${match[1]});`)();
+    }
+
+    function selectValue(documentUnderTest, id, value) {
+      const select = documentUnderTest.querySelector(`#${id}`);
+      if (!select || ![...select.options].some(option => option.value === value)) throw new Error(`Dashboard filter ${id} cannot select ${value}.`);
+      select.value = value;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    function chooseScenario(snapshot) {
+      const latest = snapshot.reduce((result, row) => Math.max(result, row.year * 12 + row.month - 1), -Infinity);
+      const currentRows = snapshot.filter(row => row.year * 12 + row.month - 1 === latest && row.status === 'Completada');
+      if (!currentRows.length) throw new Error('No completed sale exists in the latest available month.');
+      const candidates = currentRows.map(row => ({ channel: row.channel, userType: row.userType, promotion: row.promotion }));
+      return candidates.find(candidate => independentTotals(snapshot, candidate).previousRevenue !== 0) || candidates[0];
+    }
+
+    function independentTotals(snapshot, filters) {
+      const nonDateRows = snapshot.filter(row =>
+        row.channel === filters.channel && row.userType === filters.userType && row.promotion === filters.promotion
+      );
+      const currentPeriod = nonDateRows.reduce((latest, row) => Math.max(latest, row.year * 12 + row.month - 1), -Infinity);
+      if (!Number.isFinite(currentPeriod)) throw new Error('Scenario filters returned no dashboard data.');
+      const sumCompletedRevenue = period => nonDateRows
+        .filter(row => row.year * 12 + row.month - 1 === period && row.status === 'Completada')
+        .reduce((total, row) => total + Number(row.revenue || 0), 0);
+      const currentRevenue = sumCompletedRevenue(currentPeriod);
+      const previousRevenue = sumCompletedRevenue(currentPeriod - 1);
+      const difference = currentRevenue - previousRevenue;
+      return { currentPeriod, currentRevenue, previousRevenue, difference, change: previousRevenue === 0 ? 'N/A' : formatPercent(difference / previousRevenue * 100) };
+    }
+
+    function prepareScenario() {
+      const documentUnderTest = getDashboardDocument();
+      const snapshot = readSnapshot(documentUnderTest);
+      const filters = chooseScenario(snapshot);
+      selectValue(documentUnderTest, 'channelFilter', filters.channel);
+      selectValue(documentUnderTest, 'userFilter', filters.userType);
+      selectValue(documentUnderTest, 'promotionFilter', filters.promotion);
+      const result = independentTotals(snapshot, filters);
+      document.querySelector('#scenario').textContent = `Scenario: channel=${filters.channel}; user=${filters.userType}; promotion=${filters.promotion}; reference=${Math.floor(result.currentPeriod / 12)}-${String(result.currentPeriod % 12 + 1).padStart(2, '0')}.`;
+      return { documentUnderTest, filters, result };
+    }
+
+    function visibleValue(documentUnderTest, id) {
+      const element = documentUnderTest.querySelector(`#${id}`);
+      if (!element) throw new Error(`Dashboard output #${id} is missing.`);
+      return element.textContent.trim();
+    }
+
+    function writeResult(id, status, evidence) {
+      const card = document.querySelector(`[data-eval="${id}"]`);
+      const badge = card.querySelector('.status');
+      badge.textContent = status;
+      badge.className = `status ${status.toLowerCase()}`;
+      card.querySelector('.evidence').textContent = evidence;
+    }
+
+    function updateHistory() {
+      const history = document.querySelector('#history');
+      history.innerHTML = attempts.length ? attempts.map((attempt, index) => {
+        const previous = attempts.slice(0, index).reverse().find(item => item.id === attempt.id);
+        const transition = previous ? ` ${previous.status} -> ${attempt.status}` : ` ${attempt.status}`;
+        return `<li>${attempt.timestamp}  ${attempt.id}${transition}</li>`;
+      }).join('') : '<li>No attempts yet.</li>';
+      const latest = new Map();
+      attempts.forEach(attempt => latest.set(attempt.id, attempt.status));
+      const passed = EVALUATIONS.filter(evaluation => latest.get(evaluation.id) === 'PASS').length;
+      document.querySelector('#summary').textContent = `${passed}/4 PASS`;
+    }
+
+    function evaluate(evaluation, scenario) {
+      try {
+        const expected = evaluation.format(evaluation.expected(scenario.result));
+        const actual = visibleValue(scenario.documentUnderTest, evaluation.output);
+        const status = actual === expected ? 'PASS' : 'FAIL';
+        const evidence = `Expected: ${expected}\nActual:   ${actual}\nIndependent totals: current=${formatMoney(scenario.result.currentRevenue)}; previous=${formatMoney(scenario.result.previousRevenue)}; difference=${formatMoney(scenario.result.difference)}; change=${scenario.result.change}`;
+        writeResult(evaluation.id, status, evidence);
+        attempts.push({ id: evaluation.id, status, timestamp: new Date().toLocaleTimeString('en-GB') });
+      } catch (error) {
+        const evidence = `Harness error: ${error.message}`;
+        writeResult(evaluation.id, 'FAIL', evidence);
+        attempts.push({ id: evaluation.id, status: 'FAIL', timestamp: new Date().toLocaleTimeString('en-GB') });
+      }
+    }
+
+    function setRunning(value) {
+      running = value;
+      document.querySelector('#runAll').disabled = value;
+      document.querySelector('#retryFailed').disabled = value;
+    }
+
+    function run(ids) {
+      if (running || !ids.length) return;
+      setRunning(true);
+      try {
+        const scenario = prepareScenario();
+        ids.forEach(id => evaluate(EVALUATIONS.find(evaluation => evaluation.id === id), scenario));
+      } catch (error) {
+        ids.forEach(id => evaluate({ id, output: '', expected: () => { throw error; }, format: value => value }, { result: {}, documentUnderTest: document }));
+      } finally {
+        updateHistory();
+        setRunning(false);
+      }
+    }
+
+    document.querySelector('#runAll').addEventListener('click', () => run(EVALUATIONS.map(evaluation => evaluation.id)));
+    document.querySelector('#retryFailed').addEventListener('click', () => {
+      const latest = new Map();
+      attempts.forEach(attempt => latest.set(attempt.id, attempt.status));
+      run(EVALUATIONS.filter(evaluation => latest.get(evaluation.id) === 'FAIL').map(evaluation => evaluation.id));
+    });
+  </script>
+</body>
+</html>
