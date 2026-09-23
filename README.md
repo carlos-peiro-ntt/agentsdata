@@ -971,127 +971,101 @@ Evaluación (Harness/Evals)
 
 > En este ejercicio se trabajará únicamente hasta la aprobación de la spec. La implementación, el harness y los evals se incorporarán en el siguiente ejercicio.
 
-### Parte 1 — Definir la idea
+### Parte 1 — Partir de una idea concreta
 
-Elige una evolución concreta del dashboard existente y descríbela en una sola frase. Debe expresar una necesidad de negocio, no una solución técnica.
-
-Ejemplo:
+Usaremos la misma idea durante todo el flujo para que el foco esté en aprender SDD:
 
 ```text
-Como responsable comercial, quiero comparar el rendimiento del periodo seleccionado con un periodo anterior para detectar cambios relevantes en ventas.
+Como responsable comercial, quiero que Total Sales compare las ventas del mes actual con las del mes anterior y muestre la variación en euros y en porcentaje.
 ```
 
-Antes de continuar, comprueba que la idea:
-
-- identifica quién necesita el cambio;
-- explica qué problema de negocio quiere resolver;
-- no presupone tablas, columnas ni tecnologías que todavía no se hayan validado;
-- es lo bastante pequeña para implementarse y revisarse durante el taller.
+Para que el resultado sea reproducible con datos históricos, en este ejercicio **mes actual** significa el último mes disponible dentro de la selección y **mes anterior** el mes natural inmediatamente anterior. El selector de fecha fija el mes de referencia; ambos periodos comparten los demás filtros de negocio. Si el mes anterior vale cero, el porcentaje se mostrará como `N/A` para evitar una división inválida.
 
 ### Parte 2 — Generar y revisar el plan
 
-En modo **Plan**, envía:
+En modo **Plan**, envía este prompt breve:
 
 ```text
-Plan the next evolution of the retail sales dashboard based on this business idea:
+Plan this dashboard change without editing files.
 
-{idea}
+Update Total Sales to compare the latest available month in the date
+selection with the immediately previous calendar month.
 
-Read AGENTS.md and rules/dashboard.md before planning. Inspect the existing dashboard and, when authoritative data context is required, use the configured Supabase MCP in read-only mode. Do not invent tables, columns, relationships, calculations, or values.
+Treat the selected month as the reference period and apply the same
+non-date business filters to both periods.
 
-Produce an implementation-oriented plan, but do not modify files and do not implement the change yet. Identify assumptions, open questions, affected areas, data-quality checks, privacy implications, and validation needs.
+Show:
+- current month sales;
+- previous month sales;
+- euro difference: current - previous;
+- percentage change: (current - previous) / previous * 100;
+- N/A when previous sales are zero.
+
+Read AGENTS.md and rules/dashboard.md. Inspect the current dashboard
+and do not invent data or fields.
+
+Return only:
+- affected area;
+- calculation rules;
+- edge cases;
+- validation steps.
 ```
 
-Revisa el plan y resuelve las preguntas abiertas que puedan cambiar el alcance. El plan explica **cómo abordar el trabajo**, pero todavía no es el contrato de implementación.
+Comprueba que el plan no amplía el alcance. Todavía no se implementa nada.
 
 ### Parte 3 — Generar la spec
 
-Con el plan revisado disponible, pide al agente que cree `specs/dashboard-evolution.md`:
+Pide al agente que convierta la idea y el plan en una spec pequeña:
 
 ```text
-Create specs/dashboard-evolution.md for the approved dashboard evolution.
+Create specs/dashboard-evolution.md from the agreed idea and plan.
 
-Use the business idea, the approved plan, the current repository, AGENTS.md, and rules/dashboard.md as inputs. The spec must describe required behavior and observable outcomes, not implementation steps. Do not modify the dashboard or publish anything to Confluence yet.
+Read AGENTS.md and rules/dashboard.md. Describe observable behavior,
+not implementation details. Do not modify the dashboard.
 
-Write the specification with exactly these sections:
+Use exactly these nine sections:
 
 1. Metadata
-   - Title
-   - Status: Draft
-   - Version: 0.1.0
-   - Owner role or team (no personal identifiers)
-   - Last updated
 2. Problem
-   - Who is affected
-   - Current pain or limitation
-   - Business impact
 3. Context
-   - Current dashboard behavior
-   - Relevant validated data sources and dependencies
-   - Privacy and data-quality considerations
 4. Goals and Non-goals
 5. Scope
-   - In scope
-   - Out of scope
 6. Requirements
-   - Assign stable IDs: REQ-001, REQ-002, ...
-   - State observable behavior without prescribing code structure
 7. Acceptance Criteria
-   - Assign stable IDs: AC-001, AC-002, ...
-   - Use Given/When/Then where applicable
-   - Map every criterion to at least one requirement
 8. Constraints
-   - Architecture, data source, privacy, data quality, UX, compatibility, and publishing constraints
 9. Evolution
-   - Expected extension points
-   - Backward-compatibility expectations
-   - Versioning and change-log policy
-   - Explicitly deferred capabilities
-10. Open Questions and Decisions
-    - Separate unresolved questions from confirmed decisions
-    - Mark any question that blocks implementation
-11. Traceability
-    - Table mapping Problem → Goal → Requirement → Acceptance Criterion → Validation method
 
-Rules for the spec:
+Use exactly four requirements and four mapped acceptance criteria:
 
-- Do not invent data, schema fields, KPI formulas, or business rules.
-- Mark unknown information as TBD and state how it must be resolved.
-- A blocking TBD prevents the spec from moving to Approved.
-- Make every acceptance criterion objectively verifiable.
-- Include failure and empty-state behavior, not only the happy path.
-- Keep future ideas in Evolution or Out of scope; do not silently expand the current scope.
-- End with a short "Readiness for approval" summary listing blockers, if any.
+- REQ-001 / AC-001: show Total Sales for the current month in euros.
+- REQ-002 / AC-002: show Total Sales for the previous month in euros.
+- REQ-003 / AC-003: show current minus previous in euros.
+- REQ-004 / AC-004: show percentage change, or N/A when previous is zero.
+
+Use Given/When/Then for every AC.
+
+Set:
+- Status: Draft
+- Version: 0.1.0
+
+Do not add more REQ or AC, invent data, or leave blocking TBD items.
+Do not implement anything yet.
 ```
 
 ### Parte 4 — Revisar y aprobar la spec
 
-Revisa `specs/dashboard-evolution.md` con esta lista:
+Revisa solo estas condiciones:
 
-- el problema describe una necesidad y su impacto, no una solución;
-- el contexto coincide con el repositorio y con los datos realmente validados;
-- el alcance separa claramente lo incluido de lo excluido;
-- cada requisito tiene un identificador estable;
-- cada criterio de aceptación es observable y medible;
-- todos los requisitos están cubiertos por criterios de aceptación;
-- se documentan errores, estados vacíos y limitaciones de datos;
-- las restricciones de `AGENTS.md` y `rules/dashboard.md` están reflejadas;
-- la sección **Evolution** permite cambios futuros sin ampliar el alcance actual;
-- no quedan preguntas bloqueantes ni valores `TBD` sin resolver.
+- aparecen las nueve secciones, una vez y en ese orden;
+- existen exactamente cuatro requisitos y cuatro criterios, con relación uno a uno;
+- las fórmulas y el caso `previous = 0` son verificables;
+- no quedan `TBD`, preguntas bloqueantes ni conflictos con las reglas del repositorio.
 
 Si la spec cumple la lista, cambia su estado de `Draft` a `Approved` y su versión de `0.1.0` a `1.0.0`. Este cambio debe ser explícito; no se considera aprobada solo porque exista el archivo.
 
 ### Resultado del ejercicio
 
-Este ejercicio termina antes de implementar. Debe producir:
-
-- una idea de negocio acotada;
-- un plan revisado;
-- `specs/dashboard-evolution.md` con estado `Approved` y versión `1.0.0`;
-- requisitos y criterios de aceptación trazables;
-- cero preguntas bloqueantes y cero valores `TBD` sin resolver.
-
-La implementación no comienza hasta el siguiente ejercicio. Separar ambos momentos permite revisar el contrato sin que el código existente condicione la definición del resultado esperado.
+El resultado es `specs/dashboard-evolution.md` en estado `Approved`, versión `1.0.0`, con nueve secciones, cuatro `REQ` y cuatro `AC`. La implementación comienza en el ejercicio siguiente.
 
 ---
 
@@ -1099,51 +1073,30 @@ La implementación no comienza hasta el siguiente ejercicio. Separar ambos momen
 
 ### Objetivo
 
-Implementar la spec aprobada y cerrar el ciclo SDD con un **evaluation harness** reproducible.
-
-- El **harness** es el mecanismo que carga el dashboard, ejecuta comprobaciones y recopila resultados.
-- Los **evals** son las comprobaciones concretas y sus oráculos: qué se observa, qué se esperaba y qué significa `PASS`, `FAIL` o `BLOCKED`.
+Implementar la spec aprobada y comprobar sus cuatro pares `REQ/AC` con un **harness** sencillo y reproducible.
 
 El flujo completo queda así:
 
 ```text
-Idea
-  ↓
-Plan aprobado
-  ↓
-Spec aprobada
-  ↓
-Plan de evaluación derivado de la spec
-  ↓
-Implementación
-  ↓
-Harness + Evals
-  ↓
-Evidencia → Corrección → Regresión
+Idea → Plan → Spec aprobada → Implementación → Harness
+                                             ↓
+                         FAIL → Corrección → Reintento → PASS
 ```
 
-> Para respetar la arquitectura del repositorio, el harness será HTML y JavaScript nativo, sin paquetes ni servicios externos. Se ejecutará desde el mismo servidor HTTP local que el dashboard.
+El harness será un único `evals/harness.html`, con HTML y JavaScript nativo. Cargará el dashboard desde el mismo servidor local y no usará paquetes ni servicios externos.
 
-### Parte 1 — Diseñar los evals antes de implementar
+### Parte 1 — Traducir la spec a cuatro comprobaciones
 
-Antes de modificar el dashboard, crea el contrato de evaluación a partir de la spec aprobada:
+Antes de implementar, identifica qué observará el harness:
 
-```text
-Read the approved specification in specs/dashboard-evolution.md and create evals/eval-plan.md.
+| Eval | Contrato | Comprobación |
+| --- | --- | --- |
+| EVAL-001 | REQ-001 / AC-001 | Existe y es correcto el total del mes actual. |
+| EVAL-002 | REQ-002 / AC-002 | Existe y es correcto el total del mes anterior. |
+| EVAL-003 | REQ-003 / AC-003 | La diferencia en euros es `actual - anterior`. |
+| EVAL-004 | REQ-004 / AC-004 | El porcentaje aplica la fórmula acordada o muestra `N/A` si el anterior es cero. |
 
-Create the simplest reproducible evaluation mechanism for this repository.
-
-Automate every acceptance criterion that can be verified deterministically.
-Leave external or subjective validations as MANUAL.
-
-Report:
-- coverage
-- PASS / FAIL
-- remaining MANUAL checks
-- evidence
-```
-
-Revisa que ningún criterio de aceptación quede sin cobertura. El objetivo es definir los oráculos antes de ver la implementación y reducir evaluaciones diseñadas para confirmar el código ya escrito.
+No añadas más evals. Así se ve con claridad que el harness deriva de la spec y no de la implementación.
 
 ### Parte 2 — Implementar la spec aprobada
 
@@ -1152,74 +1105,60 @@ Vuelve al modo **Agent** y envía:
 ```text
 Implement the approved specification in specs/dashboard-evolution.md.
 
-Treat the approved specification as the single source of truth for scope and acceptance. Follow AGENTS.md and rules/dashboard.md. Do not implement out-of-scope or deferred capabilities.
+Confirm first that:
+- Status is Approved;
+- Version is 1.0.0;
+- there are no blocking TBD items.
 
-Before editing:
+Follow AGENTS.md and rules/dashboard.md.
 
-- Confirm that the specification status is Approved.
-- Confirm that there are no blocking TBD items or unresolved decisions.
-- Stop and report any conflict between the specification, repository, validated data, or project rules. Do not reinterpret requirements.
+Implement only REQ-001 through REQ-004 in the existing Total Sales card.
+Use stable DOM identifiers for the four displayed values.
 
-During implementation:
+Preserve the self-contained dashboard.
+Do not modify the approved spec.
+Do not create the harness yet.
 
-- Implement only the approved scope.
-- Preserve {name}.html as the single self-contained production artifact.
-- Apply the required privacy and data-quality gates before calculating KPIs or publishing documentation.
-- Ensure the implementation exposes enough observable behaviour for the evaluation step (for example, stable identifiers or predictable UI elements where appropriate).
-- Do not expose raw records, personal data, credentials, or a runtime Supabase connection.
-- Do not modify the approved requirements or acceptance criteria to simplify the implementation.
-
-Do not create the evaluation mechanism in this step.
-
-At the end, report:
-
-- Implemented REQ identifiers.
-- Modified files.
-- Data-quality results.
-- Any deviations or implementation limitations.
+Report:
+- implemented REQ identifiers;
+- modified files;
+- validation performed.
 ```
 
-### Parte 3 — Crear el harness sin dependencias
+### Parte 3 — Crear el harness
 
 Con la implementación disponible, envía:
 
 ```text
-Create the simplest reproducible evaluation mechanism for the implemented dashboard.
+Create evals/harness.html using only HTML and JavaScript.
 
-Use specs/dashboard-evolution.md, the current implementation, evals/eval-plan.md, AGENTS.md, and rules/dashboard.md as authoritative inputs.
+Read:
+- specs/dashboard-evolution.md;
+- the implemented dashboard;
+- AGENTS.md;
+- rules/dashboard.md.
 
-Do not modify the approved specification or weaken acceptance criteria.
+Do not modify the spec or dashboard.
 
-Create the files needed to run the evaluation locally. Prefer a zero-dependency browser-based solution if it fits the repository, but use the simplest reliable mechanism.
+Create exactly four evaluations:
 
-The evaluation must:
+- EVAL-001 validates REQ-001 / AC-001.
+- EVAL-002 validates REQ-002 / AC-002.
+- EVAL-003 validates REQ-003 / AC-003.
+- EVAL-004 validates REQ-004 / AC-004.
 
-- Check every acceptance criterion that can be verified deterministically.
-- Mark as MANUAL any check that depends on Supabase, Confluence, visual judgment, business interpretation, or external evidence.
-- Mark as BLOCKED any check that cannot be evaluated because the spec is ambiguous or the implementation lacks observable behavior.
-- Report PASS, FAIL, BLOCKED, or MANUAL for every evaluation.
-- Capture concise evidence for each result.
-- Export or document the results in a reusable way.
-- Avoid exposing credentials, raw records, personal data, or runtime service connections.
+The harness must:
+- load the dashboard in an iframe;
+- show EVAL, REQ, AC, PASS/FAIL and evidence;
+- provide Run all and Retry failed buttons;
+- keep the attempt history;
+- show transitions such as FAIL → PASS;
+- calculate expected values independently;
+- treat harness errors as FAIL;
+- show a final summary such as 4/4 PASS.
 
-Automate only reliable checks, such as:
-
-- required KPI elements exist;
-- required chart containers exist;
-- required filters exist;
-- filter interactions update observable dashboard state;
-- the data-quality banner exists;
-- rendered content does not expose obvious personal data patterns;
-- the dashboard does not load prohibited external scripts or styles.
-
-After creating the evaluation mechanism, report:
-
-- files created;
-- how to run the evaluation locally;
-- automated checks;
-- manual checks;
-- blocked checks;
-- coverage against the approved acceptance criteria.
+Do not add more evals, dependencies, exports, charts,
+MANUAL states or BLOCKED states.
 ```
 
 ### Parte 4 — Ejecutar el harness
@@ -1238,59 +1177,31 @@ python -m http.server 8000
 python3 -m http.server 8000
 ```
 
-Abre `http://localhost:8000/evals/harness.html` y ejecuta **Run all**.
-
-Comprueba que:
-
-- el iframe carga `/{name}.html` sin errores de origen o de ruta;
-- cada resultado conserva sus identificadores `EVAL-*` y `AC-*`;
-- ningún error interno del evaluador aparece como `PASS`;
-- los resultados manuales se muestran como `MANUAL`, no como aprobados automáticamente;
-- el JSON exportado no contiene datos personales, credenciales ni registros de venta;
-- la consola del navegador no muestra errores no controlados.
-
-Guarda el resultado exportado como evidencia del intento de evaluación. No edites manualmente un `FAIL` para convertirlo en `PASS`.
+Abre `http://localhost:8000/evals/harness.html` y pulsa **Run all**. El resultado debe mostrar únicamente cuatro filas y un resumen global.
 
 ### Parte 5 — Corregir y ejecutar regresión
 
 Si algún eval obtiene `FAIL`:
 
-1. Determina si falla la implementación, el harness o la propia spec.
-2. Si falla la implementación, corrige únicamente el comportamiento necesario y ejecuta **Run failed**.
-3. Después de corregir los fallos, ejecuta de nuevo **Run all** para detectar regresiones.
-4. Si el problema está en un oráculo, corrige `evals/eval-plan.md` y el harness sin rebajar el requisito.
-5. Si debe cambiar el comportamiento esperado, actualiza primero la spec, incrementa su versión y vuelve a aprobarla antes de modificar la implementación o el eval.
+1. Lee el `REQ/AC` y la evidencia de esa fila.
+2. Corrige solo la implementación que incumple la spec; no rebajes el criterio.
+3. Pulsa **Retry failed**. El historial debe conservar el primer `FAIL` y añadir el nuevo resultado.
+4. Cuando pase, pulsa **Run all** para comprobar que no hubo regresiones.
 
-Un criterio no pasa porque “parezca correcto”; pasa únicamente cuando existe evidencia que satisface el oráculo aprobado.
-
-### Parte 6 — Completar las evaluaciones manuales
-
-Completa los evals marcados como `MANUAL` y registra evidencia suficiente para revisarlos:
-
-- ubicación, título y contenido obligatorio de la página de Confluence;
-- legibilidad, jerarquía visual y comportamiento responsive;
-- resultados `PASS`/`FAIL` de cada tabla consultada mediante Supabase MCP;
-- cardinalidad antes y después de cada join;
-- cualquier criterio que dependa de un sistema externo o de juicio humano.
-
-No copies datos personales ni credenciales en la evidencia. Un eval manual sin evidencia permanece `BLOCKED`, no `PASS`.
+Para demostrar el ciclo durante el curso, si la primera ejecución devuelve `4/4 PASS`, renombra temporalmente uno de los IDs estables que lee el harness y ejecuta **Run all**. Restaura el ID según la spec y pulsa **Retry failed**. El historial debe mostrar claramente `FAIL → PASS`.
 
 ### Validación final del curso
 
 Comprueba que:
 
-- `specs/dashboard-evolution.md` continúa en estado `Approved` y refleja el comportamiento implementado;
-- todos los `AC-*` están cubiertos por uno o más `EVAL-*`;
-- todos los evals tienen un resultado explícito: `PASS`, `FAIL` o `BLOCKED`;
-- no queda ningún `FAIL`, `BLOCKED` ni `MANUAL` pendiente para dar la evolución por aceptada;
-- los evals manuales aprobados incluyen evidencia revisable;
-- el harness puede ejecutarse de nuevo desde un repositorio limpio siguiendo `evals/README.md`;
-- `{name}.html` sigue siendo autocontenido y no depende del harness para funcionar;
-- no se han expuesto datos personales, credenciales ni conexiones runtime a Supabase;
-- cualquier cambio de alcance quedó versionado y aprobado primero en la spec.
+- la spec continúa `Approved` y no cambió para hacer pasar los tests;
+- existen exactamente cuatro filas y cada una enlaza un `REQ` con su `AC`;
+- el resultado final es `4/4 PASS`;
+- si hubo un fallo, el historial muestra el reintento y su corrección;
+- el dashboard sigue siendo autocontenido y funciona sin el harness.
 
 La cadena final del curso es:
 
 ```text
-Idea → Plan → Spec aprobada → Eval plan → Implementación → Harness/Evals → Evidencia → Regresión
+Idea → Plan → Spec aprobada → Implementación → Harness → Corrección → Reintento
 ```
