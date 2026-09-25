@@ -38,6 +38,9 @@
     .kpi label{display:block; color:var(--muted); font-size:13px; margin-bottom:10px}
     .kpi strong{display:block; font-size:28px; letter-spacing:-.04em; position:relative; z-index:1}
     .trend{margin-top:10px; font-size:13px; color:var(--green); position:relative; z-index:1}
+    .kpi-comparison{display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:10px; margin-top:16px; position:relative; z-index:1}
+    .kpi-comparison span{display:block; color:var(--muted); font-size:11px; margin-bottom:4px}
+    .kpi-comparison strong{font-size:16px; letter-spacing:-.02em}
     .summary-grid{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:16px; margin-bottom:16px}
     .summary-card{padding:18px}
     .summary-label{font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
@@ -96,7 +99,7 @@
     </div>
 
     <section class="kpis">
-      <article class="card kpi"><label>Total Sales — Revenue (€)</label><strong id="kpiRevenue">-</strong><div class="trend" id="kpiRevenueTrend">-</div></article>
+      <article class="card kpi"><label>Total Sales — Revenue (€)</label><strong id="kpiRevenue">-</strong><div class="trend" id="kpiRevenueTrend">-</div><div class="kpi-comparison"><div><span>Mes anterior</span><strong id="kpiRevenuePrevious">-</strong></div><div><span>Diferencia</span><strong id="kpiRevenueDifference">-</strong></div><div><span>Cambio</span><strong id="kpiRevenueChange">-</strong></div></div></article>
       <article class="card kpi"><label>Total Sales — Units</label><strong id="kpiUnits">-</strong><div class="trend" id="kpiUnitsTrend">-</div></article>
       <article class="card kpi"><label>Returns — Revenue (€)</label><strong id="kpiReturnsRevenue">-</strong><div class="trend" id="kpiReturnsTrend">-</div></article>
       <article class="card kpi"><label>Returns — Units</label><strong id="kpiReturnsUnits">-</strong><div class="trend" id="kpiReturnsUnitsTrend">-</div></article>
@@ -291,12 +294,14 @@
       const channel = document.querySelector('#channelFilter').value;
       const userType = document.querySelector('#userFilter').value;
       const promotion = document.querySelector('#promotionFilter').value;
-      const filtered = SNAPSHOT.filter(row =>
-        (!years.length || years.includes(String(row.year))) &&
-        (!months.length || months.includes(String(row.month))) &&
+      const nonDateFiltered = SNAPSHOT.filter(row =>
         (channel === 'all' || row.channel === channel) &&
         (userType === 'all' || row.userType === userType) &&
         (promotion === 'all' || row.promotion === promotion)
+      );
+      const filtered = nonDateFiltered.filter(row =>
+        (!years.length || years.includes(String(row.year))) &&
+        (!months.length || months.includes(String(row.month)))
       );
       const completed = filtered.filter(v => v.status === 'Completada');
       const returns = filtered.filter(v => v.status === 'Devuelta');
@@ -306,6 +311,26 @@
       const returnUnits = returns.reduce((total, row) => total + Number(row.units || 0), 0);
       const registeredCount = completed.filter(row => row.userType === 'Registrado').length;
       const registeredPct = completed.length ? registeredCount / completed.length * 100 : 0;
+
+      const currentPeriod = filtered.reduce((latest, row) => {
+        const period = row.year * 12 + row.month - 1;
+        return !latest || period > latest.period ? { year: row.year, month: row.month, period } : latest;
+      }, null);
+      const sumCompletedRevenue = rows => rows.filter(row => row.status === 'Completada')
+        .reduce((total, row) => total + Number(row.revenue || 0), 0);
+      const currentRows = currentPeriod
+        ? nonDateFiltered.filter(row => row.year === currentPeriod.year && row.month === currentPeriod.month)
+        : [];
+      const previousPeriod = currentPeriod ? currentPeriod.period - 1 : null;
+      const previousRows = currentPeriod
+        ? nonDateFiltered.filter(row => row.year * 12 + row.month - 1 === previousPeriod)
+        : [];
+      const currentRevenue = currentPeriod ? sumCompletedRevenue(currentRows) : null;
+      const previousRevenue = currentPeriod ? sumCompletedRevenue(previousRows) : null;
+      const revenueDifference = currentRevenue === null ? null : currentRevenue - previousRevenue;
+      const revenueChange = previousRevenue === null
+        ? null
+        : previousRevenue === 0 ? 'N/A' : fmtPct((revenueDifference / previousRevenue) * 100);
 
       const monthMap = new Map();
       for (const v of completed) {
@@ -324,13 +349,18 @@
       const revenueShare = revenue ? (channelLeader.value / revenue) * 100 : 0;
       const trendDelta = trend.length > 1 ? ((trend[trend.length - 1].value - trend[0].value) / Math.max(trend[0].value, 1)) * 100 : 0;
 
-      document.querySelector('#kpiRevenue').textContent = fmtMoney(revenue);
+      document.querySelector('#kpiRevenue').textContent = currentRevenue === null ? '-' : fmtMoney(currentRevenue);
+      document.querySelector('#kpiRevenuePrevious').textContent = previousRevenue === null ? '-' : fmtMoney(previousRevenue);
+      document.querySelector('#kpiRevenueDifference').textContent = revenueDifference === null ? '-' : fmtMoney(revenueDifference);
+      document.querySelector('#kpiRevenueChange').textContent = revenueChange === null ? '-' : revenueChange;
       document.querySelector('#kpiUnits').textContent = fmtNum(units);
       document.querySelector('#kpiReturnsRevenue').textContent = fmtMoney(returnRevenue);
       document.querySelector('#kpiReturnsUnits').textContent = fmtNum(returnUnits);
       document.querySelector('#kpiRegistered').textContent = fmtPct(registeredPct);
 
-      document.querySelector('#kpiRevenueTrend').textContent = `${fmtNum(completed.length)} ventas completadas`;
+      document.querySelector('#kpiRevenueTrend').textContent = currentPeriod
+        ? `${currentPeriod.year}-${String(currentPeriod.month).padStart(2, '0')} · ${fmtNum(currentRows.filter(row => row.status === 'Completada').length)} ventas`
+        : 'Sin datos para el periodo';
       document.querySelector('#kpiUnitsTrend').textContent = `${fmtNum(completed.length)} ventas completadas`;
       document.querySelector('#kpiReturnsTrend').textContent = `${fmtNum(returns.length)} devoluciones`;
       document.querySelector('#kpiReturnsUnitsTrend').textContent = 'Unidades devueltas';
