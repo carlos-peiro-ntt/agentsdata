@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This repository contains a standalone retail sales dashboard in [web.html](web.html). The main goal is to build and iterate on a business-facing sales dashboard without introducing unnecessary dependencies. Dashboard data is now sourced from the configured Supabase MCP, validated, and embedded into the self-contained HTML output.
+This repository contains a standalone retail sales dashboard in [dashboard.html](dashboard.html). The main goal is to build and iterate on a business-facing sales dashboard without introducing unnecessary dependencies. Dashboard data is sourced from the configured Supabase MCP, validated, and embedded into the self-contained HTML output.
 
 ## Business Context
 
@@ -14,7 +14,7 @@ The primary goal is to help business stakeholders understand sales performance t
 
 Use this file as the main entry point for future agents working in this repository. The supporting guidance lives in:
 
-- Rules: [rules/dashboard.md](rules/dashboard.md)
+- Instructions: [.github/instructions/dashboard.instructions.md](.github/instructions/dashboard.instructions.md)
 - Skills: [.agents/skills/](.agents/skills/) and the registry snapshot in [skills-lock.json](skills-lock.json)
 - MCP configuration: [.vscode/mcp.json](.vscode/mcp.json)
 
@@ -23,13 +23,7 @@ Use this file as the main entry point for future agents working in this reposito
 When working on this project:
 
 - Prioritize business insights over visual complexity.
-- Treat [rules/dashboard.md](rules/dashboard.md) as the governing source for dashboard data, privacy, validation, and publishing rules.
-- Retrieve required data through the read-only Supabase MCP and embed the validated snapshot in the HTML dashboard.
-- Validate each required source table and join before presenting KPIs, and stop if a required check fails.
-- If the Supabase MCP is unavailable or the required data cannot be retrieved, stop and report the limitation rather than falling back to CSVs, sample data, or invented values.
-- Exclude personal data and never surface names, email addresses, birth dates, postal codes, or other identifying fields.
-- Report data-quality limitations before making recommendations.
-- Prefer simple, business-readable dashboards with interactive filtering.
+- Treat [.github/instructions/dashboard.instructions.md](.github/instructions/dashboard.instructions.md) as the governing source for dashboard data, privacy, validation, and publishing rules.
 - Keep the current standalone HTML architecture unless a different technical approach is explicitly requested.
 - Avoid introducing external dependencies unless explicitly approved.
 
@@ -55,9 +49,9 @@ Prefer an MCP when the task needs current data, repository-backed records, or ve
 
 Use both when helpful: a skill can define the approach, and an MCP can supply the evidence.
 
-## Dashboard Rules
+## Dashboard Instructions
 
-When generating dashboard content or related documentation, follow the constraints in [rules/dashboard.md](rules/dashboard.md): use Supabase rather than CSV files, keep the HTML self-contained, enforce the data-quality gate, and publish Confluence documentation only as the specified child page under the approved parent.
+Read and follow [.github/instructions/dashboard.instructions.md](.github/instructions/dashboard.instructions.md) before generating dashboard content or related documentation. It is the single source of truth for the mandatory data source, privacy, data-quality, self-contained HTML, and Confluence publishing constraints.
 
 ## Business KPIs
 
@@ -70,15 +64,6 @@ When relevant, prioritize metrics such as:
 - Sales by Category
 - Conversion
 - Units Sold
-
-## Data Quality
-
-Before presenting results:
-
-- Validate null or missing values.
-- Check referential integrity across dimension tables.
-- Detect anomalous values, including unusual price drops and potential stock issues.
-- Explain any limitations that may affect the reliability of the analysis.
 
 ## Local Validation
 
