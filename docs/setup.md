@@ -116,18 +116,9 @@ code --version
 
 Python will be used to serve the dashboard locally.
 
-**Windows — PowerShell**
+**Windows — Microsoft Store**
 
-```powershell
-winget install 9NQ7512CXL7T
-```
-
-Close and reopen PowerShell. Then run:
-
-```powershell
-py install 3.12
-py -3.12 --version
-```
+Open **Microsoft Store**, search for **Python 3.12**, and install it from there.
 
 **macOS — Terminal**
 
@@ -149,6 +140,8 @@ python3 --version
 `npx` will be used to install skills.
 
 **Windows — PowerShell**
+
+Administrator permissions are required for this installation. Open PowerShell as administrator before running:
 
 ```powershell
 winget install --id OpenJS.NodeJS.LTS -e
