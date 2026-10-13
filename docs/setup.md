@@ -170,29 +170,60 @@ npx --version
 
 ### 0.7 Install uv and uvx
 
-`uvx` will be used to run the Confluence MCP.
+`uvx` will be used to run the Confluence MCP. `uvx` is included with `uv`.
 
 **Windows — PowerShell**
 
-1. Run in the terminal:
+Run:
 
-   ```console
-   powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-   ```
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
 
-2. Temporarily add `uv` and `uvx` to the current session's `PATH`:
+Close and reopen the terminal, then check:
 
-   ```console
-   $env:Path = "$HOME\.local\bin;$env:Path"
-   ```
+```powershell
+uvx --version
+uvx mcp-atlassian --help
+```
 
-3. Check that `uvx` is available:
+If `uvx` is not found, add it to the current session's `PATH`:
 
-   ```console
-   uvx mcp-atlassian --help
-   ```
+```powershell
+$env:Path = "$HOME\.local\bin;$env:Path"
+```
 
-4. Close and reopen Visual Studio Code so the installation applies to a new session.
+**macOS — Terminal**
+
+```bash
+brew install uv
+```
+
+Then check:
+
+```bash
+uvx --version
+uvx mcp-atlassian --help
+```
+
+**Linux or WSL — Bash**
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Close and reopen the terminal, then check:
+
+```bash
+uvx --version
+uvx mcp-atlassian --help
+```
+
+If `uvx` is not found, load the updated environment:
+
+```bash
+source $HOME/.local/bin/env
+```
 
 ### 0.8 Install VS Code extensions
 
