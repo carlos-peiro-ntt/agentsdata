@@ -1,0 +1,20 @@
+README.md
+  h_5668b745a35fae 24-25,42-43,47-53
+dashboard.html
+  h_5668b745a35fae 99,329,335-336
+docs/exercises/exercise-04-sdd.md
+  h_5668b745a35fae 1,7,24,26,30-59,62,76-78,81,83-84,86-88,97-99,102,104-106,108,110,112,114-120,122,124,128,132
+docs/exercises/exercise-05-implementation-evals.md
+  h_5668b745a35fae 1,7,12-16,19,21,23,25,27-30,32,34,36,39-49,51,53,55-59,61,63-64,67-69,71,77,82,84-86,90,96,98,101,117,119,123,128-138,144-147,154
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c9fbedc63006ae4a3676b9609f812159aa489177",
+  "prompts": {},
+  "humans": {
+    "h_5668b745a35fae": {
+      "author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}
