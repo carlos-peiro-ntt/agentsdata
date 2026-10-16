@@ -1,0 +1,31 @@
+resources/dim_articulos.csv
+  s_d956279df69d96::t_e358b7afa3f25a 1-58
+resources/dim_canal.csv
+  s_d956279df69d96::t_de9e84d5b9c865 1-7
+resources/dim_fecha.csv
+  s_d956279df69d96::t_01fbcca11fc122 1-175
+resources/dim_promociones.csv
+  s_d956279df69d96::t_d6b5336811edf3 1-8
+resources/dim_usuarios.csv
+  s_d956279df69d96::t_c0e34f1b3670d5 1-12
+resources/fact_promociones_articulos.csv
+  s_d956279df69d96::t_8877df64877de2 1-125
+resources/fact_ventas.csv
+  s_d956279df69d96::t_03828c3f08961b 1-201
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f6b48097f73d0862bd15e7e61c253c13e5a9c411",
+  "prompts": {},
+  "sessions": {
+    "s_d956279df69d96": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "31ad1e2f-4696-4d81-97fd-2d8432fc4159",
+        "model": "copilot/claude-sonnet-5"
+      },
+      "human_author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}
