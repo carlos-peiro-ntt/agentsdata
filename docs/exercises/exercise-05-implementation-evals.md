@@ -16,7 +16,7 @@ Reviewed change → Implementation (/opsx-apply) → Verify (/opsx-verify) → H
                                                                   Archive
 ```
 
-The harness is still a single `evals/harness.html` using native HTML and JavaScript. It loads the dashboard from the same local server and uses no packages or external services. Its checks are now derived directly from the `#### Scenario:` blocks in `openspec/changes/total-sales-mom-comparison/specs/`, instead of a fixed, invented count.
+The harness is a single `evals/harness.js`, run with plain Node.js (already a prerequisite for this course) — no browser, no local server, no npm packages. Its checks are derived directly from the `#### Scenario:` blocks in `openspec/changes/total-sales-mom-comparison/specs/`, instead of a fixed, invented count.
 
 ## Part 1 — Translate the spec into checks
 
@@ -68,20 +68,20 @@ Then, in Copilot Chat:
 
 The agent produces a report across three dimensions — **Completeness** (tasks and spec coverage), **Correctness** (requirement implementation mapping and scenario coverage), and **Coherence** (design adherence and code pattern consistency) — without touching the harness or the dashboard.
 
-Expect `verify` to flag **Scenario Coverage** as a WARNING even when the implementation is correct: it only searches the codebase for matching logic, it does not run the dashboard or compute expected values. Without any automated test evidence, every scenario reads "not covered" by design. Fix any CRITICAL issue it reports before moving on; a Scenario Coverage WARNING is expected here and is resolved by the harness in the next part.
+Expect `verify` to flag **Scenario Coverage** as a WARNING the first time, even though the implementation is correct: it only searches the codebase for matching logic, it never runs the dashboard or computes an expected value. Without any automated test file in the repo, every scenario reads "not covered" by design — that is not a mistake to fix here, it is the lesson for this part of the exercise. Fix any CRITICAL issue it reports; leave the Scenario Coverage WARNING as-is and carry it into Part 4, where the harness closes exactly that gap.
 
 ## Part 4 — Create the harness
 
-`verify` audits structure and code; it cannot load the dashboard, pick a real filter combination, or compute an expected euro value independently. The harness fills exactly that gap: it is the automated test evidence `/opsx-verify` is looking for, and it is the only part of this flow that actually executes the implementation against real data. Re-run `/opsx-verify` after the harness exists — Scenario Coverage should move from "not covered" to covered once a test file exercising those scenarios is present.
+`verify` only audits structure and code; it cannot load the dashboard, pick a real filter combination, or compute an expected euro value independently. The harness fills exactly that gap, and it is the only part of this flow that actually executes the real calculation against real data.
 
-Once the implementation passes verify, send:
+Send:
 
 ```text
-Create evals/harness.html using only HTML and JavaScript.
+Create evals/harness.js using plain Node.js, no npm packages.
 
 Read:
 - openspec/changes/total-sales-mom-comparison/specs/;
-- the implemented dashboard;
+- the implemented dashboard.html;
 - AGENTS.md;
 - .github/instructions/dashboard.instructions.md.
 
@@ -91,49 +91,61 @@ Create exactly one evaluation per Scenario block found in specs/ — one
 EVAL per requirement/scenario pair, named after that scenario. Do not
 invent additional evaluations and do not drop any.
 
-The harness must:
-- load the dashboard in an iframe;
-- show EVAL, the source requirement, PASS/FAIL, and evidence;
-- provide Run all and Retry failed buttons;
-- keep the attempt history;
-- show transitions such as FAIL → PASS;
-- calculate expected values independently;
-- treat harness errors as FAIL;
-- show a final summary such as N/N PASS.
+The script must, when run with `node evals/harness.js`:
+- read dashboard.html as text and extract the embedded SNAPSHOT array;
+- compute each scenario's expected value independently, reimplementing
+  the formula from the spec — never by calling or copying the
+  dashboard's own code;
+- extract the dashboard's actual calculation lines for the current
+  total, previous total, difference, and percentage change from
+  dashboard.html by pattern, and evaluate them against the same
+  SNAPSHOT to get the dashboard's actual value for comparison;
+- confirm, by inspecting the source, that the stable DOM ids
+  (#kpiRevenue, #kpiRevenuePrevious, #kpiRevenueDifference,
+  #kpiRevenueChange) are assigned from those same variables;
+- print one row per EVAL with the scenario name, expected value,
+  actual value, and PASS/FAIL;
+- persist attempt history across runs in evals/.harness-history.json,
+  so a FAIL → PASS transition from a previous run is visible;
+- treat any harness error (missing SNAPSHOT, missing DOM id, parse
+  failure) as FAIL for that EVAL, never a crash;
+- print a final summary such as N/N PASS;
+- exit with a non-zero status code if any EVAL fails.
 
-Do not add dependencies, exports, charts, MANUAL states, or BLOCKED states.
+Do not add dependencies, a browser, a local server, exports, or
+MANUAL/BLOCKED states.
 ```
 
 ## Part 5 — Run the harness
 
-Serve the repository from its root:
-
-**Windows — PowerShell**
-
-```powershell
-python -m http.server 8000
-```
-
-**macOS, Linux, or WSL — Bash/Zsh**
-
 ```bash
-python3 -m http.server 8000
+node evals/harness.js
 ```
 
-Open `http://localhost:8000/evals/harness.html` and press **Run all**. The result must show one row per scenario and a global summary.
+The result must show one row per scenario, each with expected vs. actual, and a final `N/N PASS` summary. A non-zero exit code means at least one scenario failed.
 
 ## Part 6 — Fix and run regression
 
-If an eval returns `FAIL`:
+If an EVAL returns `FAIL`:
 
-1. Read the source scenario and the evidence in that row.
+1. Read the expected vs. actual values printed for that row.
 2. Fix only the implementation that violates the spec; do not lower the criterion.
-3. Press **Retry failed**. The history must preserve the first `FAIL` and add the new result.
-4. Once it passes, press **Run all** to check for regressions.
+3. Run `node evals/harness.js` again. `evals/.harness-history.json` must preserve the first `FAIL` and add the new result, so the transition is visible across runs.
+4. Once it passes, confirm the summary reads `N/N PASS` with no regressions.
 
-To demonstrate the cycle during the course, if the first run returns N/N `PASS`, temporarily rename one of the stable IDs read by the harness and run **Run all**. Restore the ID according to the spec and press **Retry failed**. The history must clearly show `FAIL → PASS`.
+To demonstrate the cycle during the course, if the first run returns `N/N PASS`, temporarily rename one of the stable IDs the harness reads (for example `#kpiRevenuePrevious`) and run it again — that EVAL must fail. Restore the ID and run again; the history file must clearly show `FAIL → PASS` for that EVAL.
 
-## Part 7 — Archive the change
+## Part 7 — Re-verify against the spec
+
+Now that `evals/harness.js` exists and exercises all 5 scenarios, run `/opsx-verify` again:
+
+```text
+/opsx-verify
+```
+
+Compare this report to the one from Part 3: **Scenario Coverage** should no longer read "not covered" — `verify` now finds a test file exercising each scenario. This is the lab's payoff: the same command, run twice, shows the exact gap the harness was built to close.
+
+## Part 8 — Archive the change
 
 Once the harness is green and `tasks.md` is fully checked:
 
@@ -150,14 +162,14 @@ Check that:
 - `openspec/changes/archive/` contains the dated, completed change;
 - `openspec/specs/` now holds the Total Sales requirements as living documentation;
 - exactly one harness row exists per scenario in the archived spec;
-- the final result is N/N `PASS`;
-- if there was a failure, the history shows the retry and its fix;
+- `node evals/harness.js` prints `N/N PASS`, and `evals/.harness-history.json` shows the retry if there was a failure;
+- the second `/opsx-verify` run no longer flags Scenario Coverage as not covered;
 - the dashboard remains self-contained and works without the harness.
 
 The final course chain is:
 
 ```text
-Idea → Propose → Review → Apply → Verify → Harness → Fix → Retry → Archive
+Idea → Propose → Review → Apply → Verify (gap) → Harness → Fix → Retry → Verify (closed) → Archive
 ```
 
 ---
