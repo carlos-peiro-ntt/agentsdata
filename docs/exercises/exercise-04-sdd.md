@@ -21,6 +21,8 @@ Implementation
 ```text
 Idea
   ↓
+Explore (optional, skipped in this exercise)
+  ↓
 Propose (OpenSpec generates proposal + specs + tasks)
   ↓
 Review and correct the plan
@@ -34,14 +36,19 @@ Archive (specs become living documentation)
 
 > In this exercise, work only through a reviewed, correct OpenSpec change. Implementation, verification, the harness, and evals are added in the next exercise.
 
-## Part 0 — Install and initialize OpenSpec (one time)
+OpenSpec's own [loop](https://openspec.dev/docs/quickstart#the-loop-at-a-glance) starts with `/opsx-explore`, a thinking-only mode that investigates the codebase and sharpens a fuzzy idea before proposing anything. This exercise skips it on purpose: the idea in Part 1 is already fully scoped (exact formulas, exact edge case) so every learner proposes the same change and gets a comparable result. Use `/opsx-explore` in your own work whenever the idea is still fuzzy — OpenSpec's own guidance is to go straight to `/opsx-propose` when you already know what you want to build, which is the case here.
 
-OpenSpec is a CLI that generates and manages the spec artifacts for you, instead of writing a single spec file by hand.
+## Part 0 — Validate OpenSpec and initialize the project (one time)
+
+OpenSpec is a CLI that generates and manages the spec artifacts for you, instead of writing a single spec file by hand. It should already be installed from [Setup and Workshop Preparation](../setup.md).
+
+Confirm it:
 
 ```bash
-# macOS, Linux, WSL, or Windows (PowerShell) — requires Node.js, already a prerequisite
-npm install -g @fission-ai/openspec@latest
+openspec --version
 ```
+
+If that command fails, go back to [Setup and Workshop Preparation](../setup.md) and install it before continuing.
 
 From the repository root, initialize it for GitHub Copilot:
 
@@ -70,8 +77,6 @@ As a sales manager, I want Total Sales to compare current-month sales with previ
 ```
 
 For the result to be reproducible with historical data, in this exercise **current month** means the last available month within the selection and **previous month** means the immediately preceding calendar month. The date selector sets the reference month; both periods share the other business filters. If previous month sales are zero, show the percentage as `N/A` to avoid an invalid division.
-
-## Part 2 — Generate and review the plan
 
 ## Part 2 — Propose the change
 
@@ -103,7 +108,8 @@ OpenSpec creates `openspec/changes/total-sales-mom-comparison/` with:
 
 - `proposal.md` — why this change is needed and what it affects;
 - `specs/<capability>/spec.md` — requirements and scenarios, written as `### Requirement:` / `#### Scenario:` blocks with WHEN/THEN;
-- `tasks.md` — the implementation checklist derived from the spec.
+- `tasks.md` — the implementation checklist derived from the spec;
+- `design.md` — only when the change actually needs one (new dependency, cross-cutting change, security/performance complexity). A single KPI card usually doesn't, and OpenSpec may skip it; that's expected, not a missing artifact.
 
 Nothing is implemented yet.
 
@@ -116,7 +122,7 @@ Read the three generated files, in this order, and correct what's wrong — eith
   - current month sales in euros;
   - previous month sales in euros;
   - euro difference (current − previous);
-  - percentage change, or `N/A` when previous is zero;
+  - percentage change, or `N/A` when previous is zero — this behavior typically needs two scenarios under the same requirement: the normal calculation and the zero-previous edge case;
 - `tasks.md`: do the tasks cover the specs above, and nothing more?
 
 Reject and ask the agent to fix the plan if you find invented fields, a missing `previous = 0` edge case, scope creep beyond the Total Sales card, or any conflict with `AGENTS.md` / `.github/instructions/dashboard.instructions.md`.
@@ -125,7 +131,7 @@ There is no separate "Approved" field to flip: a plan counts as approved once yo
 
 ## Exercise result
 
-The result is a reviewed `openspec/changes/total-sales-mom-comparison/` folder with a correct `proposal.md`, a `specs/` with exactly four scenarios matching the four behaviors above, and a `tasks.md` that covers them and nothing more. Nothing has been implemented. Implementation begins in the next exercise.
+The result is a reviewed `openspec/changes/total-sales-mom-comparison/` folder with a correct `proposal.md`, a `specs/` with one requirement per behavior above (the percentage-change requirement may carry two scenarios), and a `tasks.md` that covers them and nothing more. Nothing has been implemented. Implementation begins in the next exercise.
 
 ---
 

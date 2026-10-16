@@ -225,7 +225,35 @@ If `uvx` is not found, load the updated environment:
 source $HOME/.local/bin/env
 ```
 
-### 0.8 Install VS Code extensions
+### 0.8 Install OpenSpec
+
+OpenSpec will be used for Specification-Driven Development in Exercises 4 and 5.
+
+**Windows — PowerShell**
+
+```powershell
+npm install -g @fission-ai/openspec@latest
+```
+
+**macOS — Terminal**
+
+```bash
+brew install openspec
+```
+
+**Linux or WSL — Bash**
+
+```bash
+npm install -g @fission-ai/openspec@latest
+```
+
+Check the installation on any system:
+
+```bash
+openspec --version
+```
+
+### 0.9 Install VS Code extensions
 
 1. Open Visual Studio Code.
 2. Press `Ctrl+Shift+X` on Windows/Linux or `⇧⌘X` on macOS.
@@ -234,7 +262,7 @@ source $HOME/.local/bin/env
 5. Optionally, install **Codex – OpenAI's coding agent**.
 6. Open chat and check that you can send messages.
 
-### 0.9 Final check
+### 0.10 Final check
 
 **Windows — PowerShell**
 
@@ -245,6 +273,7 @@ py --version
 node --version
 npx --version
 uvx --version
+openspec --version
 ```
 
 **macOS, Linux, or WSL — Bash/Zsh**
@@ -256,6 +285,7 @@ python3 --version
 node --version
 npx --version
 uvx --version
+openspec --version
 ```
 
 Do not continue until all commands respond without errors.

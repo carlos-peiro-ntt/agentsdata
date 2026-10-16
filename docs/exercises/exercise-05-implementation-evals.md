@@ -20,14 +20,15 @@ The harness is still a single `evals/harness.html` using native HTML and JavaScr
 
 ## Part 1 — Translate the spec into checks
 
-Before implementing, open `openspec/changes/total-sales-mom-comparison/specs/<capability>/spec.md` and list its scenarios — the harness will observe exactly these, one EVAL per scenario:
+Before implementing, open `openspec/changes/total-sales-mom-comparison/specs/<capability>/spec.md` and list its scenarios — the harness will observe exactly these, one EVAL per scenario. For this change, that's typically five, because the percentage-change requirement carries two scenarios (the normal calculation and the zero-previous edge case):
 
 | Eval | Scenario | Check |
 | --- | --- | --- |
 | EVAL-001 | current month total | The current-month total exists and is correct. |
 | EVAL-002 | previous month total | The previous-month total exists and is correct. |
 | EVAL-003 | euro difference | The euro difference is `current - previous`. |
-| EVAL-004 | percentage change | The percentage applies the agreed formula or shows `N/A` when the previous value is zero. |
+| EVAL-004 | percentage change is calculated | The percentage applies the agreed formula when previous is greater than zero. |
+| EVAL-005 | percentage change is N/A | The percentage shows `N/A` when the previous value is zero. |
 
 Do not add more evals than scenarios, and do not drop any. This keeps the harness a direct derivative of the spec, not of the implementation.
 

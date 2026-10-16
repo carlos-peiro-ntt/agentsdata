@@ -44,10 +44,9 @@ The workshop moves through three data stages, and each exercise states which one
 
 ## Essential Commands
 
-Install and initialize OpenSpec once, before Exercise 4 (see that exercise for details):
+Initialize OpenSpec once, before Exercise 4 (installed during setup, see that exercise for details):
 
 ```bash
-npm install -g @fission-ai/openspec@latest
 openspec init --tools github-copilot
 ```
 
