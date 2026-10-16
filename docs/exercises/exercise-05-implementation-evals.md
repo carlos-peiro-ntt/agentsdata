@@ -51,13 +51,14 @@ If a session is interrupted or runs out of context, re-run `/opsx-apply` — it 
 
 ## Part 3 — Verify against the spec
 
-Enable the expanded workflow set once per machine, so the `verify` workflow is available:
+`verify` is an optional workflow, not installed by the default `openspec init`. Enable it once per machine by adding it to the configured workflow list, then refreshing the generated Copilot files:
 
 ```bash
-openspec config profile
-# choose the expanded workflow set
+openspec config set workflows '["propose","explore","apply","update","sync","archive","verify"]'
 openspec update
 ```
+
+`openspec config set` replaces the whole list, so it's spelled out in full rather than just adding `verify`. Restart VS Code if `/opsx-verify` doesn't show up right away.
 
 Then, in Copilot Chat:
 
@@ -65,9 +66,13 @@ Then, in Copilot Chat:
 /opsx-verify
 ```
 
-The agent compares the implementation against every scenario in `specs/` and reports mismatches, without touching the harness. Fix anything it flags before moving on — this catches spec drift before you open a browser.
+The agent produces a report across three dimensions — **Completeness** (tasks and spec coverage), **Correctness** (requirement implementation mapping and scenario coverage), and **Coherence** (design adherence and code pattern consistency) — without touching the harness or the dashboard.
+
+Expect `verify` to flag **Scenario Coverage** as a WARNING even when the implementation is correct: it only searches the codebase for matching logic, it does not run the dashboard or compute expected values. Without any automated test evidence, every scenario reads "not covered" by design. Fix any CRITICAL issue it reports before moving on; a Scenario Coverage WARNING is expected here and is resolved by the harness in the next part.
 
 ## Part 4 — Create the harness
+
+`verify` audits structure and code; it cannot load the dashboard, pick a real filter combination, or compute an expected euro value independently. The harness fills exactly that gap: it is the automated test evidence `/opsx-verify` is looking for, and it is the only part of this flow that actually executes the implementation against real data. Re-run `/opsx-verify` after the harness exists — Scenario Coverage should move from "not covered" to covered once a test file exercising those scenarios is present.
 
 Once the implementation passes verify, send:
 
