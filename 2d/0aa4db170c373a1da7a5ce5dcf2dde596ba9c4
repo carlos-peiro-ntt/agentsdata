@@ -1,0 +1,21 @@
+.github/prompts/opsx-verify.prompt.md
+  s_d956279df69d96::t_6de2f911ef816c 1-214
+.github/skills/openspec-verify-change/SKILL.md
+  s_d956279df69d96::t_b468f1a845307a 1-223
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2d0aa4db170c373a1da7a5ce5dcf2dde596ba9c4",
+  "prompts": {},
+  "sessions": {
+    "s_d956279df69d96": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "31ad1e2f-4696-4d81-97fd-2d8432fc4159",
+        "model": "copilot/claude-sonnet-5"
+      },
+      "human_author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}
