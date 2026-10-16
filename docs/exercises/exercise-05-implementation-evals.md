@@ -153,7 +153,12 @@ Once the harness is green and `tasks.md` is fully checked:
 /opsx-archive
 ```
 
-This merges the change's requirements into `openspec/specs/` — the project's living specification — and moves the change folder into `openspec/changes/archive/` with today's date prefixed to its name. Nothing about the dashboard's self-contained architecture changes.
+Expect two confirmation gates before anything moves — `/opsx-archive` never archives silently:
+
+1. **Incomplete artifacts**: `design.md` reads `ready`, not `done` or `skipped` — this is the design artifact we deliberately left uncreated in Exercise 4. The agent warns about it and asks to continue; confirm, since nothing in this change needed a design decision.
+2. **Delta spec sync**: `openspec/specs/` is still empty, so the `total-sales-kpi` capability has no main spec yet. Since the delta only has `ADDED Requirements`, the agent offers **"Sync now (recommended)"** or **"Archive without syncing"**. Choose **Sync now** — this is what turns the four requirements into `openspec/specs/total-sales-kpi/spec.md`, the project's living specification. Skipping it would archive the change but leave `openspec/specs/` empty, losing the point of using OpenSpec over a disposable spec file.
+
+Once confirmed, this merges the requirements into `openspec/specs/` and moves the change folder into `openspec/changes/archive/` with today's date prefixed to its name. Nothing about the dashboard's self-contained architecture changes.
 
 ## Final course validation
 
