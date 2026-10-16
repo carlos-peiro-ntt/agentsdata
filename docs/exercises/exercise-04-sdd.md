@@ -1,10 +1,10 @@
-# Exercise 4 — From Plan to Specification with SDD
+# Exercise 4 — From Plan to Specification with OpenSpec
 
 [← Back to README](../../README.md) · [← Exercise 3](exercise-03-skills-mcp.md)
 
 ## Objective
 
-Introduce **Specification-Driven Development (SDD)** so an idea does not move directly from planning to implementation. The approved specification becomes the verifiable contract between them.
+Introduce **Specification-Driven Development (SDD)** using [OpenSpec](https://github.com/Fission-AI/OpenSpec), the industry tool for this workflow, so an idea does not move directly from planning to implementation. A reviewed, correct change becomes the verifiable contract between them.
 
 **Before**
 
@@ -21,16 +21,45 @@ Implementation
 ```text
 Idea
   ↓
-Plan
+Propose (OpenSpec generates proposal + specs + tasks)
   ↓
-Spec
+Review and correct the plan
   ↓
 Implementation
   ↓
-Evaluation (Harness/Evals)
+Verify + Evaluation (Harness/Evals)
+  ↓
+Archive (specs become living documentation)
 ```
 
-> In this exercise, work only through approval of the spec. Implementation, the harness, and evals will be added in the next exercise.
+> In this exercise, work only through a reviewed, correct OpenSpec change. Implementation, verification, the harness, and evals are added in the next exercise.
+
+## Part 0 — Install and initialize OpenSpec (one time)
+
+OpenSpec is a CLI that generates and manages the spec artifacts for you, instead of writing a single spec file by hand.
+
+```bash
+# macOS, Linux, WSL, or Windows (PowerShell) — requires Node.js, already a prerequisite
+npm install -g @fission-ai/openspec@latest
+```
+
+From the repository root, initialize it for GitHub Copilot:
+
+```bash
+openspec init --tools github-copilot
+```
+
+This creates:
+
+```text
+openspec/
+├── config.yaml     # project settings and context for the agent
+├── specs/          # living specs — empty until the first change is archived
+└── changes/
+    └── archive/    # completed changes land here
+```
+
+It also adds `.github/prompts/opsx-*.prompt.md`, so VS Code Copilot Chat shows new commands: `/opsx-propose`, `/opsx-apply`, `/opsx-archive`, and others. Restart VS Code if they don't appear right away.
 
 ## Part 1 — Start from a concrete idea
 
@@ -44,16 +73,19 @@ For the result to be reproducible with historical data, in this exercise **curre
 
 ## Part 2 — Generate and review the plan
 
-In **Plan** mode, send this short prompt:
+## Part 2 — Propose the change
+
+In Copilot Chat, run:
 
 ```text
-Plan this dashboard change without editing files.
+/opsx-propose
 
-Update Total Sales to compare the latest available month in the date
-selection with the immediately previous calendar month.
+As a sales manager, I want Total Sales to compare current-month sales with
+previous-month sales and show the change in euros and percentage terms.
 
-Treat the selected month as the reference period and apply the same
-non-date business filters to both periods.
+Current month means the last available month within the current selection;
+previous month means the immediately preceding calendar month. Apply the
+same non-date business filters to both periods.
 
 Show:
 - current month sales;
@@ -62,72 +94,39 @@ Show:
 - percentage change: (current - previous) / previous * 100;
 - N/A when previous sales are zero.
 
-Read AGENTS.md and .github/instructions/dashboard.instructions.md. Inspect the current dashboard
-and do not invent data or fields.
-
-Return only:
-- affected area;
-- calculation rules;
-- edge cases;
-- validation steps.
+Read AGENTS.md and .github/instructions/dashboard.instructions.md first.
+Inspect the current dashboard and do not invent data or fields. Scope this
+change to the Total Sales card only.
 ```
 
-Check that the plan does not expand the scope. Nothing is implemented yet.
+OpenSpec creates `openspec/changes/total-sales-mom-comparison/` with:
 
-## Part 3 — Generate the spec
+- `proposal.md` — why this change is needed and what it affects;
+- `specs/<capability>/spec.md` — requirements and scenarios, written as `### Requirement:` / `#### Scenario:` blocks with WHEN/THEN;
+- `tasks.md` — the implementation checklist derived from the spec.
 
-Ask the agent to convert the idea and plan into a small spec:
+Nothing is implemented yet.
 
-```text
-Create specs/dashboard-evolution.md from the agreed idea and plan.
+## Part 3 — Review and correct the plan
 
-Read AGENTS.md and .github/instructions/dashboard.instructions.md. Describe observable behavior,
-not implementation details. Do not modify the dashboard.
+Read the three generated files, in this order, and correct what's wrong — either by editing the Markdown directly or by asking the agent to revise it:
 
-Use exactly these nine sections:
+- `proposal.md`: is this the right problem, scoped to the Total Sales card only, without expanding beyond it?
+- `specs/<capability>/spec.md`: the highest-value read. Does every scenario map to exactly one of these four behaviors, with none missing and none invented?
+  - current month sales in euros;
+  - previous month sales in euros;
+  - euro difference (current − previous);
+  - percentage change, or `N/A` when previous is zero;
+- `tasks.md`: do the tasks cover the specs above, and nothing more?
 
-1. Metadata
-2. Problem
-3. Context
-4. Goals and Non-goals
-5. Scope
-6. Requirements
-7. Acceptance Criteria
-8. Constraints
-9. Evolution
+Reject and ask the agent to fix the plan if you find invented fields, a missing `previous = 0` edge case, scope creep beyond the Total Sales card, or any conflict with `AGENTS.md` / `.github/instructions/dashboard.instructions.md`.
 
-Use exactly four requirements and four mapped acceptance criteria:
-
-- REQ-001 / AC-001: show Total Sales for the current month in euros.
-- REQ-002 / AC-002: show Total Sales for the previous month in euros.
-- REQ-003 / AC-003: show current minus previous in euros.
-- REQ-004 / AC-004: show percentage change, or N/A when previous is zero.
-
-Use Given/When/Then for every AC.
-
-Set:
-- Status: Draft
-- Version: 0.1.0
-
-Do not add more REQ or AC, invent data, or leave blocking TBD items.
-Do not implement anything yet.
-```
-
-## Part 4 — Review and approve the spec
-
-Review only these conditions:
-
-- the nine sections appear once and in that order;
-- exactly four requirements and four criteria exist, with a one-to-one relationship;
-- the formulas and the `previous = 0` case are verifiable;
-- no `TBD`, blocking questions, or conflicts with repository rules remain.
-
-If the spec meets the list, change its status from `Draft` to `Approved` and its version from `0.1.0` to `1.0.0`. This change must be explicit; the file is not considered approved merely because it exists.
+There is no separate "Approved" field to flip: a plan counts as approved once you stop correcting it and are ready to move to implementation.
 
 ## Exercise result
 
-The result is `specs/dashboard-evolution.md` in `Approved` status, version `1.0.0`, with nine sections, four `REQ`s, and four `AC`s. Implementation begins in the next exercise.
+The result is a reviewed `openspec/changes/total-sales-mom-comparison/` folder with a correct `proposal.md`, a `specs/` with exactly four scenarios matching the four behaviors above, and a `tasks.md` that covers them and nothing more. Nothing has been implemented. Implementation begins in the next exercise.
 
 ---
 
-Continue to [Exercise 5 — Guided Implementation and Harness/Evals](exercise-05-implementation-evals.md).
+Continue to [Exercise 5 — Guided Implementation, Verify, and Harness/Evals](exercise-05-implementation-evals.md).
