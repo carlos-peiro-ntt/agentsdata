@@ -224,7 +224,56 @@ Keep `AGENTS.md` as the human-friendly overview and starting point; do not dupli
 
 In this workshop, `AGENTS.md` remains the project entry point, while `.github/instructions/dashboard.instructions.md` is the single source of truth for the detailed dashboard governance requirements.
 
-1. Run `/create-instruccion`.
+1. Run `/create-instructions` and send it this request:
+
+```text
+/create-instructions
+
+Create a workspace instruction file for this repository.
+
+Name: Dashboard Privacy and Data Governance
+Scope: workspace (.github/instructions/)
+Filename: dashboard.instructions.md
+
+Description for discovery (use-when style):
+"Use when creating or modifying the sales dashboard, calculating KPIs,
+querying dashboard data, handling user attributes, or publishing
+dashboard documentation."
+
+applyTo: ["**/*.html", "**/*.js", "**/*.md"]
+
+Body content — mandatory rules for every dashboard, analysis, and
+generated document in this repository:
+
+1. Dashboard Data Source: Supabase MCP read-only is the only source;
+   no CSV/resources/ after the learning exercise; validate schemas
+   and tables before use; never embed credentials or a live DB
+   connection; stop and report if Supabase is unavailable instead of
+   falling back to CSV, sample, or invented data.
+
+2. Privacy and GDPR: never expose first/last name, email, date of
+   birth, postal code, or other identifying fields anywhere (charts,
+   KPIs, tooltips, labels, filters, tables, embedded JS data, source
+   examples, Confluence docs); user-profile analysis limited to
+   segmento_cliente, genero, comunidad_autonoma; document in source
+   code why names are excluded.
+
+3. Data-Quality Gate: validate each required table separately with a
+   PASS/FAIL result; check join cardinality before/after each join;
+   abort if a join duplicates sales or inflates row count; report
+   failures instead of producing misleading KPIs.
+
+4. Confluence Publishing: create documentation only as a child of
+   page ID 1430576442, space key IADEIADATAENGINEERS, with title
+   exactly "{creator name} - Informe ventas"; never publish at root
+   or under another parent.
+
+5. Project Constraints: keep the dashboard as a single self-contained
+   HTML file; no external dependencies without approval; prefer
+   simple, business-readable dashboards with interactive filtering;
+   report data-quality limitations before recommendations.
+```
+
 2. Create `.github/instructions/dashboard.instructions.md` with the generated output.
 3. Preserve the generated YAML front matter.
 4. Keep the instruction authoritative for the current dashboard governance requirements. Do not reproduce its full content in `README.md` or `AGENTS.md`; link to and follow the instruction instead.
