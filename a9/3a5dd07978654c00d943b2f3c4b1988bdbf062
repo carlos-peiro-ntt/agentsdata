@@ -1,0 +1,19 @@
+docs/exercises/exercise-03-skills-mcp.md
+  s_e63b31aa36dc53::t_d2a8afaede27e1 227-276
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a93a5dd07978654c00d943b2f3c4b1988bdbf062",
+  "prompts": {},
+  "sessions": {
+    "s_e63b31aa36dc53": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "4bf46d11-c03d-4c99-92a9-19e8aa17f01a",
+        "model": "copilot/claude-sonnet-5"
+      },
+      "human_author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}
