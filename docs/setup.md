@@ -17,6 +17,40 @@ Before the workshop you need:
 
 Tokens are secrets. Do not paste them into chat, store them in repository files, or include them in commits or screenshots.
 
+### Quick setup (recommended)
+
+The repository includes scripts that install any missing prerequisite (Git, VS Code, Node.js, uv/uvx, OpenSpec, and the GitHub Copilot extensions) and then verify everything. Run them from the repository root.
+
+**macOS, Linux (Debian/Ubuntu), or WSL — Bash**
+
+```bash
+bash scripts/setup.sh
+```
+
+macOS requires [Homebrew](https://brew.sh/). On Linux the script uses `apt` and `sudo`. On WSL it does not install VS Code; install it on Windows with the **WSL** extension.
+
+**Windows — PowerShell**
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\setup.ps1
+```
+
+Requires `winget`. Python is not installed by the script: install **Python 3.12** from Microsoft Store (see [0.5](#05-install-python)). Node.js installation may require an administrator PowerShell.
+
+To only verify, without installing anything:
+
+```bash
+bash scripts/setup.sh --check
+```
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -Check
+```
+
+The script ends with an OK/FAIL summary and exits with an error if any check fails. Close and reopen the terminal after a first install. Signing in to GitHub Copilot (step 6 in [0.9](#09-install-vs-code-extensions)) and handling tokens remain manual.
+
+If the script fails or you prefer to install each tool yourself, follow the manual steps below.
+
 ### 0.2 Open a terminal
 
 #### Windows — PowerShell
@@ -209,7 +243,7 @@ uvx mcp-atlassian --help
 **Linux or WSL — Bash**
 
 ```bash
-curl -kLsSf https://astral.sh/uv/install.sh | sh
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
 Close and reopen the terminal, then check:
@@ -269,7 +303,7 @@ openspec --version
 ```powershell
 git --version
 code --version
-py --version
+python --version
 node --version
 npx --version
 uvx --version

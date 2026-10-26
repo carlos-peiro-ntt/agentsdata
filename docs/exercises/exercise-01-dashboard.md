@@ -57,7 +57,7 @@ Generate an HTML sales dashboard for business users using the CSV files in the `
 **Windows — PowerShell**
 
 ```powershell
-py -m http.server 8000
+python -m http.server 8000
 ```
 
 **macOS, Linux, or WSL — Bash/Zsh**
