@@ -17,7 +17,7 @@ The goal is to start from zero and iterate on a simple business dashboard to und
 
 Work through the linked documents in order. Each one builds on the files created by the previous step.
 
-1. [Setup and Workshop Preparation](docs/setup.md) — install prerequisites.
+1. [Setup and Workshop Preparation](docs/setup.md) — install prerequisites, ideally with `scripts/setup.sh` (macOS/Linux/WSL) or `scripts/setup.ps1` (Windows).
 2. [Exercise 1 — Create the First Dashboard](docs/exercises/exercise-01-dashboard.md) — prompt-only generation, then generation from real CSV data.
 3. [Exercise 2 — From Prompt to Persistent Instructions](docs/exercises/exercise-02-agent-instructions.md) — create `AGENTS.md`.
 4. [Exercise 3 — Skills, MCP, Planning, and Implementation](docs/exercises/exercise-03-skills-mcp.md) — install skills, configure MCP servers, add the dashboard instruction, plan and implement the Supabase-backed dashboard.
