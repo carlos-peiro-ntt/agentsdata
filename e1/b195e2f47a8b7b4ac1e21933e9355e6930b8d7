@@ -1,0 +1,19 @@
+README.md
+  s_b067ca3eebf894::t_b989882efb1c5a 3,16-38,43,47-48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e1b195e2f47a8b7b4ac1e21933e9355e6930b8d7",
+  "prompts": {},
+  "sessions": {
+    "s_b067ca3eebf894": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "71194f6a-e3d8-4711-a376-79ed7a0f39e7",
+        "model": "unknown"
+      },
+      "human_author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}
