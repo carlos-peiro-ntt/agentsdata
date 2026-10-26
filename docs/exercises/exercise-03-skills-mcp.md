@@ -8,11 +8,11 @@ Add specialized knowledge, connect external sources, and complete the dashboard'
 
 ## Part 1 — Install the skills
 
-Run from the repository root. The commands are the same on all systems.
+Open a terminal in VS Code (**Terminal → New Terminal**); it starts at the repository root. Run:
 
 ```bash
-npx skills add https://github.com/anthropics/skills --skill frontend-design
-npx skills add https://github.com/wshobson/agents --skill kpi-dashboard-design
+npx --registry=https://registry.npmjs.org/ skills add https://github.com/anthropics/skills --skill frontend-design
+npx --registry=https://registry.npmjs.org/ skills add https://github.com/wshobson/agents --skill kpi-dashboard-design
 ```
 
 When the installer asks:
@@ -22,21 +22,7 @@ When the installer asks:
 3. review the skill's origin;
 4. confirm the installation.
 
-Check the result:
-
-**Windows — PowerShell**
-
-```powershell
-Get-ChildItem .agents\skills -Recurse -Filter SKILL.md
-Get-Content skills-lock.json
-```
-
-**macOS, Linux, or WSL — Bash/Zsh**
-
-```bash
-find .agents/skills -name SKILL.md -print
-cat skills-lock.json
-```
+Check in the VS Code Explorer that `.agents/skills/frontend-design/SKILL.md`, `.agents/skills/kpi-dashboard-design/SKILL.md`, and `skills-lock.json` exist.
 
 Skills used:
 
@@ -45,21 +31,18 @@ Skills used:
 
 ## Part 2 — Configure the MCP servers
 
-1. Create the `.vscode` folder:
+First let VS Code create the MCP configuration file with a placeholder server:
 
-**Windows — PowerShell**
+1. Open the Command Palette (`Ctrl+Shift+P` on Windows/Linux, `⇧⌘P` on macOS).
+2. Run **MCP: Add Server...**.
+3. Select **Command (stdio)**.
+4. Enter `echo` as the command. It is only a placeholder.
+5. Enter `dummy` as the server ID.
+6. Select **Workspace** so the configuration is saved in the repository.
 
-```powershell
-New-Item -ItemType Directory -Force .vscode
-```
+VS Code creates and opens `.vscode/mcp.json` with the `dummy` server.
 
-**macOS, Linux, or WSL — Bash/Zsh**
-
-```bash
-mkdir -p .vscode
-```
-
-2. Create `.vscode/mcp.json` with this content:
+Replace the whole content of `.vscode/mcp.json` with:
 
 ```json
 {
@@ -100,127 +83,18 @@ mkdir -p .vscode
 }
 ```
 
-3. Press `Ctrl+Shift+P`.
-4. Run **MCP: List Servers**.
-5. Start `confluence` and `supabase`.
-6. Enter the tokens when VS Code requests them.
-7. Do not replace `${input:...}` with real tokens in the file.
+The `inputs` section declares the secrets the servers need. Each `${input:<id>}` reference is replaced at startup by the value of the input with that `id`: VS Code prompts for it the first time a server starts, hides it because of `"password": true`, and stores it securely outside the repository. This keeps the tokens out of the file and out of Git.
+
+Start the servers:
+
+1. Open the Command Palette and run **MCP: List Servers**.
+2. Start `confluence` and `supabase`.
+3. Enter the tokens provided by the instructor when VS Code requests them.
+4. Do not replace `${input:...}` with real tokens in the file.
 
 > **Troubleshooting (Windows):** if the `confluence` server fails to start, `uvx` is likely missing or not on `PATH`. Repeat [Install uv and uvx](../setup.md#07-install-uv-and-uvx), then close and reopen VS Code before starting the server again.
 
-## Part 3 — Update `AGENTS.md`
-
-The repository has evolved. Update its living document by sending this prompt in Agent mode:
-
-```text
-Review the repository and update AGENTS.md to reflect the current agent ecosystem.
-
-The repository now includes additional agent skills and MCP servers.
-
-Update AGENTS.md so it:
-
-- Preserves the existing business context and project guidance.
-- Documents the available skills and when they should be used.
-- Documents the available MCP servers and the capabilities they provide.
-- References the location of these resources in the repository.
-- Explains when an agent should prefer using a skill versus an MCP.
-- Avoids duplicating the documentation already contained in the skills or MCP configuration.
-- Keeps AGENTS.md as the main entry point for future agents working on this project.
-```
-
-Review the result before accepting it. `AGENTS.md` should act as the entry point and link to resources, not copy all their content.
-
-```markdown
-# AGENTS.md
-
-## Project Overview
-
-This repository contains a standalone retail sales dashboard in html that loads data from the Supabase MCP. The main goal is to build and iterate on a business-facing sales dashboard without introducing unnecessary dependencies.
-
-## Business Context
-
-This project is a retail sales analytics dashboard for business users.
-
-The primary goal is to help business stakeholders understand sales performance through reliable KPIs, interactive visualizations, and actionable insights.
-
-## Agent Guidance
-
-When working on this project:
-
-- Prioritize business insights over visual complexity.
-- Validate data quality before calculating or presenting KPIs.
-- Clearly identify the Supabase tables used for each metric.
-- Report data-quality limitations before making recommendations.
-- Prefer simple, business-readable dashboards with interactive filtering.
-- Keep the current standalone HTML architecture unless a different technical approach is explicitly requested.
-- Avoid introducing external dependencies unless explicitly approved.
-
-## Business KPIs
-
-When relevant, prioritize metrics such as:
-
-- Revenue
-- Margin %
-- Average Ticket
-- Sales by Channel
-- Sales by Category
-- Conversion
-- Units Sold
-
-## Data Quality
-
-Before presenting results:
-
-- Validate null or missing values.
-- Check referential integrity across dimension tables.
-- Detect anomalous values, including unusual price drops and potential stock issues.
-- Explain any limitations that may affect the reliability of the analysis.
-
-## Local Validation
-
-- For browser-only changes, validate by serving the repo with a local HTTP server and opening the dashboard in a browser.
-- If JavaScript is edited, check the browser console for snapshot loading, parsing, or rendering errors.
-- There are no project build or test scripts in this repository by default.
-
-## Agent Ecosystem
-
-This repository includes lightweight agent **skills** for design and dashboard guidance, plus configured **MCP servers** that provide external capabilities. Use this page as the single entry point when deciding how an agent should act on the project.
-
-### Available Skills
-
-- **frontend-design**: Visual and interaction design guidance for distinctive UIs. See [.agents/skills/frontend-design/SKILL.md](.agents/skills/frontend-design/SKILL.md) for full instructions and examples. Use this skill when making aesthetic, typographic, or layout decisions for HTML/CSS/JS changes.
-- **kpi-dashboard-design**: Patterns and best practices for selecting KPIs, layout, and metric governance. See [.agents/skills/kpi-dashboard-design/SKILL.md](.agents/skills/kpi-dashboard-design/SKILL.md) for details. Use this skill when choosing metrics, designing dashboard cards, or documenting calculation methodology.
-
-Notes:
-- The skills contain the canonical, detailed guidance — prefer reading the related `SKILL.md` before applying design or KPI changes.
-- A skills list and locks are available in `skills-lock.json` at the repository root.
-
-### Configured MCP Servers
-
-The repository configures the following MCP servers in `.vscode/mcp.json`:
-
-- **confluence** (Atlassian MCP server): provides Confluence access for creating/updating documentation and pages. Configuration and credentials are in [.vscode/mcp.json](.vscode/mcp.json).
-- **supabase** (Supabase MCP endpoint): provides read-only database capabilities (project-specific) for querying data and inspecting schemas. See [.vscode/mcp.json](.vscode/mcp.json) for the configured endpoints and auth inputs.
-
-Notes:
-- The `.vscode/mcp.json` file contains the authoritative server connection settings and input prompts; do not duplicate those details here — follow the MCP configuration when using servers.
-
-### When to Use a Skill vs an MCP
-
-- Use a **skill** when the task is domain knowledge or pattern-based and can be satisfied by local guidance (design choices, KPI selection, dashboard UX, writing copy, small code examples). Skills hold curated best-practices and should be the first stop for project-specific guidance.
-- Use an **MCP server** when you need external system capabilities the workspace cannot provide locally: publishing or updating Confluence pages, executing SQL against the project's Supabase instance, or other networked services defined in `.vscode/mcp.json`.
-- Prefer skills for thinking, pattern selection, and small code edits; prefer MCPs for authoritative actions (publish, update, run queries) and for accessing remote data or services.
-
-### Linking Out
-
-- Skills (full docs): [.agents/skills/](.agents/skills/)
-- MCP configuration: [.vscode/mcp.json](.vscode/mcp.json)
-- Lockfile for skills: [skills-lock.json](skills-lock.json)
-
-Keep `AGENTS.md` as the human-friendly overview and starting point; do not duplicate long how-to content that already exists in the `SKILL.md` files or the MCP configuration. If you add new skills or servers, update this file with a short summary and a link to the authoritative resource.
-```
-
-## Part 4 — Add the dashboard instruction
+## Part 3 — Add the dashboard instruction
 
 In this workshop, `AGENTS.md` remains the project entry point, while `.github/instructions/dashboard.instructions.md` is the single source of truth for the detailed dashboard governance requirements.
 
@@ -267,16 +141,11 @@ generated document in this repository:
    page ID 1430576442, space key IADEIADATAENGINEERS, with title
    exactly "{creator name} - Informe ventas"; never publish at root
    or under another parent.
-
-5. Project Constraints: keep the dashboard as a single self-contained
-   HTML file; no external dependencies without approval; prefer
-   simple, business-readable dashboards with interactive filtering;
-   report data-quality limitations before recommendations.
 ```
 
 2. Create `.github/instructions/dashboard.instructions.md` with the generated output.
 3. Preserve the generated YAML front matter.
-4. Keep the instruction authoritative for the current dashboard governance requirements. Do not reproduce its full content in `README.md` or `AGENTS.md`; link to and follow the instruction instead.
+4. Do not copy its content into `README.md` or `AGENTS.md`. Copilot applies the instruction automatically to every file that matches its `applyTo` pattern, so `AGENTS.md` keeps the general project rules and the instruction keeps the dashboard-specific ones.
 
 ### Validation checklist
 
@@ -284,9 +153,9 @@ generated document in this repository:
 - Its generated YAML front matter is valid and preserved.
 - Its `applyTo` pattern covers the intended dashboard, analysis, and documentation files.
 - Its current requirements cover the configured Supabase data-source rules, privacy constraints, data-quality gate, and Confluence publishing constraints.
-- `AGENTS.md` points to the instruction as the single source of truth while remaining the project entry point.
+- `AGENTS.md` does not duplicate the instruction's rules.
 
-## Part 5 — Generate the plan
+## Part 4 — Generate the plan
 
 1. Select **Plan** mode.
 2. Send:
@@ -378,11 +247,10 @@ Include:
 - Include a visible **Data Quality Status** banner in the dashboard.
 ```
 
-## Part 6 — Validate the plan
+## Part 5 — Validate the plan
 
 Check that:
 
-- `AGENTS.md` requires reading and following `.github/instructions/dashboard.instructions.md`;
 - `.github/instructions/dashboard.instructions.md` contains the detailed privacy, data-quality, and Confluence rules;
 - the prohibited personal fields are explicitly listed in `.github/instructions/dashboard.instructions.md`;
 - every table must receive `PASS` or `FAIL`;
@@ -394,7 +262,7 @@ Check that:
 - the plan updates Confluence with controls and limitations;
 - the regenerated plan has not yet been implemented.
 
-## Part 7 — Execute the plan
+## Part 6 — Execute the plan
 
 1. Return to **Agent** mode.
 2. Check that the `supabase` and `confluence` MCP servers are still running.
@@ -420,23 +288,9 @@ If all required checks pass:
 6. If any table receives `FAIL` or a join duplicates sales, stop the exercise and keep the error report. Do not ask the agent to skip the check to finish the dashboard.
 7. If all checks receive `PASS`, verify that the agent updated `{name}.html` and created the Confluence page in the required location.
 
-## Part 8 — Validate the implementation
+## Part 7 — Validate the implementation
 
-Serve the repository from a local terminal.
-
-**Windows — PowerShell**
-
-```powershell
-python -m http.server 8000
-```
-
-**macOS, Linux, or WSL — Bash/Zsh**
-
-```bash
-python3 -m http.server 8000
-```
-
-Open `http://localhost:8000/{name}.html` in the browser and check that:
+Open `{name}.html` in the browser the way the agent indicates and check that:
 
 - the five KPIs and five charts display without errors;
 - all filters update KPIs and charts simultaneously;
@@ -452,8 +306,6 @@ Then open the page created in Confluence and verify that:
 - it documents sources, joins, KPIs, filters, `PASS`/`FAIL` results, and limitations;
 - it contains no personal data.
 
-Stop the local server with `Ctrl+C` when finished.
-
 ## Final exercise validation
 
 Check that:
@@ -465,7 +317,7 @@ Check that:
 - the dashboard uses only anonymized user attributes;
 - the code explains why first and last names are excluded;
 - the Confluence page is under the required parent and has the required title;
-- the dashboard works when served over HTTP and produces no console errors.
+- the dashboard opens in the browser and produces no console errors.
 
 ---
 

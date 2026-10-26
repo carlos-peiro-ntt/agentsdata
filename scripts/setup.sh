@@ -91,7 +91,7 @@ install_linux() {
   has uvx || install_uv
   if ! has openspec; then
     info "Installing OpenSpec (npm)"
-    sudo npm install -g @fission-ai/openspec@latest || warn "OpenSpec installation failed"
+    sudo npm install -g @fission-ai/openspec@latest --registry=https://registry.npmjs.org/ || warn "OpenSpec installation failed"
   fi
 }
 

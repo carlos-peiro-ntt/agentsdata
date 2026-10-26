@@ -46,9 +46,8 @@ The primary goal is to help business stakeholders understand sales performance t
 When working on this project:
 
 - Prioritize business insights over visual complexity.
-- Validate data quality before calculating or presenting KPIs.
-- Clearly identify the source CSVs used for each metric.
-- Report data-quality limitations before making recommendations.
+- Validate data quality and report limitations before presenting KPIs or recommendations.
+- Clearly identify the data source (files or tables) used for each metric.
 - Prefer simple, business-readable dashboards with interactive filtering.
 - Keep the current standalone HTML architecture unless a different technical approach is explicitly requested.
 - Avoid introducing external dependencies unless explicitly approved.
@@ -64,15 +63,6 @@ When relevant, prioritize metrics such as:
 - Sales by Category
 - Conversion
 - Units Sold
-
-## Data Quality
-
-Before presenting results:
-
-- Validate null or missing values.
-- Check referential integrity across dimension tables.
-- Detect anomalous values, including unusual price drops and potential stock issues.
-- Explain any limitations that may affect the reliability of the analysis.
 ```
 
 ## Part 3 — Improve the dashboard
@@ -82,7 +72,7 @@ Before presenting results:
 3. Send:
 
 ```text
-Mejora este dashboard.
+Improve this dashboard.
 ```
 
 4. Check whether the agent automatically applies the `AGENTS.md` rules.

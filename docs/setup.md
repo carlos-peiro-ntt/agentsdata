@@ -261,12 +261,12 @@ source $HOME/.local/bin/env
 
 ### 0.8 Install OpenSpec
 
-OpenSpec will be used for Specification-Driven Development in Exercises 4 and 5.
+OpenSpec will be used for Specification-Driven Development in Exercises 4 and 5. The commands set the public npm registry explicitly, so they also work if your npm is configured with a private or corporate registry.
 
 **Windows — PowerShell**
 
 ```powershell
-npm install -g @fission-ai/openspec@latest
+npm install -g @fission-ai/openspec@latest --registry=https://registry.npmjs.org/
 ```
 
 **macOS — Terminal**
@@ -278,7 +278,7 @@ brew install openspec
 **Linux or WSL — Bash**
 
 ```bash
-npm install -g @fission-ai/openspec@latest
+npm install -g @fission-ai/openspec@latest --registry=https://registry.npmjs.org/
 ```
 
 Check the installation on any system:

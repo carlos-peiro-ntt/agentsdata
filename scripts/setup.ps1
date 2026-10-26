@@ -80,7 +80,7 @@ function Install-Tools {
     if (-not (Test-Cmd 'openspec')) {
         if (Test-Cmd 'npm') {
             Write-Info 'Installing OpenSpec (npm)'
-            npm install -g '@fission-ai/openspec@latest'
+            npm install -g '@fission-ai/openspec@latest' --registry=https://registry.npmjs.org/
             if ($LASTEXITCODE -ne 0) { Write-Warn 'OpenSpec installation failed' }
             Update-SessionPath
         } else {
