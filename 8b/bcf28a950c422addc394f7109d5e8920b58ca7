@@ -1,0 +1,16 @@
+README.md
+  h_5668b745a35fae 20
+docs/exercises/exercise-05-implementation-evals.md
+  h_5668b745a35fae 54,57,61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8bbcf28a950c422addc394f7109d5e8920b58ca7",
+  "prompts": {},
+  "humans": {
+    "h_5668b745a35fae": {
+      "author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}
