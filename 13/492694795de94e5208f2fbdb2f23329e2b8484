@@ -1,0 +1,20 @@
+README.md
+  h_5668b745a35fae 20
+docs/setup.md
+  h_5668b745a35fae 20-53,246
+scripts/setup.ps1
+  h_5668b745a35fae 1-162
+scripts/setup.sh
+  h_5668b745a35fae 1-204
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "13492694795de94e5208f2fbdb2f23329e2b8484",
+  "prompts": {},
+  "humans": {
+    "h_5668b745a35fae": {
+      "author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}
