@@ -1,0 +1,21 @@
+dashboard.html
+  s_7a9bc1db0b3823::t_5dc5385143f591 41-43,102,297,302-305,315-334,352-355,361-363
+evals/harness.html
+  s_7a9bc1db0b3823::t_e4c0b8e93b756f 1-222
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "db00fc376f83790272cf384ca52b06aeb0fad1bf",
+  "prompts": {},
+  "sessions": {
+    "s_7a9bc1db0b3823": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "5e68495d-f2f2-40c6-98a7-5897b53a20c2",
+        "model": "unknown"
+      },
+      "human_author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}

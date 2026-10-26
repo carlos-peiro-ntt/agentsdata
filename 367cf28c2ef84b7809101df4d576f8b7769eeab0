@@ -1,0 +1,44 @@
+.github/instructions/dashboard.instructions.md
+  h_5668b745a35fae 1-6,9,13,15,22,36,38-45
+AGENTS.md
+  h_5668b745a35fae 5,17,26,52,54
+README.md
+  h_5668b745a35fae 1,3,5,7-12,14,16,18,20-25,27,29,31-33,35,37-43,45,47,50,53-54,57
+docs/exercises/exercise-01-dashboard.md
+  h_5668b745a35fae 1-84
+docs/exercises/exercise-02-agent-instructions.md
+  h_5668b745a35fae 1-105
+docs/exercises/exercise-03-skills-mcp.md
+  h_5668b745a35fae 1-423
+docs/exercises/exercise-04-sdd.md
+  h_5668b745a35fae 1-133
+docs/exercises/exercise-05-implementation-evals.md
+  h_5668b745a35fae 1-142
+docs/setup.md
+  h_5668b745a35fae 1-287
+resources/dim_articulos.csv
+  h_5668b745a35fae 1-58
+resources/dim_canal.csv
+  h_5668b745a35fae 1-7
+resources/dim_fecha.csv
+  h_5668b745a35fae 1-175
+resources/dim_promociones.csv
+  h_5668b745a35fae 1-8
+resources/dim_usuarios.csv
+  h_5668b745a35fae 1-12
+resources/fact_promociones_articulos.csv
+  h_5668b745a35fae 1-125
+resources/fact_ventas.csv
+  h_5668b745a35fae 1-201
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "367cf28c2ef84b7809101df4d576f8b7769eeab0",
+  "prompts": {},
+  "humans": {
+    "h_5668b745a35fae": {
+      "author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}

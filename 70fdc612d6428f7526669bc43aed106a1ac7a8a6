@@ -1,0 +1,43 @@
+.github/prompts/opsx-apply.prompt.md
+  s_d956279df69d96::t_d3285255e66dd2 1-198
+.github/prompts/opsx-archive.prompt.md
+  s_d956279df69d96::t_e1cdcc61416a0d 1-260
+.github/prompts/opsx-explore.prompt.md
+  s_d956279df69d96::t_4c1d72add929b9 1-237
+.github/prompts/opsx-propose.prompt.md
+  s_d956279df69d96::t_67d47f89f1dfcd 1-166
+.github/prompts/opsx-sync.prompt.md
+  s_d956279df69d96::t_94eb01cdfb9200 1-282
+.github/prompts/opsx-update.prompt.md
+  s_d956279df69d96::t_ec9e8168a0a059 1-101
+.github/skills/openspec-apply-change/SKILL.md
+  s_d956279df69d96::t_c3d1cf912d7654 1-206
+.github/skills/openspec-archive-change/SKILL.md
+  s_d956279df69d96::t_0db909f3ff47b3 1-221
+.github/skills/openspec-explore/SKILL.md
+  s_d956279df69d96::t_ef701bb5c7cafc 1-356
+.github/skills/openspec-propose/SKILL.md
+  s_d956279df69d96::t_26e6c4d89bc3f1 1-174
+.github/skills/openspec-sync-specs/SKILL.md
+  s_d956279df69d96::t_cd6984e975da19 1-290
+.github/skills/openspec-update-change/SKILL.md
+  s_d956279df69d96::t_55435fc83cd6f5 1-109
+openspec/changes/total-sales-mom-comparison/.openspec.yaml
+  s_d956279df69d96::t_502c778735f659 1-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "70fdc612d6428f7526669bc43aed106a1ac7a8a6",
+  "prompts": {},
+  "sessions": {
+    "s_d956279df69d96": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "31ad1e2f-4696-4d81-97fd-2d8432fc4159",
+        "model": "copilot/claude-sonnet-5"
+      },
+      "human_author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}
