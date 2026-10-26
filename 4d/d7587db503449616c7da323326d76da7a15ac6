@@ -1,0 +1,30 @@
+README.md
+  h_5668b745a35fae 3,18,25-33,56-57,64
+docs/exercises/exercise-01-dashboard.md
+  h_5668b745a35fae 7,29,31-33,38-39,42-43,45,47-48,56,58
+docs/exercises/exercise-02-agent-instructions.md
+  h_5668b745a35fae 49-50,75
+docs/exercises/exercise-03-skills-mcp.md
+  h_5668b745a35fae 11,14-15,25,34,36-41,43,45,86,88,90-93,95,97,148,156,158,250,265,291,293,320
+docs/exercises/exercise-04-sdd.md
+  h_5668b745a35fae 37,132-148,151
+docs/exercises/exercise-05-implementation-evals.md
+  h_5668b745a35fae 7,12-16,23,35,54,56,102,110,121,129,131
+docs/setup.md
+  h_5668b745a35fae 264,269,281
+scripts/setup.ps1
+  h_5668b745a35fae 83
+scripts/setup.sh
+  h_5668b745a35fae 94
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4dd7587db503449616c7da323326d76da7a15ac6",
+  "prompts": {},
+  "humans": {
+    "h_5668b745a35fae": {
+      "author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}
