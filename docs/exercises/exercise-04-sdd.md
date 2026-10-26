@@ -34,7 +34,7 @@ Verify + Evaluation (Harness/Evals)
 Archive (specs become living documentation)
 ```
 
-> In this exercise, work only through a reviewed, correct OpenSpec change. Implementation, verification, the harness, and evals are added in the next exercise.
+> In this exercise, work through a reviewed, correct OpenSpec change and implement it. Verification, the harness, evals, and archiving are added in the next exercise.
 
 OpenSpec's own [loop](https://openspec.dev/docs/quickstart#the-loop-at-a-glance) starts with `/opsx-explore`, a thinking-only mode that investigates the codebase and sharpens a fuzzy idea before proposing anything. This exercise skips it on purpose: the idea in Part 1 is already fully scoped (exact formulas, exact edge case) so every learner proposes the same change and gets a comparable result. Use `/opsx-explore` in your own work whenever the idea is still fuzzy — OpenSpec's own guidance is to go straight to `/opsx-propose` when you already know what you want to build, which is the case here.
 
@@ -129,9 +129,26 @@ Reject and ask the agent to fix the plan if you find invented fields, a missing 
 
 There is no separate "Approved" field to flip: a plan counts as approved once you stop correcting it and are ready to move to implementation.
 
+## Part 4 — Implement the change
+
+In Copilot Chat:
+
+```text
+/opsx-apply
+```
+
+The agent works through `openspec/changes/total-sales-mom-comparison/tasks.md`, checking off each task as it lands. Confirm it also:
+
+- follows `AGENTS.md` and `.github/instructions/dashboard.instructions.md`;
+- implements only the tasks in the reviewed change, in the existing Total Sales card;
+- uses stable DOM identifiers for the four displayed values;
+- preserves the self-contained dashboard.
+
+If a session is interrupted or runs out of context, re-run `/opsx-apply` — it resumes at the first unchecked task.
+
 ## Exercise result
 
-The result is a reviewed `openspec/changes/total-sales-mom-comparison/` folder with a correct `proposal.md`, a `specs/` with one requirement per behavior above (the percentage-change requirement may carry two scenarios), and a `tasks.md` that covers them and nothing more. Nothing has been implemented. Implementation begins in the next exercise.
+The result is a reviewed `openspec/changes/total-sales-mom-comparison/` folder with a correct `proposal.md`, a `specs/` with one requirement per behavior above (the percentage-change requirement may carry two scenarios), and a `tasks.md` that covers them and nothing more, fully checked off. The Total Sales card shows the four new values. Verification and evaluation begin in the next exercise.
 
 ---
 

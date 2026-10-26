@@ -4,7 +4,7 @@
 
 ## Objective
 
-Compare the result of a prompt without context with the result obtained when the agent has real data.
+Compare a dashboard generated without data, where the agent has to invent the values, with one generated from real CSV data. In the second part each participant chooses their own KPIs, colors, and layout, so every dashboard in the group ends up different.
 
 ## Part 1 — Generation without data
 
@@ -26,48 +26,26 @@ Generate an HTML sales dashboard for business users.
 - Without data, generation is fast, but values and KPIs may be fictional.
 - Codex and OpenCode do not always expose a mode called **Ask**. In that case, explicitly request: `Analyze and propose a solution without modifying files`.
 
-## Part 2 — Add the CSV files
+## Part 2 — Generation with CSV data
 
-1. Receive the `resources` folder for the exercise from the instructor.
-2. Copy the folder to the repository root.
-3. Check that the files are available:
-
-**Windows — PowerShell**
-
-```powershell
-Get-ChildItem .\resources
-```
-
-**macOS, Linux, or WSL — Bash/Zsh**
-
-```bash
-ls -la ./resources
-```
-
-4. Return to chat and send:
+1. Copy the `resources` folder provided by the instructor to the repository root.
+2. Decide which KPIs, colors, and layout you want. Choose your own; do not copy a colleague's.
+3. Send the prompt, replacing the placeholders with your choices:
 
 ```text
 Generate an HTML sales dashboard for business users using the CSV files in the `resources` folder.
+
+KPIs: <your KPIs, for example revenue, units sold, average ticket>.
+Visual style: <your colors and layout>.
 ```
 
-5. Review which files the agent wants to read and modify.
-6. Accept the changes after checking that it uses the CSV files.
-7. Serve the dashboard:
+4. Review which files the agent wants to read and modify, and accept the changes after checking that it uses the CSV files.
+5. Open the dashboard in the browser the way the agent indicates.
 
-**Windows — PowerShell**
+### Discussion points
 
-```powershell
-python -m http.server 8000
-```
-
-**macOS, Linux, or WSL — Bash/Zsh**
-
-```bash
-python3 -m http.server 8000
-```
-
-8. Open `http://localhost:8000/{name}.html`.
-9. Stop the server with `Ctrl+C` when finished.
+- Same data, different prompts: compare your dashboard with your colleagues'. KPIs, calculations, and style vary because each prompt carries different, one-off context.
+- That context is lost on the next prompt. The next exercise moves it into persistent instructions.
 
 ## Exercise validation
 
@@ -75,9 +53,9 @@ Check that:
 
 - `{name}.html` was created;
 - the data comes from `resources`;
-- the dashboard loads over HTTP;
+- the KPIs, colors, and layout reflect your choices;
 - no personal data is displayed;
-- the KPIs are not manually entered values.
+- the KPIs are calculated from the data, not manually entered values.
 
 ---
 

@@ -4,23 +4,23 @@
 
 ## Objective
 
-Implement the reviewed OpenSpec change, let the agent verify it against the spec's scenarios, and confirm the result with a simple, reproducible **harness**.
+Verify the OpenSpec change implemented in Exercise 4 against the spec's scenarios, and confirm the result with a simple, reproducible **harness**.
 
 The complete flow is:
 
 ```text
-Reviewed change → Implementation (/opsx-apply) → Verify (/opsx-verify) → Harness
-                                                                      ↓
-                                          FAIL → Correction → Retry → PASS
-                                                                      ↓
-                                                                  Archive
+Implemented change (Exercise 4) → Verify (/opsx-verify) → Harness
+                                                            ↓
+                                FAIL → Correction → Retry → PASS
+                                                            ↓
+                                                        Archive
 ```
 
 The harness is a single `evals/harness.js`, run with plain Node.js (already a prerequisite for this course) — no browser, no local server, no npm packages. Its checks are derived directly from the `#### Scenario:` blocks in `openspec/changes/total-sales-mom-comparison/specs/`, instead of a fixed, invented count.
 
 ## Part 1 — Translate the spec into checks
 
-Before implementing, open `openspec/changes/total-sales-mom-comparison/specs/<capability>/spec.md` and list its scenarios — the harness will observe exactly these, one EVAL per scenario. For this change, that's typically five, because the percentage-change requirement carries two scenarios (the normal calculation and the zero-previous edge case):
+Open `openspec/changes/total-sales-mom-comparison/specs/<capability>/spec.md` and list its scenarios — the harness will observe exactly these, one EVAL per scenario. For this change, that's typically five, because the percentage-change requirement carries two scenarios (the normal calculation and the zero-previous edge case):
 
 | Eval | Scenario | Check |
 | --- | --- | --- |
@@ -32,24 +32,7 @@ Before implementing, open `openspec/changes/total-sales-mom-comparison/specs/<ca
 
 Do not add more evals than scenarios, and do not drop any. This keeps the harness a direct derivative of the spec, not of the implementation.
 
-## Part 2 — Implement the change
-
-In Copilot Chat:
-
-```text
-/opsx-apply
-```
-
-The agent works through `openspec/changes/total-sales-mom-comparison/tasks.md`, checking off each task as it lands. Confirm it also:
-
-- follows `AGENTS.md` and `.github/instructions/dashboard.instructions.md`;
-- implements only the tasks in the reviewed change, in the existing Total Sales card;
-- uses stable DOM identifiers for the four displayed values;
-- preserves the self-contained dashboard.
-
-If a session is interrupted or runs out of context, re-run `/opsx-apply` — it resumes at the first unchecked task.
-
-## Part 3 — Verify against the spec
+## Part 2 — Verify against the spec
 
 `verify` is an optional workflow, not installed by the default `openspec init`. Enable it once per machine with the interactive profile selector, then refresh the generated Copilot files:
 
@@ -68,9 +51,9 @@ Then, in Copilot Chat:
 
 The agent produces a report across three dimensions — **Completeness** (tasks and spec coverage), **Correctness** (requirement implementation mapping and scenario coverage), and **Coherence** (design adherence and code pattern consistency) — without touching the harness or the dashboard.
 
-Expect `verify` to flag **Scenario Coverage** as a WARNING the first time, even though the implementation is correct: it only searches the codebase for matching logic, it never runs the dashboard or computes an expected value. Without any automated test file in the repo, every scenario reads "not covered" by design — that is not a mistake to fix here, it is the lesson for this part of the exercise. Fix any CRITICAL issue it reports; leave the Scenario Coverage WARNING as-is and carry it into Part 4, where the harness closes exactly that gap.
+Expect `verify` to flag **Scenario Coverage** as a WARNING the first time, even though the implementation is correct: it only searches the codebase for matching logic, it never runs the dashboard or computes an expected value. Without any automated test file in the repo, every scenario reads "not covered" by design — that is not a mistake to fix here, it is the lesson for this part of the exercise. Fix any CRITICAL issue it reports; leave the Scenario Coverage WARNING as-is and carry it into Part 3, where the harness closes exactly that gap.
 
-## Part 4 — Create the harness
+## Part 3 — Create the harness
 
 `verify` only audits structure and code; it cannot load the dashboard, pick a real filter combination, or compute an expected euro value independently. The harness fills exactly that gap, and it is the only part of this flow that actually executes the real calculation against real data.
 
@@ -116,7 +99,7 @@ Do not add dependencies, a browser, a local server, exports, or
 MANUAL/BLOCKED states.
 ```
 
-## Part 5 — Run the harness
+## Part 4 — Run the harness
 
 ```bash
 node evals/harness.js
@@ -124,7 +107,7 @@ node evals/harness.js
 
 The result must show one row per scenario, each with expected vs. actual, and a final `N/N PASS` summary. A non-zero exit code means at least one scenario failed.
 
-## Part 6 — Fix and run regression
+## Part 5 — Fix and run regression
 
 If an EVAL returns `FAIL`:
 
@@ -135,7 +118,7 @@ If an EVAL returns `FAIL`:
 
 To demonstrate the cycle during the course, if the first run returns `N/N PASS`, temporarily rename one of the stable IDs the harness reads (for example `#kpiRevenuePrevious`) and run it again — that EVAL must fail. Restore the ID and run again; the history file must clearly show `FAIL → PASS` for that EVAL.
 
-## Part 7 — Re-verify against the spec
+## Part 6 — Re-verify against the spec
 
 Now that `evals/harness.js` exists and exercises all 5 scenarios, run `/opsx-verify` again:
 
@@ -143,9 +126,9 @@ Now that `evals/harness.js` exists and exercises all 5 scenarios, run `/opsx-ver
 /opsx-verify
 ```
 
-Compare this report to the one from Part 3: **Scenario Coverage** should no longer read "not covered" — `verify` now finds a test file exercising each scenario. This is the lab's payoff: the same command, run twice, shows the exact gap the harness was built to close.
+Compare this report to the one from Part 2: **Scenario Coverage** should no longer read "not covered" — `verify` now finds a test file exercising each scenario. This is the lab's payoff: the same command, run twice, shows the exact gap the harness was built to close.
 
-## Part 8 — Archive the change
+## Part 7 — Archive the change
 
 Once the harness is green and `tasks.md` is fully checked:
 
