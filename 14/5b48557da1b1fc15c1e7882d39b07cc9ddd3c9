@@ -1,0 +1,33 @@
+docs/setup.md
+  s_b067ca3eebf894::t_62717cbfbdb7f5 264,269,281
+docs/exercises/exercise-01-dashboard.md
+  s_b067ca3eebf894::t_8f17996ba84455 7,29,31-33,38-39,42-43,45,47-48,56,58
+docs/exercises/exercise-02-agent-instructions.md
+  s_b067ca3eebf894::t_3402b79730ee9e 49-50,75
+docs/exercises/exercise-03-skills-mcp.md
+  s_b067ca3eebf894::t_8d4021ad52aa43 11,14-15,25,34,36-41,43,45,86,88,90-93,95,97,148,156,158,250,265,291,293,320
+docs/exercises/exercise-04-sdd.md
+  s_b067ca3eebf894::t_0346bfe0f9fe9b 37,132-148,151
+docs/exercises/exercise-05-implementation-evals.md
+  s_b067ca3eebf894::t_7347ac46842734 7,12-16,23,35,54,56,102,110,121,129,131
+scripts/setup.ps1
+  s_b067ca3eebf894::t_a841d2a97090ee 83
+scripts/setup.sh
+  s_b067ca3eebf894::t_70e348025bfd56 94
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "145b48557da1b1fc15c1e7882d39b07cc9ddd3c9",
+  "prompts": {},
+  "sessions": {
+    "s_b067ca3eebf894": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "71194f6a-e3d8-4711-a376-79ed7a0f39e7",
+        "model": "copilot/claude-opus-5.5"
+      },
+      "human_author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}
