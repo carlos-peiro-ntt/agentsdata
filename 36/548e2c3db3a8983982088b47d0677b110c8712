@@ -1,0 +1,20 @@
+README.md
+  h_5668b745a35fae 60
+docs/exercises/exercise-01-dashboard.md
+  h_5668b745a35fae 60
+docs/setup.md
+  h_5668b745a35fae 306
+scripts/setup.ps1
+  h_5668b745a35fae 57-63,131
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "36548e2c3db3a8983982088b47d0677b110c8712",
+  "prompts": {},
+  "humans": {
+    "h_5668b745a35fae": {
+      "author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}
