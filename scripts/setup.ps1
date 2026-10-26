@@ -54,7 +54,13 @@ function Install-Tools {
     if (-not (Test-Cmd 'git')) { Install-Winget 'Git.Git' }
     if (-not (Test-Cmd 'code')) { Install-Winget 'Microsoft.VisualStudioCode' }
 
-    if (-not (Test-Cmd 'py')) {
+    # Without Python, 'python' may resolve to the Microsoft Store alias stub, which exits non-zero.
+    $pythonOk = $false
+    if (Test-Cmd 'python') {
+        python --version *> $null
+        $pythonOk = ($LASTEXITCODE -eq 0)
+    }
+    if (-not $pythonOk) {
         Write-Warn 'Python not found. Install "Python 3.12" from Microsoft Store, then run this script again.'
     }
 
@@ -122,7 +128,7 @@ function Invoke-Verify {
     Write-Info 'Verifying installation'
     Test-Tool 'git' 'git' @('--version')
     Test-Tool 'code' 'code' @('--version')
-    Test-Tool 'python (py)' 'py' @('--version')
+    Test-Tool 'python' 'python' @('--version')
     Test-Tool 'node' 'node' @('--version')
     if (Test-Cmd 'node') {
         $major = [int](node -p "process.versions.node.split('.')[0]")

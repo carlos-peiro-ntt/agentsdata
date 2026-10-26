@@ -303,7 +303,7 @@ openspec --version
 ```powershell
 git --version
 code --version
-py --version
+python --version
 node --version
 npx --version
 uvx --version

@@ -57,7 +57,7 @@ Serve the repository locally to open the dashboard or the harness in a browser:
 python3 -m http.server 8000
 
 # Windows
-py -m http.server 8000
+python -m http.server 8000
 ```
 
 Then open `http://localhost:8000/{name}.html` or `http://localhost:8000/evals/harness.html`.
