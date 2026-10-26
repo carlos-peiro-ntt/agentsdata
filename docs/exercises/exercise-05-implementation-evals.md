@@ -51,14 +51,14 @@ If a session is interrupted or runs out of context, re-run `/opsx-apply` — it 
 
 ## Part 3 — Verify against the spec
 
-`verify` is an optional workflow, not installed by the default `openspec init`. Enable it once per machine by adding it to the configured workflow list, then refreshing the generated Copilot files:
+`verify` is an optional workflow, not installed by the default `openspec init`. Enable it once per machine with the interactive profile selector, then refresh the generated Copilot files:
 
 ```bash
-openspec config set workflows '["propose","explore","apply","update","sync","archive","verify"]'
+openspec config profile
 openspec update
 ```
 
-`openspec config set` replaces the whole list, so it's spelled out in full rather than just adding `verify`. Restart VS Code if `/opsx-verify` doesn't show up right away.
+In `openspec config profile`, select the workflows to install and make sure `verify` is checked alongside the existing ones (`propose`, `explore`, `apply`, `update`, `sync`, `archive`), then confirm. Restart VS Code if `/opsx-verify` doesn't show up right away.
 
 Then, in Copilot Chat:
 
