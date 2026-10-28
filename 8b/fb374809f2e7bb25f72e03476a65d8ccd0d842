@@ -1,0 +1,25 @@
+evals/.harness-history.json
+  s_f30a7fe70392f9::t_64898bcabe26f6 94-124
+openspec/changes/archive/2026-10-28-dashboard-dark-mode/.openspec.yaml
+  s_f30a7fe70392f9::t_89f851755140d2 1-2
+dashboard.html
+  s_f30a7fe70392f9::t_8464b7d46c244f 9-34,39,52-53,60,81,93,96-98,100,104-122,124-166,181,338,343,461,464
+openspec/changes/archive/2026-10-28-dashboard-dark-mode/tasks.md
+  s_f30a7fe70392f9::t_80f1e5537cb1df 1-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "8bfb374809f2e7bb25f72e03476a65d8ccd0d842",
+  "prompts": {},
+  "sessions": {
+    "s_f30a7fe70392f9": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "c017eea3-9068-48c3-aba8-b6a00d631207",
+        "model": "copilot/gpt-6-luna"
+      },
+      "human_author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}
