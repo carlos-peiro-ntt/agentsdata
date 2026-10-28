@@ -1,0 +1,29 @@
+docs/exercises/exercise-02-agents-md.md
+  s_b067ca3eebf894::t_dbc0e2ced9dbe7 1-95
+docs/exercises/exercise-03-skills-mcp-instructions.md
+  s_b067ca3eebf894::t_8a42a716729d21 1-326
+docs/exercises/exercise-04-openspec-propose-apply.md
+  s_b067ca3eebf894::t_12915458e83f5e 1-154
+docs/exercises/exercise-05-verify-harness-archive.md
+  s_b067ca3eebf894::t_02abecda1c8956 1-163
+README.md
+  s_b067ca3eebf894::t_a40cd0d1ec8e34 54-57
+docs/exercises/exercise-01-dashboard.md
+  s_b067ca3eebf894::t_d22244ed6cc300 59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "485a6a5767b5bbf72358ec53e65c9aa40dc53a3f",
+  "prompts": {},
+  "sessions": {
+    "s_b067ca3eebf894": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "71194f6a-e3d8-4711-a376-79ed7a0f39e7",
+        "model": "copilot/claude-opus-5.5"
+      },
+      "human_author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}
