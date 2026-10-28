@@ -278,8 +278,6 @@ Check that:
 
 ```text
 Implement the approved plan.
-
-Start with the discovery phase: use the Supabase MCP to inspect the schemas, relationships, and row counts of the required tables, and run the data-quality gate before writing any code. Resolve the pending decisions from the plan with what you find. If the actual schema contradicts the plan, stop and report the differences before continuing.
 ```
 
 Note: in plan mode you can click on `Start Implementation` instead. Because the reviewed plan already begins with the discovery phase, the agent follows the same order; check that its first actions are Supabase queries, not file edits.
