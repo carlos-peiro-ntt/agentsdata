@@ -1,6 +1,6 @@
-# Exercise 3 — Skills, MCP, Instruccions, Planning, and Implementation
+# Exercise 3 — Skills, MCP, Instructions, Planning, and Implementation
 
-[← Back to README](../../README.md) · [← Exercise 2](exercise-02-agent-instructions.md)
+[← Back to README](../../README.md) · [← Exercise 2](exercise-02-agents-md.md)
 
 ## Objective
 
@@ -50,7 +50,7 @@ Replace the whole content of `.mcp.json` with:
 		{
 			"type": "promptString",
 			"id": "supabase-access-token",
-			"description": "Supabase Access Token para el curso",
+			"description": "Supabase access token for the course",
 			"password": true
 		},
 		{
@@ -158,13 +158,21 @@ generated document in this repository:
 
 ## Part 4 — Generate the plan
 
-1. Select **Plan** mode.
+1. Select **Plan** mode. Plan mode cannot call MCP servers, so the prompt asks the plan to defer every schema-dependent decision to a discovery phase at the start of the implementation.
 2. Send:
 
 ```text
 # Generate an Interactive HTML Sales Dashboard
 
 Generate an interactive HTML sales dashboard for the business, reading data from Supabase through the configured MCP. Automatically document the report in Confluence using the corresponding MCP.
+
+## Planning Constraints
+
+- You cannot access the MCP servers while planning. Do not assume table schemas, columns, relationships, or values.
+- Make the first implementation phase a **discovery phase** using the Supabase MCP: inspect the schemas, relationships, and row counts of the required tables and run the data-quality gate. Only after that, define joins and KPI calculations.
+- Mark every decision that depends on discovery as pending (joins, column mappings for returns, registered vs. guest users, and promotions).
+- If discovery contradicts the plan, the implementation must stop and report the differences before writing code.
+- Before creating the Confluence page, the implementation must confirm that its parent page exists.
 
 ## Exercise Deliverables
 
@@ -182,9 +190,7 @@ Generate an interactive HTML sales dashboard for the business, reading data from
   - `dim_usuarios`
   - `dim_promociones`
   - `fact_promociones_articulos`
-- Inspect the table schemas and relationships before defining joins or calculating KPIs. Do not invent columns, relationships, or values.
-- Use the configured **Confluence MCP** to create the documentation as a **child page of the existing page with ID `1430576442`**, space_key `IADEIADATAENGINEERS`. Do not create it at the Confluence root or under a different parent.
-- Title the new child page using exactly this pattern: `{creator name} - Informe ventas`. If the creator name is not available from the repository or conversation, ask for it before implementation.
+- Use the configured **Confluence MCP** to create the documentation page. If the creator name needed for the page title is not available from the repository or conversation, ask for it before implementation.
 - The Confluence page must document the data sources and joins, KPI definitions, filters, data-quality findings, assumptions, and known limitations.
 
 ## Dashboard Technical Requirements
@@ -250,6 +256,9 @@ Include:
 
 Check that:
 
+- the plan starts the implementation with a Supabase discovery phase and the data-quality gate;
+- the plan does not invent columns or joins, and marks discovery-dependent decisions as pending;
+- the plan stops the implementation if discovery contradicts it;
 - `.github/instructions/dashboard.instructions.md` contains the detailed privacy, data-quality, and Confluence rules;
 - the prohibited personal fields are explicitly listed in `.github/instructions/dashboard.instructions.md`;
 - every table must receive `PASS` or `FAIL`;
@@ -269,9 +278,11 @@ Check that:
 
 ```text
 Implement the approved plan.
+
+Start with the discovery phase: use the Supabase MCP to inspect the schemas, relationships, and row counts of the required tables, and run the data-quality gate before writing any code. Resolve the pending decisions from the plan with what you find. If the actual schema contradicts the plan, stop and report the differences before continuing.
 ```
 
-Note: in plan mode you can click on `Start Implementation`.
+Note: in plan mode you can click on `Start Implementation` instead. Because the reviewed plan already begins with the discovery phase, the agent follows the same order; check that its first actions are Supabase queries, not file edits.
 
 4. If the agent does not know the creator's name, provide it when requested. Do not allow it to invent the value.
 5. Review queries, quality results, and tool-use requests before approving changes.
@@ -301,6 +312,7 @@ Then open the page created in Confluence and verify that:
 Check that:
 
 - the implementation matches the reviewed plan, not the initial plan;
+- the discovery phase ran before any code was written, and pending decisions were resolved from the actual schema;
 - all required tables have a `PASS` result before KPIs are calculated;
 - no join unexpectedly increases the number of sales;
 - `{name}.html` remains one self-contained file;
@@ -311,4 +323,4 @@ Check that:
 
 ---
 
-Continue to [Exercise 4 — From Plan to Specification with SDD](exercise-04-sdd.md).
+Continue to [Exercise 4 — Propose and Apply a Change with OpenSpec](exercise-04-openspec-propose-apply.md).

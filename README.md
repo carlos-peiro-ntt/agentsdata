@@ -51,10 +51,10 @@ Work through the linked documents in order. Each one builds on the files created
 
 1. [Setup and Workshop Preparation](docs/setup.md) — install prerequisites with `scripts/setup.sh` (macOS/Linux/WSL) or `scripts/setup.ps1` (Windows).
 2. [Exercise 1 — Create the First Dashboard](docs/exercises/exercise-01-dashboard.md) — prompt-only generation, then generation from real CSV data.
-3. [Exercise 2 — From Prompt to Persistent Instructions](docs/exercises/exercise-02-agent-instructions.md) — create `AGENTS.md`.
-4. [Exercise 3 — Skills, MCP, Planning, and Implementation](docs/exercises/exercise-03-skills-mcp.md) — install skills, configure MCP servers, add the dashboard instruction, plan and implement the Supabase-backed dashboard.
-5. [Exercise 4 — From Plan to Specification with OpenSpec](docs/exercises/exercise-04-sdd.md) — initialize [OpenSpec](https://github.com/Fission-AI/OpenSpec), turn an idea into a reviewed change under `openspec/changes/`, and implement it with `/opsx-apply`.
-6. [Exercise 5 — Guided Implementation, Verify, and Harness/Evals](docs/exercises/exercise-05-implementation-evals.md) — verify the implemented change, validate it with `evals/harness.js`, then archive it.
+3. [Exercise 2 — From Prompt to AGENTS.md](docs/exercises/exercise-02-agents-md.md) — create `AGENTS.md`.
+4. [Exercise 3 — Skills, MCP, Instructions, Planning, and Implementation](docs/exercises/exercise-03-skills-mcp-instructions.md) — install skills, configure MCP servers, add the dashboard instruction, plan and implement the Supabase-backed dashboard.
+5. [Exercise 4 — Propose and Apply a Change with OpenSpec](docs/exercises/exercise-04-openspec-propose-apply.md) — initialize [OpenSpec](https://github.com/Fission-AI/OpenSpec), turn an idea into a reviewed change under `openspec/changes/`, and implement it with `/opsx-apply`.
+6. [Exercise 5 — Verify, Evaluate with a Harness, and Archive](docs/exercises/exercise-05-verify-harness-archive.md) — verify the implemented change, validate it with `evals/harness.js`, then archive it.
 
 ## Data Progression
 

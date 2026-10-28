@@ -1,4 +1,4 @@
-# Exercise 2 — From Prompt to Persistent Instructions
+# Exercise 2 — From Prompt to AGENTS.md
 
 [← Back to README](../../README.md) · [← Exercise 1](exercise-01-dashboard.md)
 
@@ -92,4 +92,4 @@ Check that:
 
 ---
 
-Continue to [Exercise 3 — Skills, MCP, Planning, and Implementation](exercise-03-skills-mcp.md).
+Continue to [Exercise 3 — Skills, MCP, Instructions, Planning, and Implementation](exercise-03-skills-mcp-instructions.md).

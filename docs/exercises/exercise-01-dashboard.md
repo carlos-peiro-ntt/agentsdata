@@ -56,4 +56,4 @@ Check that:
 
 ---
 
-Continue to [Exercise 2 — From Prompt to Persistent Instructions](exercise-02-agent-instructions.md).
+Continue to [Exercise 2 — From Prompt to AGENTS.md](exercise-02-agents-md.md).
