@@ -34,9 +34,6 @@ Generate an HTML sales dashboard for business users.
 
 ```text
 Generate an HTML sales dashboard for business users using the CSV files in the `resources` folder.
-
-KPIs: <your KPIs, for example revenue, units sold, average ticket>.
-Visual style: <your colors and layout>.
 ```
 
 4. Review which files the agent wants to read and modify, and accept the changes after checking that it uses the CSV files.

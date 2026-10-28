@@ -1,4 +1,4 @@
-# Exercise 3 — Skills, MCP, Planning, and Implementation
+# Exercise 3 — Skills, MCP, Instruccions, Planning, and Implementation
 
 [← Back to README](../../README.md) · [← Exercise 2](exercise-02-agent-instructions.md)
 
@@ -40,46 +40,47 @@ First let VS Code create the MCP configuration file with a placeholder server:
 5. Enter `dummy` as the server ID.
 6. Select **Workspace** so the configuration is saved in the repository.
 
-VS Code creates and opens `.vscode/mcp.json` with the `dummy` server.
+VS Code creates and opens `.mcp.json` with the `dummy` server.
 
-Replace the whole content of `.vscode/mcp.json` with:
+Replace the whole content of `.mcp.json` with:
 
 ```json
 {
-  "inputs": [
-    {
-      "type": "promptString",
-      "id": "supabase-access-token",
-      "description": "Supabase Access Token para el curso",
-      "password": true
-    },
-    {
-      "type": "promptString",
-      "id": "confluence-token",
-      "description": "Confluence Bearer Token",
-      "password": true
-    }
-  ],
-  "servers": {
-    "confluence": {
-      "type": "stdio",
-      "command": "uvx",
-      "args": [
-        "mcp-atlassian"
-      ],
-      "env": {
-        "CONFLUENCE_URL": "https://umane.emeal.nttdata.com/confluence",
-        "CONFLUENCE_PERSONAL_TOKEN": "${input:confluence-token}"
-      }
-    },
-    "supabase": {
-      "type": "http",
-      "url": "https://mcp.supabase.com/mcp?project_ref=tnzlxngahrlnnmusxqpf&read_only=true&features=database",
-      "headers": {
-        "Authorization": "Bearer ${input:supabase-access-token}"
-      }
-    }
-  }
+	"inputs": [
+		{
+			"type": "promptString",
+			"id": "supabase-access-token",
+			"description": "Supabase Access Token para el curso",
+			"password": true
+		},
+		{
+			"type": "promptString",
+			"id": "confluence-token",
+			"description": "Confluence Bearer Token",
+			"password": true
+		}
+	],
+	"mcpServers": {
+		"confluence": {
+			"type": "stdio",
+			"command": "uvx",
+			"args": [
+				"mcp-atlassian==0.21.1"
+			],
+			"env": {
+				"UV_DEFAULT_INDEX": "https://pypi.org/simple",
+				"CONFLUENCE_URL": "https://umane.emeal.nttdata.com/confluence",
+				"CONFLUENCE_PERSONAL_TOKEN": "${input:confluence-token}"
+			}
+		},
+		"supabase": {
+			"type": "http",
+			"url": "https://mcp.supabase.com/mcp?project_ref=tnzlxngahrlnnmusxqpf&read_only=true&features=database",
+			"headers": {
+				"Authorization": "Bearer ${input:supabase-access-token}"
+			}
+		}
+	}
 }
 ```
 
@@ -188,8 +189,6 @@ Generate an interactive HTML sales dashboard for the business, reading data from
 
 ## Dashboard Technical Requirements
 
-- Follow the installed skills and the repository instructions in `AGENTS.md`.
-
 The output must be a **single self-contained HTML file**.
 
 ### Interactive Filters
@@ -269,19 +268,10 @@ Check that:
 3. Keep the reviewed plan available and send:
 
 ```text
-Implement the approved revised plan now.
-
-Follow every instruction in AGENTS.md and .github/instructions/dashboard.instructions.md, and use the configured skills and MCP servers. Apply the data-quality gate before generating any dashboard or Confluence output. If a required table fails validation or a join unexpectedly increases the sales row count, stop the implementation and report the failure and its limitations instead of producing misleading KPIs.
-
-If all required checks pass:
-
-- Update the standalone, self-contained dashboard file {name}.html.
-- Use only anonymized user attributes and do not expose personal data anywhere in the HTML, JavaScript, visualizations, filters, tooltips, source examples, or documentation.
-- Add the source-code comment required by .github/instructions/dashboard.instructions.md explaining why first and last names are excluded.
-- Create the Confluence report as a child of page 1430576442, space_key IADEIADATAENGINEERS with the exact title `{creator name} - Informe ventas`.
-- Document the source tables, joins, KPI definitions, PASS/FAIL results, filters, assumptions, data-quality findings, and known limitations.
-- Validate the completed dashboard locally and report the files and external resources created or updated.
+Implement the approved plan.
 ```
+
+Note: in plan mode you can click on `Start Implementation`.
 
 4. If the agent does not know the creator's name, provide it when requested. Do not allow it to invent the value.
 5. Review queries, quality results, and tool-use requests before approving changes.
