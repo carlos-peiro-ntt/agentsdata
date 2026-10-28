@@ -91,5 +91,36 @@
       }
     ],
     "summary": "5/5 PASS"
+  },
+  {
+    "timestamp": "2026-10-28T15:04:41.610Z",
+    "results": [
+      {
+        "id": "EVAL-001",
+        "scenario": "current month total is shown",
+        "status": "PASS"
+      },
+      {
+        "id": "EVAL-002",
+        "scenario": "previous month total is shown",
+        "status": "PASS"
+      },
+      {
+        "id": "EVAL-003",
+        "scenario": "euro difference is current minus previous",
+        "status": "PASS"
+      },
+      {
+        "id": "EVAL-004",
+        "scenario": "percentage change is calculated",
+        "status": "PASS"
+      },
+      {
+        "id": "EVAL-005",
+        "scenario": "percentage change is N/A when previous is zero",
+        "status": "PASS"
+      }
+    ],
+    "summary": "5/5 PASS"
   }
 ]
