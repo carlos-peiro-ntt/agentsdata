@@ -1,0 +1,18 @@
+.mcp.json
+  h_5668b745a35fae 1-37
+AGENTS.md
+  h_5668b745a35fae 12-14,28
+docs/exercises/exercise-03-skills-mcp.md
+  h_5668b745a35fae 1,43,45,49-83,271,274-275
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "4994435a078c52c5f75878d6c661b4d45f93b974",
+  "prompts": {},
+  "humans": {
+    "h_5668b745a35fae": {
+      "author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}
