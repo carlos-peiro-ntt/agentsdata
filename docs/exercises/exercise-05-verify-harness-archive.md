@@ -121,7 +121,7 @@ To demonstrate the cycle during the course, if the first run returns `N/N PASS`,
 Now that `evals/harness.js` exists and exercises all 5 scenarios, run `/opsx-verify` again:
 
 ```text
-/opsx-verify
+/opsx-verify <specification-name>
 ```
 
 Compare this report to the one from Part 2: **Scenario Coverage** should no longer read "not covered" — `verify` now finds a test file exercising each scenario. This is the lab's payoff: the same command, run twice, shows the exact gap the harness was built to close.
@@ -131,7 +131,7 @@ Compare this report to the one from Part 2: **Scenario Coverage** should no long
 Once the harness is green and `tasks.md` is fully checked:
 
 ```text
-/opsx-archive
+/opsx-archive <specification-name>
 ```
 
 Expect two confirmation gates before anything moves — `/opsx-archive` never archives silently:
