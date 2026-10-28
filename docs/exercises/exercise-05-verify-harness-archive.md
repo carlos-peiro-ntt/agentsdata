@@ -1,6 +1,6 @@
-# Exercise 5 — Guided Implementation, Verify, and Harness/Evals
+# Exercise 5 — Verify, Evaluate with a Harness, and Archive
 
-[← Back to README](../../README.md) · [← Exercise 4](exercise-04-sdd.md)
+[← Back to README](../../README.md) · [← Exercise 4](exercise-04-openspec-propose-apply.md)
 
 ## Objective
 
@@ -51,7 +51,7 @@ Then, in Copilot Chat:
 
 The agent produces a report across three dimensions — **Completeness** (tasks and spec coverage), **Correctness** (requirement implementation mapping and scenario coverage), and **Coherence** (design adherence and code pattern consistency) — without touching the harness or the dashboard.
 
-Expect `verify` to flag **Scenario Coverage** as a WARNING the first time, even though the implementation is correct: it only searches the codebase for matching logic, it never runs the dashboard or computes an expected value. Without any automated test file in the repo, every scenario reads "not covered" by design — that is not a mistake to fix here, it is the lesson for this part of the exercise. Fix any CRITICAL issue it reports; leave the Scenario Coverage WARNING as-is and carry it into Part 3, where the harness closes exactly that gap.
+Expect `verify` to flag **Scenario Coverage** as a WARNING the first time, even though the implementation is correct: it only searches the codebase for matching logic, it never runs the dashboard or computes an expected value. Without any automated test file in the project, every scenario reads "not covered" by design — that is not a mistake to fix here, it is the lesson for this part of the exercise. Fix any CRITICAL issue it reports; leave the Scenario Coverage WARNING as-is and carry it into Part 3, where the harness closes exactly that gap.
 
 ## Part 3 — Create the harness
 
@@ -64,9 +64,7 @@ Create evals/harness.js using plain Node.js, no npm packages.
 
 Read:
 - openspec/changes/total-sales-mom-comparison/specs/;
-- the implemented dashboard.html;
-- AGENTS.md;
-- .github/instructions/dashboard.instructions.md.
+- the implemented dashboard, {name}.html.
 
 Do not modify the change folder or the dashboard.
 
@@ -75,13 +73,13 @@ EVAL per requirement/scenario pair, named after that scenario. Do not
 invent additional evaluations and do not drop any.
 
 The script must, when run with `node evals/harness.js`:
-- read dashboard.html as text and extract the embedded SNAPSHOT array;
+- read {name}.html as text and extract the embedded SNAPSHOT array;
 - compute each scenario's expected value independently, reimplementing
   the formula from the spec — never by calling or copying the
   dashboard's own code;
 - extract the dashboard's actual calculation lines for the current
   total, previous total, difference, and percentage change from
-  dashboard.html by pattern, and evaluate them against the same
+  {name}.html by pattern, and evaluate them against the same
   SNAPSHOT to get the dashboard's actual value for comparison;
 - confirm, by inspecting the source, that the stable DOM ids
   (#kpiRevenue, #kpiRevenuePrevious, #kpiRevenueDifference,

@@ -1,6 +1,6 @@
-# Exercise 3 — Skills, MCP, Planning, and Implementation
+# Exercise 3 — Skills, MCP, Instructions, Planning, and Implementation
 
-[← Back to README](../../README.md) · [← Exercise 2](exercise-02-agent-instructions.md)
+[← Back to README](../../README.md) · [← Exercise 2](exercise-02-agents-md.md)
 
 ## Objective
 
@@ -8,7 +8,7 @@ Add specialized knowledge, connect external sources, and complete the dashboard'
 
 ## Part 1 — Install the skills
 
-Open a terminal in VS Code (**Terminal → New Terminal**); it starts at the repository root. Run:
+Open a terminal in VS Code (**Terminal → New Terminal**); it starts at the project folder. Run:
 
 ```bash
 npx --registry=https://registry.npmjs.org/ skills add https://github.com/anthropics/skills --skill frontend-design
@@ -38,48 +38,49 @@ First let VS Code create the MCP configuration file with a placeholder server:
 3. Select **Command (stdio)**.
 4. Enter `echo` as the command. It is only a placeholder.
 5. Enter `dummy` as the server ID.
-6. Select **Workspace** so the configuration is saved in the repository.
+6. Select **Workspace** so the configuration is saved in the project folder.
 
-VS Code creates and opens `.vscode/mcp.json` with the `dummy` server.
+VS Code creates and opens `.mcp.json` with the `dummy` server.
 
-Replace the whole content of `.vscode/mcp.json` with:
+Replace the whole content of `.mcp.json` with:
 
 ```json
 {
-  "inputs": [
-    {
-      "type": "promptString",
-      "id": "supabase-access-token",
-      "description": "Supabase Access Token para el curso",
-      "password": true
-    },
-    {
-      "type": "promptString",
-      "id": "confluence-token",
-      "description": "Confluence Bearer Token",
-      "password": true
-    }
-  ],
-  "servers": {
-    "confluence": {
-      "type": "stdio",
-      "command": "uvx",
-      "args": [
-        "mcp-atlassian"
-      ],
-      "env": {
-        "CONFLUENCE_URL": "https://umane.emeal.nttdata.com/confluence",
-        "CONFLUENCE_PERSONAL_TOKEN": "${input:confluence-token}"
-      }
-    },
-    "supabase": {
-      "type": "http",
-      "url": "https://mcp.supabase.com/mcp?project_ref=tnzlxngahrlnnmusxqpf&read_only=true&features=database",
-      "headers": {
-        "Authorization": "Bearer ${input:supabase-access-token}"
-      }
-    }
-  }
+	"inputs": [
+		{
+			"type": "promptString",
+			"id": "supabase-access-token",
+			"description": "Supabase access token for the course",
+			"password": true
+		},
+		{
+			"type": "promptString",
+			"id": "confluence-token",
+			"description": "Confluence Bearer Token",
+			"password": true
+		}
+	],
+	"mcpServers": {
+		"confluence": {
+			"type": "stdio",
+			"command": "uvx",
+			"args": [
+				"mcp-atlassian==0.21.1"
+			],
+			"env": {
+				"UV_DEFAULT_INDEX": "https://pypi.org/simple",
+				"CONFLUENCE_URL": "https://umane.emeal.nttdata.com/confluence",
+				"CONFLUENCE_PERSONAL_TOKEN": "${input:confluence-token}"
+			}
+		},
+		"supabase": {
+			"type": "http",
+			"url": "https://mcp.supabase.com/mcp?project_ref=tnzlxngahrlnnmusxqpf&read_only=true&features=database",
+			"headers": {
+				"Authorization": "Bearer ${input:supabase-access-token}"
+			}
+		}
+	}
 }
 ```
 
@@ -103,7 +104,7 @@ In this workshop, `AGENTS.md` remains the project entry point, while `.github/in
 ```text
 /create-instructions
 
-Create a workspace instruction file for this repository.
+Create a workspace instruction file for this project.
 
 Name: Dashboard Privacy and Data Governance
 Scope: workspace (.github/instructions/)
@@ -117,7 +118,7 @@ dashboard documentation."
 applyTo: ["**/*.html", "**/*.js", "**/*.md"]
 
 Body content — mandatory rules for every dashboard, analysis, and
-generated document in this repository:
+generated document in this project:
 
 1. Dashboard Data Source: Supabase MCP read-only is the only source;
    no CSV/resources/ after the learning exercise; validate schemas
@@ -157,13 +158,21 @@ generated document in this repository:
 
 ## Part 4 — Generate the plan
 
-1. Select **Plan** mode.
+1. Select **Plan** mode. Plan mode cannot call MCP servers, so the prompt asks the plan to defer every schema-dependent decision to a discovery phase at the start of the implementation.
 2. Send:
 
 ```text
 # Generate an Interactive HTML Sales Dashboard
 
 Generate an interactive HTML sales dashboard for the business, reading data from Supabase through the configured MCP. Automatically document the report in Confluence using the corresponding MCP.
+
+## Planning Constraints
+
+- You cannot access the MCP servers while planning. Do not assume table schemas, columns, relationships, or values.
+- Make the first implementation phase a **discovery phase** using the Supabase MCP: inspect the schemas, relationships, and row counts of the required tables and run the data-quality gate. Only after that, define joins and KPI calculations.
+- Mark every decision that depends on discovery as pending (joins, column mappings for returns, registered vs. guest users, and promotions).
+- If discovery contradicts the plan, the implementation must stop and report the differences before writing code.
+- Before creating the Confluence page, the implementation must confirm that its parent page exists.
 
 ## Exercise Deliverables
 
@@ -181,14 +190,10 @@ Generate an interactive HTML sales dashboard for the business, reading data from
   - `dim_usuarios`
   - `dim_promociones`
   - `fact_promociones_articulos`
-- Inspect the table schemas and relationships before defining joins or calculating KPIs. Do not invent columns, relationships, or values.
-- Use the configured **Confluence MCP** to create the documentation as a **child page of the existing page with ID `1430576442`**, space_key `IADEIADATAENGINEERS`. Do not create it at the Confluence root or under a different parent.
-- Title the new child page using exactly this pattern: `{creator name} - Informe ventas`. If the creator name is not available from the repository or conversation, ask for it before implementation.
+- Use the configured **Confluence MCP** to create the documentation page. If the creator name needed for the page title is not available from the project or conversation, ask for it before implementation.
 - The Confluence page must document the data sources and joins, KPI definitions, filters, data-quality findings, assumptions, and known limitations.
 
 ## Dashboard Technical Requirements
-
-- Follow the installed skills and the repository instructions in `AGENTS.md`.
 
 The output must be a **single self-contained HTML file**.
 
@@ -251,6 +256,9 @@ Include:
 
 Check that:
 
+- the plan starts the implementation with a Supabase discovery phase and the data-quality gate;
+- the plan does not invent columns or joins, and marks discovery-dependent decisions as pending;
+- the plan stops the implementation if discovery contradicts it;
 - `.github/instructions/dashboard.instructions.md` contains the detailed privacy, data-quality, and Confluence rules;
 - the prohibited personal fields are explicitly listed in `.github/instructions/dashboard.instructions.md`;
 - every table must receive `PASS` or `FAIL`;
@@ -269,19 +277,12 @@ Check that:
 3. Keep the reviewed plan available and send:
 
 ```text
-Implement the approved revised plan now.
+Implement the approved plan.
 
-Follow every instruction in AGENTS.md and .github/instructions/dashboard.instructions.md, and use the configured skills and MCP servers. Apply the data-quality gate before generating any dashboard or Confluence output. If a required table fails validation or a join unexpectedly increases the sales row count, stop the implementation and report the failure and its limitations instead of producing misleading KPIs.
-
-If all required checks pass:
-
-- Update the standalone, self-contained dashboard file {name}.html.
-- Use only anonymized user attributes and do not expose personal data anywhere in the HTML, JavaScript, visualizations, filters, tooltips, source examples, or documentation.
-- Add the source-code comment required by .github/instructions/dashboard.instructions.md explaining why first and last names are excluded.
-- Create the Confluence report as a child of page 1430576442, space_key IADEIADATAENGINEERS with the exact title `{creator name} - Informe ventas`.
-- Document the source tables, joins, KPI definitions, PASS/FAIL results, filters, assumptions, data-quality findings, and known limitations.
-- Validate the completed dashboard locally and report the files and external resources created or updated.
+Start with the discovery phase: use the Supabase MCP to inspect the schemas, relationships, and row counts of the required tables, and run the data-quality gate before writing any code. Resolve the pending decisions from the plan with what you find. If the actual schema contradicts the plan, stop and report the differences before continuing.
 ```
+
+Note: in plan mode you can click on `Start Implementation` instead. Because the reviewed plan already begins with the discovery phase, the agent follows the same order; check that its first actions are Supabase queries, not file edits.
 
 4. If the agent does not know the creator's name, provide it when requested. Do not allow it to invent the value.
 5. Review queries, quality results, and tool-use requests before approving changes.
@@ -311,6 +312,7 @@ Then open the page created in Confluence and verify that:
 Check that:
 
 - the implementation matches the reviewed plan, not the initial plan;
+- the discovery phase ran before any code was written, and pending decisions were resolved from the actual schema;
 - all required tables have a `PASS` result before KPIs are calculated;
 - no join unexpectedly increases the number of sales;
 - `{name}.html` remains one self-contained file;
@@ -321,4 +323,4 @@ Check that:
 
 ---
 
-Continue to [Exercise 4 — From Plan to Specification with SDD](exercise-04-sdd.md).
+Continue to [Exercise 4 — Propose and Apply a Change with OpenSpec](exercise-04-openspec-propose-apply.md).

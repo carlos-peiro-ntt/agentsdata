@@ -1,6 +1,6 @@
-# Exercise 4 — From Plan to Specification with OpenSpec
+# Exercise 4 — Propose and Apply a Change with OpenSpec
 
-[← Back to README](../../README.md) · [← Exercise 3](exercise-03-skills-mcp.md)
+[← Back to README](../../README.md) · [← Exercise 3](exercise-03-skills-mcp-instructions.md)
 
 ## Objective
 
@@ -50,7 +50,7 @@ openspec --version
 
 If that command fails, go back to [Setup and Workshop Preparation](../setup.md) and install it before continuing.
 
-From the repository root, initialize it for GitHub Copilot:
+From the project folder, initialize it for GitHub Copilot:
 
 ```bash
 openspec init --tools github-copilot
@@ -99,7 +99,6 @@ Show:
 - percentage change: (current - previous) / previous * 100;
 - N/A when previous sales are zero.
 
-Read AGENTS.md and .github/instructions/dashboard.instructions.md first.
 Inspect the current dashboard and do not invent data or fields. Scope this
 change to the Total Sales card only.
 ```
@@ -152,4 +151,4 @@ The result is a reviewed `openspec/changes/total-sales-mom-comparison/` folder w
 
 ---
 
-Continue to [Exercise 5 — Guided Implementation, Verify, and Harness/Evals](exercise-05-implementation-evals.md).
+Continue to [Exercise 5 — Verify, Evaluate with a Harness, and Archive](exercise-05-verify-harness-archive.md).

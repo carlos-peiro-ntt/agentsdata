@@ -1,5 +1,5 @@
 # Workshop setup for Windows (PowerShell).
-# Usage: powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 [-Check]
+# Usage: powershell -ExecutionPolicy Bypass -File setup.ps1 [-Check]
 [CmdletBinding()]
 param(
     [switch]$Check
@@ -157,7 +157,7 @@ function Invoke-Verify {
     $Results | Format-Table -AutoSize | Out-String | Write-Host
 
     if ($Results.Status -contains 'FAIL') {
-        Write-Warn 'Some checks failed. Fix them (see docs\setup.md) and run: powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -Check'
+        Write-Warn 'Some checks failed. Fix them (see https://github.com/carlos-peiro-ntt/agentsdata/blob/main/docs/setup.md) and run: powershell -ExecutionPolicy Bypass -File setup.ps1 -Check'
         exit 1
     }
     Write-Info 'All checks passed. Restart your terminal if any tool was just installed.'
