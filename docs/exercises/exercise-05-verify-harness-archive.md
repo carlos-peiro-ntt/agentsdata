@@ -51,7 +51,7 @@ Then, in Copilot Chat:
 
 The agent produces a report across three dimensions — **Completeness** (tasks and spec coverage), **Correctness** (requirement implementation mapping and scenario coverage), and **Coherence** (design adherence and code pattern consistency) — without touching the harness or the dashboard.
 
-Expect `verify` to flag **Scenario Coverage** as a WARNING the first time, even though the implementation is correct: it only searches the codebase for matching logic, it never runs the dashboard or computes an expected value. Without any automated test file in the repo, every scenario reads "not covered" by design — that is not a mistake to fix here, it is the lesson for this part of the exercise. Fix any CRITICAL issue it reports; leave the Scenario Coverage WARNING as-is and carry it into Part 3, where the harness closes exactly that gap.
+Expect `verify` to flag **Scenario Coverage** as a WARNING the first time, even though the implementation is correct: it only searches the codebase for matching logic, it never runs the dashboard or computes an expected value. Without any automated test file in the project, every scenario reads "not covered" by design — that is not a mistake to fix here, it is the lesson for this part of the exercise. Fix any CRITICAL issue it reports; leave the Scenario Coverage WARNING as-is and carry it into Part 3, where the harness closes exactly that gap.
 
 ## Part 3 — Create the harness
 

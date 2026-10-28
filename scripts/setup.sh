@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 # Workshop setup for macOS, Debian/Ubuntu Linux, and WSL.
-# Usage: bash scripts/setup.sh [--check]
+# Usage: bash setup.sh [--check]
 set -uo pipefail
 
+GUIDE_URL="https://github.com/carlos-peiro-ntt/agentsdata/blob/main/docs/setup.md"
 CHECK_ONLY=0
 case "${1:-}" in
   --check) CHECK_ONLY=1 ;;
   "") ;;
-  -h|--help) echo "Usage: bash scripts/setup.sh [--check]"; exit 0 ;;
-  *) echo "Unknown option: $1" >&2; echo "Usage: bash scripts/setup.sh [--check]" >&2; exit 2 ;;
+  -h|--help) echo "Usage: bash setup.sh [--check]"; exit 0 ;;
+  *) echo "Unknown option: $1" >&2; echo "Usage: bash setup.sh [--check]" >&2; exit 2 ;;
 esac
 
 EXTENSIONS=(GitHub.copilot GitHub.copilot-chat)
@@ -29,7 +30,7 @@ detect_os() {
 }
 
 OS="$(detect_os)"
-[[ "$OS" == unsupported ]] && die "Unsupported OS: $(uname -s). On Windows, run scripts\\setup.ps1 from PowerShell."
+[[ "$OS" == unsupported ]] && die "Unsupported OS: $(uname -s). On Windows, run setup.ps1 from PowerShell."
 
 load_uv_env() {
   if [[ -f "$HOME/.local/bin/env" ]]; then
@@ -72,7 +73,7 @@ install_macos() {
 }
 
 install_linux() {
-  has apt-get || die "Only Debian/Ubuntu (apt) is supported. Follow the manual steps in docs/setup.md."
+  has apt-get || die "Only Debian/Ubuntu (apt) is supported. Follow the manual steps in $GUIDE_URL"
   has git     || apt_install git
   has curl    || apt_install curl
   has python3 || apt_install python3 python3-pip
@@ -189,7 +190,7 @@ verify() {
   printf '%s\n' "${RESULTS[@]}"
   echo
   if [[ $FAILED -ne 0 ]]; then
-    warn "Some checks failed. Fix them (see docs/setup.md) and run: bash scripts/setup.sh --check"
+    warn "Some checks failed. Fix them (see $GUIDE_URL) and run: bash setup.sh --check"
     exit 1
   fi
   info "All checks passed. Restart your terminal if any tool was just installed."

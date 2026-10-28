@@ -50,7 +50,7 @@ openspec --version
 
 If that command fails, go back to [Setup and Workshop Preparation](../setup.md) and install it before continuing.
 
-From the repository root, initialize it for GitHub Copilot:
+From the project folder, initialize it for GitHub Copilot:
 
 ```bash
 openspec init --tools github-copilot

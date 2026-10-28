@@ -10,29 +10,39 @@ Before the workshop you need:
 
 - Internet access;
 - permission to install applications;
-- a GitHub account with access to the repository;
+- a GitHub account;
 - access to GitHub Copilot or the development agent used in the workshop;
 - the Supabase token provided for the course;
 - the Confluence token provided for the course.
 
-Tokens are secrets. Do not paste them into chat, store them in repository files, or include them in commits or screenshots.
+Tokens are secrets. Do not paste them into chat, store them in project files, or include them in commits or screenshots.
+
+> [!IMPORTANT]
+> Do not clone, fork, or download the workshop repository. You only need the files listed in this guide.
 
 ### Quick setup (recommended)
 
-The repository includes scripts that install any missing prerequisite (Git, VS Code, Node.js, uv/uvx, OpenSpec, and the GitHub Copilot extensions) and then verify everything. Run them from the repository root.
+The setup scripts install any missing prerequisite (Git, VS Code, Node.js, uv/uvx, OpenSpec, and the GitHub Copilot extensions) and then verify everything. Download the one for your system from your browser:
+
+- macOS, Linux, or WSL: [setup.sh](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup.sh)
+- Windows: [setup.ps1](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup.ps1)
+
+Run it from your Downloads folder; do not move it into your project folder.
 
 **macOS, Linux (Debian/Ubuntu), or WSL — Bash**
 
 ```bash
-bash scripts/setup.sh
+bash ~/Downloads/setup.sh
 ```
+
+On WSL, the browser saves files to the Windows Downloads folder: run `bash /mnt/c/Users/<windows-user>/Downloads/setup.sh`.
 
 macOS requires [Homebrew](https://brew.sh/). On Linux the script uses `apt` and `sudo`. On WSL it does not install VS Code; install it on Windows with the **WSL** extension.
 
 **Windows — PowerShell**
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\setup.ps1
+powershell -ExecutionPolicy Bypass -File "$HOME\Downloads\setup.ps1"
 ```
 
 Requires `winget`. Python is not installed by the script: install **Python 3.12** from Microsoft Store (see [0.5](#05-install-python)). Node.js installation may require an administrator PowerShell.
@@ -40,11 +50,11 @@ Requires `winget`. Python is not installed by the script: install **Python 3.12*
 To only verify, without installing anything:
 
 ```bash
-bash scripts/setup.sh --check
+bash ~/Downloads/setup.sh --check
 ```
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -Check
+powershell -ExecutionPolicy Bypass -File "$HOME\Downloads\setup.ps1" -Check
 ```
 
 The script ends with an OK/FAIL summary and exits with an error if any check fails. Close and reopen the terminal after a first install. Signing in to GitHub Copilot (step 6 in [0.9](#09-install-vs-code-extensions)) and handling tokens remain manual.
@@ -323,6 +333,26 @@ openspec --version
 ```
 
 Do not continue until all commands respond without errors.
+
+### 0.11 Prepare your project folder
+
+Create an empty folder for the workshop and open it in VS Code. Every exercise happens inside this folder; it does not need Git.
+
+**Windows — PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force "$HOME\agentsdata-workshop"
+code "$HOME\agentsdata-workshop"
+```
+
+**macOS, Linux, or WSL — Bash/Zsh**
+
+```bash
+mkdir -p ~/agentsdata-workshop
+code ~/agentsdata-workshop
+```
+
+You can also create the folder from your file explorer and open it with **File → Open Folder** in VS Code. The guide calls it the "project folder".
 
 ---
 

@@ -6,7 +6,7 @@
 
 Create `AGENTS.md` as the project instruction manual and check how it changes the agent's behavior.
 
-> `AGENTS.md` is not an agent. It is a living document that provides context, rules, and conventions to agents working in the repository.
+> `AGENTS.md` is not an agent. It is a living document that provides context, rules, and conventions to agents working in the project.
 
 Common names by tool:
 
@@ -23,12 +23,12 @@ Common names by tool:
 ```
 
 3. Open the generated `AGENTS.md`.
-4. Review what knowledge it extracted from the repository.
+4. Review what knowledge it extracted from the project folder.
 
 `/init` can be used in two ways:
 
-- in an empty repository, to establish initial rules;
-- in a repository with content, to capture implicit knowledge from its structure and code.
+- in an empty project, to establish initial rules;
+- in a project with content, to capture implicit knowledge from its structure and code.
 
 ## Part 2 — Add business context
 

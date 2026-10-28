@@ -8,7 +8,7 @@ Add specialized knowledge, connect external sources, and complete the dashboard'
 
 ## Part 1 — Install the skills
 
-Open a terminal in VS Code (**Terminal → New Terminal**); it starts at the repository root. Run:
+Open a terminal in VS Code (**Terminal → New Terminal**); it starts at the project folder. Run:
 
 ```bash
 npx --registry=https://registry.npmjs.org/ skills add https://github.com/anthropics/skills --skill frontend-design
@@ -38,7 +38,7 @@ First let VS Code create the MCP configuration file with a placeholder server:
 3. Select **Command (stdio)**.
 4. Enter `echo` as the command. It is only a placeholder.
 5. Enter `dummy` as the server ID.
-6. Select **Workspace** so the configuration is saved in the repository.
+6. Select **Workspace** so the configuration is saved in the project folder.
 
 VS Code creates and opens `.mcp.json` with the `dummy` server.
 
@@ -104,7 +104,7 @@ In this workshop, `AGENTS.md` remains the project entry point, while `.github/in
 ```text
 /create-instructions
 
-Create a workspace instruction file for this repository.
+Create a workspace instruction file for this project.
 
 Name: Dashboard Privacy and Data Governance
 Scope: workspace (.github/instructions/)
@@ -118,7 +118,7 @@ dashboard documentation."
 applyTo: ["**/*.html", "**/*.js", "**/*.md"]
 
 Body content — mandatory rules for every dashboard, analysis, and
-generated document in this repository:
+generated document in this project:
 
 1. Dashboard Data Source: Supabase MCP read-only is the only source;
    no CSV/resources/ after the learning exercise; validate schemas
@@ -190,7 +190,7 @@ Generate an interactive HTML sales dashboard for the business, reading data from
   - `dim_usuarios`
   - `dim_promociones`
   - `fact_promociones_articulos`
-- Use the configured **Confluence MCP** to create the documentation page. If the creator name needed for the page title is not available from the repository or conversation, ask for it before implementation.
+- Use the configured **Confluence MCP** to create the documentation page. If the creator name needed for the page title is not available from the project or conversation, ask for it before implementation.
 - The Confluence page must document the data sources and joins, KPI definitions, filters, data-quality findings, assumptions, and known limitations.
 
 ## Dashboard Technical Requirements

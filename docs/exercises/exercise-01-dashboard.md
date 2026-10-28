@@ -28,7 +28,12 @@ Generate an HTML sales dashboard for business users.
 
 ## Part 2 — Generation with CSV data
 
-1. Copy the `resources` folder provided by the instructor to the repository root.
+1. Download [resources.zip](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/resources.zip) and extract it into a `resources` folder at the root of your project folder:
+   - macOS: double-click the zip and move the resulting `resources` folder into your project folder.
+   - Windows: right-click the zip, select **Extract All**, and set the destination to `<project folder>\resources`.
+   - Linux or WSL: `unzip resources.zip -d <project folder>/resources`.
+
+   Check that `resources/` contains the seven CSV files directly, without a nested folder.
 2. Decide which KPIs, colors, and layout you want. Choose your own; do not copy a colleague's.
 3. Send the prompt, replacing the placeholders with your choices:
 
