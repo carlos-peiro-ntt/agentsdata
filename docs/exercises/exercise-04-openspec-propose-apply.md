@@ -133,7 +133,7 @@ There is no separate "Approved" field to flip: a plan counts as approved once yo
 In Copilot Chat:
 
 ```text
-/opsx-apply
+/opsx-apply <specification-name>
 ```
 
 The agent works through `openspec/changes/total-sales-mom-comparison/tasks.md`, checking off each task as it lands. Confirm it also:
