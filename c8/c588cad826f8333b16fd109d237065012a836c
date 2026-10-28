@@ -1,0 +1,16 @@
+README.md
+  h_5668b745a35fae 16-18,47-49,69-73,75-76,78,80,82-86
+docs/setup.md
+  h_5668b745a35fae 9-10,16,18,357-359,362
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "c8c588cad826f8333b16fd109d237065012a836c",
+  "prompts": {},
+  "humans": {
+    "h_5668b745a35fae": {
+      "author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}
