@@ -6,16 +6,16 @@
 
 ### 0.1 Requirements
 
+Complete this guide on your own **before the course**. It only installs tools and prepares an empty project folder; the exercises are done together during the live session.
+
 Before the workshop you need:
 
 - Internet access;
 - permission to install applications;
 - a GitHub account;
-- access to GitHub Copilot or the development agent used in the workshop;
-- the Supabase token provided for the course;
-- the Confluence token provided for the course.
+- access to GitHub Copilot or the development agent used in the workshop.
 
-Tokens are secrets. Do not paste them into chat, store them in project files, or include them in commits or screenshots.
+The Supabase and Confluence tokens are shared during the course; you do not need them for this setup. Tokens are secrets. Do not paste them into chat, store them in project files, or include them in commits or screenshots.
 
 > [!IMPORTANT]
 > Do not clone, fork, or download the workshop repository. You only need the files listed in this guide.
@@ -354,6 +354,9 @@ code ~/agentsdata-workshop
 
 You can also create the folder from your file explorer and open it with **File → Open Folder** in VS Code. The guide calls it the "project folder".
 
+> [!WARNING]
+> **Stop here.** Your preparation is complete. Do not start the exercises in advance: they are done step by step during the live course, where the sample data is introduced and the tokens are shared.
+
 ---
 
-Continue to [Exercise 1 — Create the First Dashboard](exercises/exercise-01-dashboard.md).
+Continue with [Exercise 1 — Create the First Dashboard](exercises/exercise-01-dashboard.md) only when the course starts.
