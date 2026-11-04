@@ -1,0 +1,21 @@
+docs/exercises/exercise-04-openspec-propose-apply.md
+  s_df6eda905ce7ef::t_242f07c8e3f61a 32,37,154
+.mcp.json
+  s_df6eda905ce7ef::t_331d178fd08fcd 7,12-14,20-22,25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "60f4b3183542748118eca8b945753a9e8cc4542e",
+  "prompts": {},
+  "sessions": {
+    "s_df6eda905ce7ef": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "729f0775-6f5a-4884-bd65-1bf9219127ba",
+        "model": "copilot/claude-sonnet-5.5"
+      },
+      "human_author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}
