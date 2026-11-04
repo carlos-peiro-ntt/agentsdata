@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
-// Harness for openspec/changes/total-sales-mom-comparison.
+// Eval for openspec/changes/total-sales-mom-comparison.
 // One EVAL per Scenario in specs/total-sales-kpi/spec.md. Plain Node.js,
 // no browser, no server, no npm packages.
 
@@ -10,7 +10,7 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const DASHBOARD_PATH = path.join(ROOT, 'dashboard.html');
-const HISTORY_PATH = path.join(__dirname, '.harness-history.json');
+const HISTORY_PATH = path.join(__dirname, '.eval-history.json');
 
 const DASHBOARD_HTML = fs.readFileSync(DASHBOARD_PATH, 'utf8');
 
@@ -162,7 +162,7 @@ const history = loadHistory();
 const lastRun = history[history.length - 1];
 const lastStatusById = new Map((lastRun ? lastRun.results : []).map(r => [r.id, r.status]));
 
-console.log('## Harness: total-sales-mom-comparison\n');
+console.log('## Eval: total-sales-mom-comparison\n');
 console.log('| EVAL | Scenario | Expected | Actual | Result |');
 console.log('| --- | --- | --- | --- | --- |');
 

@@ -1,37 +1,25 @@
 {
-	"inputs": [
-		{
-			"type": "promptString",
-			"id": "supabase-access-token",
-			"description": "Supabase Access Token para el curso",
-			"password": true
-		},
-		{
-			"type": "promptString",
-			"id": "confluence-token",
-			"description": "Confluence Bearer Token",
-			"password": true
-		}
-	],
 	"mcpServers": {
 		"confluence": {
 			"type": "stdio",
 			"command": "uvx",
 			"args": [
-				"mcp-atlassian==0.21.1"
+				"mcp-atlassian"
 			],
 			"env": {
 				"UV_DEFAULT_INDEX": "https://pypi.org/simple",
 				"CONFLUENCE_URL": "https://umane.emeal.nttdata.com/confluence",
-				"CONFLUENCE_PERSONAL_TOKEN": "${input:confluence-token}"
-			}
+				"CONFLUENCE_PERSONAL_TOKEN": "${CONFLUENCE_PERSONAL_TOKEN}"
+			},
+			"tools": ["*"]
 		},
 		"supabase": {
 			"type": "http",
 			"url": "https://mcp.supabase.com/mcp?project_ref=tnzlxngahrlnnmusxqpf&read_only=true&features=database",
 			"headers": {
-				"Authorization": "Bearer ${input:supabase-access-token}"
-			}
+				"Authorization": "Bearer ${SUPABASE_ACCESS_TOKEN}"
+			},
+			"tools": ["*"]
 		}
 	}
 }

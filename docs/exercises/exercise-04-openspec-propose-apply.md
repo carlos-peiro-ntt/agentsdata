@@ -29,12 +29,12 @@ Review and correct the plan
   ↓
 Implementation
   ↓
-Verify + Evaluation (Harness/Evals)
+Verify + Evaluation (Test/Evals)
   ↓
 Archive (specs become living documentation)
 ```
 
-> In this exercise, work through a reviewed, correct OpenSpec change and implement it. Verification, the harness, evals, and archiving are added in the next exercise.
+> In this exercise, work through a reviewed, correct OpenSpec change and implement it. Verification, the test, evals, and archiving are added in the next exercise.
 
 OpenSpec's own [loop](https://openspec.dev/docs/quickstart#the-loop-at-a-glance) starts with `/opsx-explore`, a thinking-only mode that investigates the codebase and sharpens a fuzzy idea before proposing anything. This exercise skips it on purpose: the idea in Part 1 is already fully scoped (exact formulas, exact edge case) so every learner proposes the same change and gets a comparable result. Use `/opsx-explore` in your own work whenever the idea is still fuzzy — OpenSpec's own guidance is to go straight to `/opsx-propose` when you already know what you want to build, which is the case here.
 
@@ -151,4 +151,4 @@ The result is a reviewed `openspec/changes/total-sales-mom-comparison/` folder w
 
 ---
 
-Continue to [Exercise 5 — Verify, Evaluate with a Harness, and Archive](exercise-05-verify-harness-archive.md).
+Continue to [Exercise 5 — Verify, Test, and Archive](exercise-05-verify-test-archive.md).

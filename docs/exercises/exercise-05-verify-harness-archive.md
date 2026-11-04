@@ -1,26 +1,26 @@
-# Exercise 5 — Verify, Evaluate with a Harness, and Archive
+# Exercise 5 — Verify, Test, and Archive
 
 [← Back to README](../../README.md) · [← Exercise 4](exercise-04-openspec-propose-apply.md)
 
 ## Objective
 
-Verify the OpenSpec change implemented in Exercise 4 against the spec's scenarios, and confirm the result with a simple, reproducible **harness**.
+Verify the OpenSpec change implemented in Exercise 4 against the spec's scenarios, and confirm the result with a simple, reproducible **test**.
 
 The complete flow is:
 
 ```text
-Implemented change (Exercise 4) → Verify (/opsx-verify) → Harness
-                                                            ↓
+Implemented change (Exercise 4) → Verify (/opsx-verify) → Test
+                                                         ↓
                                 FAIL → Correction → Retry → PASS
-                                                            ↓
-                                                        Archive
+                                                         ↓
+                                                      Archive
 ```
 
-The harness is a single `evals/harness.js`, run with plain Node.js (already a prerequisite for this course) — no browser, no local server, no npm packages. Its checks are derived directly from the `#### Scenario:` blocks in `openspec/changes/total-sales-mom-comparison/specs/`, instead of a fixed, invented count.
+The test is a single `evals/eval.js`, run with plain Node.js (already a prerequisite for this course) — no browser, no local server, no npm packages. Its checks are derived directly from the `#### Scenario:` blocks in `openspec/changes/total-sales-mom-comparison/specs/`, instead of a fixed, invented count.
 
 ## Part 1 — Translate the spec into checks
 
-Open `openspec/changes/total-sales-mom-comparison/specs/<capability>/spec.md` and list its scenarios — the harness will observe exactly these, one EVAL per scenario. For this change, that's typically five, because the percentage-change requirement carries two scenarios (the normal calculation and the zero-previous edge case):
+Open `openspec/changes/total-sales-mom-comparison/specs/<capability>/spec.md` and list its scenarios — the test will observe exactly these, one EVAL per scenario. For this change, that's typically five, because the percentage-change requirement carries two scenarios (the normal calculation and the zero-previous edge case):
 
 | Eval | Scenario | Check |
 | --- | --- | --- |
@@ -30,7 +30,7 @@ Open `openspec/changes/total-sales-mom-comparison/specs/<capability>/spec.md` an
 | EVAL-004 | percentage change is calculated | The percentage applies the agreed formula when previous is greater than zero. |
 | EVAL-005 | percentage change is N/A | The percentage shows `N/A` when the previous value is zero. |
 
-Do not add more evals than scenarios, and do not drop any. This keeps the harness a direct derivative of the spec, not of the implementation.
+Do not add more evals than scenarios, and do not drop any. This keeps the test a direct derivative of the spec, not of the implementation.
 
 ## Part 2 — Verify against the spec
 
@@ -49,18 +49,18 @@ Then, in Copilot Chat:
 /opsx-verify
 ```
 
-The agent produces a report across three dimensions — **Completeness** (tasks and spec coverage), **Correctness** (requirement implementation mapping and scenario coverage), and **Coherence** (design adherence and code pattern consistency) — without touching the harness or the dashboard.
+The agent produces a report across three dimensions — **Completeness** (tasks and spec coverage), **Correctness** (requirement implementation mapping and scenario coverage), and **Coherence** (design adherence and code pattern consistency) — without touching the test or the dashboard.
 
-Expect `verify` to flag **Scenario Coverage** as a WARNING the first time, even though the implementation is correct: it only searches the codebase for matching logic, it never runs the dashboard or computes an expected value. Without any automated test file in the project, every scenario reads "not covered" by design — that is not a mistake to fix here, it is the lesson for this part of the exercise. Fix any CRITICAL issue it reports; leave the Scenario Coverage WARNING as-is and carry it into Part 3, where the harness closes exactly that gap.
+Expect `verify` to flag **Scenario Coverage** as a WARNING the first time, even though the implementation is correct: it only searches the codebase for matching logic, it never runs the dashboard or computes an expected value. Without any automated test file in the project, every scenario reads "not covered" by design — that is not a mistake to fix here, it is the lesson for this part of the exercise. Fix any CRITICAL issue it reports; leave the Scenario Coverage WARNING as-is and carry it into Part 3, where the test closes exactly that gap.
 
-## Part 3 — Create the harness
+## Part 3 — Create the test
 
-`verify` only audits structure and code; it cannot load the dashboard, pick a real filter combination, or compute an expected euro value independently. The harness fills exactly that gap, and it is the only part of this flow that actually executes the real calculation against real data.
+`verify` only audits structure and code; it cannot load the dashboard, pick a real filter combination, or compute an expected euro value independently. The test fills exactly that gap, and it is the only part of this flow that actually executes the real calculation against real data.
 
 Send:
 
 ```text
-Create evals/harness.js using plain Node.js, no npm packages.
+Create evals/eval.js using plain Node.js, no npm packages.
 
 Read:
 - openspec/changes/total-sales-mom-comparison/specs/;
@@ -72,7 +72,7 @@ Create exactly one evaluation per Scenario block found in specs/ — one
 EVAL per requirement/scenario pair, named after that scenario. Do not
 invent additional evaluations and do not drop any.
 
-The script must, when run with `node evals/harness.js`:
+The script must, when run with `node evals/eval.js`:
 - read {name}.html as text and extract the embedded SNAPSHOT array;
 - compute each scenario's expected value independently, reimplementing
   the formula from the spec — never by calling or copying the
@@ -86,9 +86,9 @@ The script must, when run with `node evals/harness.js`:
   #kpiRevenueChange) are assigned from those same variables;
 - print one row per EVAL with the scenario name, expected value,
   actual value, and PASS/FAIL;
-- persist attempt history across runs in evals/.harness-history.json,
+- persist attempt history across runs in evals/.eval-history.json,
   so a FAIL → PASS transition from a previous run is visible;
-- treat any harness error (missing SNAPSHOT, missing DOM id, parse
+- treat any test error (missing SNAPSHOT, missing DOM id, parse
   failure) as FAIL for that EVAL, never a crash;
 - print a final summary such as N/N PASS;
 - exit with a non-zero status code if any EVAL fails.
@@ -97,10 +97,10 @@ Do not add dependencies, a browser, a local server, exports, or
 MANUAL/BLOCKED states.
 ```
 
-## Part 4 — Run the harness
+## Part 4 — Run the test
 
 ```bash
-node evals/harness.js
+node evals/eval.js
 ```
 
 The result must show one row per scenario, each with expected vs. actual, and a final `N/N PASS` summary. A non-zero exit code means at least one scenario failed.
@@ -111,24 +111,24 @@ If an EVAL returns `FAIL`:
 
 1. Read the expected vs. actual values printed for that row.
 2. Fix only the implementation that violates the spec; do not lower the criterion.
-3. Run `node evals/harness.js` again. `evals/.harness-history.json` must preserve the first `FAIL` and add the new result, so the transition is visible across runs.
+3. Run `node evals/eval.js` again. `evals/.eval-history.json` must preserve the first `FAIL` and add the new result, so the transition is visible across runs.
 4. Once it passes, confirm the summary reads `N/N PASS` with no regressions.
 
-To demonstrate the cycle during the course, if the first run returns `N/N PASS`, temporarily rename one of the stable IDs the harness reads (for example `#kpiRevenuePrevious`) and run it again — that EVAL must fail. Restore the ID and run again; the history file must clearly show `FAIL → PASS` for that EVAL.
+To demonstrate the cycle during the course, if the first run returns `N/N PASS`, temporarily rename one of the stable IDs the test reads (for example `#kpiRevenuePrevious`) and run it again — that EVAL must fail. Restore the ID and run again; the history file must clearly show `FAIL → PASS` for that EVAL.
 
 ## Part 6 — Re-verify against the spec
 
-Now that `evals/harness.js` exists and exercises all 5 scenarios, run `/opsx-verify` again:
+Now that `evals/eval.js` exists and exercises all 5 scenarios, run `/opsx-verify` again:
 
 ```text
 /opsx-verify <specification-name>
 ```
 
-Compare this report to the one from Part 2: **Scenario Coverage** should no longer read "not covered" — `verify` now finds a test file exercising each scenario. This is the lab's payoff: the same command, run twice, shows the exact gap the harness was built to close.
+Compare this report to the one from Part 2: **Scenario Coverage** should no longer read "not covered" — `verify` now finds a test file exercising each scenario. This is the lab's payoff: the same command, run twice, shows the exact gap the test was built to close.
 
 ## Part 7 — Archive the change
 
-Once the harness is green and `tasks.md` is fully checked:
+Once the test is green and `tasks.md` is fully checked:
 
 ```text
 /opsx-archive <specification-name>
@@ -147,15 +147,15 @@ Check that:
 
 - `openspec/changes/archive/` contains the dated, completed change;
 - `openspec/specs/` now holds the Total Sales requirements as living documentation;
-- exactly one harness row exists per scenario in the archived spec;
-- `node evals/harness.js` prints `N/N PASS`, and `evals/.harness-history.json` shows the retry if there was a failure;
+- exactly one test row exists per scenario in the archived spec;
+- `node evals/eval.js` prints `N/N PASS`, and `evals/.eval-history.json` shows the retry if there was a failure;
 - the second `/opsx-verify` run no longer flags Scenario Coverage as not covered;
-- the dashboard remains self-contained and works without the harness.
+- the dashboard remains self-contained and works without the test.
 
 The final course chain is:
 
 ```text
-Idea → Propose → Review → Apply → Verify (gap) → Harness → Fix → Retry → Verify (closed) → Archive
+Idea → Propose → Review → Apply → Verify (gap) → Test → Fix → Retry → Verify (closed) → Archive
 ```
 
 ---

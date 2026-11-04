@@ -17,5 +17,5 @@
 
 ## Workflow follow-up
 
-- Build `evals/harness.html`, one evaluation per scenario in `specs/total-sales-kpi/spec.md`, and get it to a full PASS before archiving.
-- Archive the change with `openspec archive total-sales-mom-comparison` once the harness passes.
+- Build `evals/eval.js`, one evaluation per scenario in `specs/total-sales-kpi/spec.md`, and get it to a full PASS before archiving.
+- Archive the change with `openspec archive total-sales-mom-comparison` once the eval passes.

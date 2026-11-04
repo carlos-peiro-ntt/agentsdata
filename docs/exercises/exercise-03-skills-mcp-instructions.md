@@ -46,20 +46,6 @@ Replace the whole content of `.mcp.json` with:
 
 ```json
 {
-	"inputs": [
-		{
-			"type": "promptString",
-			"id": "supabase-access-token",
-			"description": "Supabase access token for the course",
-			"password": true
-		},
-		{
-			"type": "promptString",
-			"id": "confluence-token",
-			"description": "Confluence Bearer Token",
-			"password": true
-		}
-	],
 	"mcpServers": {
 		"confluence": {
 			"type": "stdio",
@@ -70,28 +56,51 @@ Replace the whole content of `.mcp.json` with:
 			"env": {
 				"UV_DEFAULT_INDEX": "https://pypi.org/simple",
 				"CONFLUENCE_URL": "https://umane.emeal.nttdata.com/confluence",
-				"CONFLUENCE_PERSONAL_TOKEN": "${input:confluence-token}"
-			}
+				"CONFLUENCE_PERSONAL_TOKEN": "${CONFLUENCE_PERSONAL_TOKEN}"
+			},
+			"tools": ["*"]
 		},
 		"supabase": {
 			"type": "http",
 			"url": "https://mcp.supabase.com/mcp?project_ref=tnzlxngahrlnnmusxqpf&read_only=true&features=database",
 			"headers": {
-				"Authorization": "Bearer ${input:supabase-access-token}"
-			}
+				"Authorization": "Bearer ${SUPABASE_ACCESS_TOKEN}"
+			},
+			"tools": ["*"]
 		}
 	}
 }
 ```
 
-The `inputs` section declares the secrets the servers need. Each `${input:<id>}` reference is replaced at startup by the value of the input with that `id`: VS Code prompts for it the first time a server starts, hides it because of `"password": true`, and stores it securely outside the repository. This keeps the tokens out of the file and out of Git.
+The workspace `.mcp.json` format does not prompt for secrets. Each `${NAME}` reference is replaced at startup with the environment variable `NAME` of the process that runs VS Code, so the tokens stay out of the file and out of Git.
+
+Fully quit VS Code first (`Cmd+Q` on macOS; close every window on Windows), because it only reads variables when it starts. Then provide the tokens shared by the instructor and start VS Code from that same terminal.
+
+macOS/Linux:
+
+```bash
+export SUPABASE_ACCESS_TOKEN='<token>'
+export CONFLUENCE_PERSONAL_TOKEN='<token>'
+code .
+```
+
+Windows PowerShell (`Read-Host` keeps the token out of the shell history):
+
+```powershell
+$env:SUPABASE_ACCESS_TOKEN = Read-Host "Supabase token"
+$env:CONFLUENCE_PERSONAL_TOKEN = Read-Host "Confluence token"
+code .
+```
+
+To rotate or clear a token, set or unset the variable and restart VS Code.
 
 Start the servers:
 
 1. Open the Command Palette and run **MCP: List Servers**.
 2. Start `confluence` and `supabase`.
-3. Enter the tokens provided by the instructor when VS Code requests them.
-4. Do not replace `${input:...}` with real tokens in the file.
+
+> A server showing as **Running** does not mean its token is valid. Both servers only check the token when a tool is called, so a wrong or missing variable shows up as a `401` error on the first tool call. If that happens, fix the variable, fully quit VS Code, and reopen it from the terminal where you exported it.
+3. Do not write real tokens in `.mcp.json`.
 
 > **Troubleshooting (Windows):** if the `confluence` server fails to start, `uvx` is likely missing or not on `PATH`. Repeat [Install uv and uvx](../setup.md#07-install-uv-and-uvx), then close and reopen VS Code before starting the server again.
 
