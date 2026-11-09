@@ -83,7 +83,7 @@ Work through the exercises in order, following the instructor. Each one builds o
 2. [Exercise 2 — From Prompt to AGENTS.md](docs/exercises/exercise-02-agents-md.md) — create `AGENTS.md`.
 3. [Exercise 3 — Skills, MCP, Instructions, Planning, and Implementation](docs/exercises/exercise-03-skills-mcp-instructions.md) — install skills, configure MCP servers, add the dashboard instruction, plan and implement the Supabase-backed dashboard.
 4. [Exercise 4 — Propose and Apply a Change with OpenSpec](docs/exercises/exercise-04-openspec-propose-apply.md) — initialize [OpenSpec](https://github.com/Fission-AI/OpenSpec), turn an idea into a reviewed change under `openspec/changes/`, and implement it with `/opsx-apply`.
-5. [Exercise 5 — Verify, Test, and Archive](docs/exercises/exercise-05-verify-test-archive.md) — verify the implemented change, validate it with `evals/eval.js`, then archive it.
+5. [Exercise 5 — Verify, Test, and Archive](docs/exercises/exercise-05-verify-harness-archive.md) — verify the implemented change, validate it with `evals/eval.js`, then archive it.
 
 ## Data Progression
 

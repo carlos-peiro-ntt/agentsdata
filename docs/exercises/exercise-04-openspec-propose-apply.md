@@ -151,4 +151,4 @@ The result is a reviewed `openspec/changes/total-sales-mom-comparison/` folder w
 
 ---
 
-Continue to [Exercise 5 — Verify, Test, and Archive](exercise-05-verify-test-archive.md).
+Continue to [Exercise 5 — Verify, Test, and Archive](exercise-05-verify-harness-archive.md).
