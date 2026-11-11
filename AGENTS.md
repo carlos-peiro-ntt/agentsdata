@@ -13,7 +13,9 @@ When working on this project:
 - Clearly identify the data source (files or tables) used for each metric.
 - Prefer simple, business-readable dashboards with interactive filtering.
 - Keep the current standalone HTML architecture unless a different technical approach is explicitly requested.
+- The dashboard must open directly from disk with its data embedded. Do not start a local web server (for example `python -m http.server`) to serve or preview it.
 - Avoid introducing external dependencies unless explicitly approved.
+- Read and follow `.github/instructions/dashboard.instructions.md` before any dashboard, KPI, data, or Confluence work.
 
 ## Business KPIs
 

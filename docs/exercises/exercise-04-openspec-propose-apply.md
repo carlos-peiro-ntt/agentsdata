@@ -68,6 +68,28 @@ openspec/
 
 It also adds `.github/prompts/opsx-*.prompt.md`, so VS Code Copilot Chat shows new commands: `/opsx-propose`, `/opsx-apply`, `/opsx-archive`, and others. Restart VS Code if they don't appear right away.
 
+<details>
+<summary><strong>Codex</strong></summary>
+
+Initialize for Codex instead:
+
+```bash
+openspec init --tools codex
+```
+
+Codex gets no slash commands; OpenSpec installs its workflows as skills in `.agents/skills/openspec-*/`, next to the skills from Exercise 3. Invoke them with `$` followed by the skill name, and start a new Codex conversation if they don't appear:
+
+| Copilot | Codex |
+| --- | --- |
+| `/opsx-propose` | `$openspec-propose` |
+| `/opsx-apply` | `$openspec-apply-change` |
+| `/opsx-verify` | `$openspec-verify-change` |
+| `/opsx-archive` | `$openspec-archive-change` |
+
+The rest of this exercise and the next one use the Copilot names; replace them with the Codex ones. To use both agents in the same folder, run `openspec init --tools github-copilot,codex`.
+
+</details>
+
 ## Part 1 — Start from a concrete idea
 
 Use the same idea throughout the flow so the focus remains on learning SDD:

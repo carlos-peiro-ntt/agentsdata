@@ -18,7 +18,7 @@ npx --registry=https://registry.npmjs.org/ skills add https://github.com/wshobso
 When the installer asks:
 
 1. select installation in the project;
-2. select the agent used during the workshop;
+2. select the agent used during the workshop (**GitHub Copilot** or **Codex**; both read `.agents/skills/`);
 3. review the skill's origin;
 4. confirm the installation.
 
@@ -51,7 +51,7 @@ Replace the whole content of `.mcp.json` with:
 			"type": "stdio",
 			"command": "uvx",
 			"args": [
-				"mcp-atlassian==0.21.1"
+				"mcp-atlassian"
 			],
 			"env": {
 				"UV_DEFAULT_INDEX": "https://pypi.org/simple",
@@ -94,6 +94,28 @@ code .
 
 To rotate or clear a token, set or unset the variable and restart VS Code.
 
+<details>
+<summary><strong>Codex</strong></summary>
+
+Codex does not read `.mcp.json`. Skip the **MCP: Add Server...** steps and append these tables at the end of `.codex/config.toml`, after `sandbox_mode` and `approval_policy`:
+
+```toml
+[mcp_servers.confluence]
+command = "uvx"
+args = ["mcp-atlassian"]
+env = { UV_DEFAULT_INDEX = "https://pypi.org/simple", CONFLUENCE_URL = "https://umane.emeal.nttdata.com/confluence" }
+env_vars = ["CONFLUENCE_PERSONAL_TOKEN"]
+startup_timeout_sec = 60
+
+[mcp_servers.supabase]
+url = "https://mcp.supabase.com/mcp?project_ref=tnzlxngahrlnnmusxqpf&read_only=true&features=database"
+bearer_token_env_var = "SUPABASE_ACCESS_TOKEN"
+```
+
+`env_vars` and `bearer_token_env_var` take the token from the environment of the process that runs VS Code, so export the tokens and start VS Code from the terminal exactly as above. Codex starts both servers when a new conversation begins; there is no **MCP: List Servers** step.
+
+</details>
+
 Start the servers:
 
 1. Open the Command Palette and run **MCP: List Servers**.
@@ -103,6 +125,34 @@ Start the servers:
 3. Do not write real tokens in `.mcp.json`.
 
 > **Troubleshooting (Windows):** if the `confluence` server fails to start, `uvx` is likely missing or not on `PATH`. Repeat [Install uv and uvx](../setup.md#07-install-uv-and-uvx), then close and reopen VS Code before starting the server again.
+
+### Inspect the MCP tools
+
+Each MCP server exposes a set of tools. Check which ones the agent can use before relying on them:
+
+1. In the chat input, type `#`. The list shows every available tool, including the MCP tools grouped by server. Keep typing (for example `#supabase` or `#confluence`) to filter it.
+2. Click the **Configure Tools** button (wrench icon) in the chat input and expand `confluence` and `supabase` to read each tool's description. Uncheck any tool you do not want the agent to use.
+3. For logs or startup errors, run **MCP: List Servers**, select a server, and choose **Show Output**.
+4. Selecting a tool from the `#` list adds an explicit reference to the prompt. Try a read-only call:
+
+```text
+Use #list_tables to list the tables in the public schema of Supabase. Do not modify anything.
+```
+
+The first call asks for approval; check that it returns the seven workshop tables. A `401` at this point means the token variable is wrong.
+
+<details>
+<summary><strong>Codex</strong></summary>
+
+Codex has no `#` tool references. The Codex settings menu (gear icon) → **MCP settings** shows the configured servers. To list their tools, ask:
+
+```text
+List the tools you have from the supabase and confluence MCP servers, with a one-line description of each. Do not call them.
+```
+
+To force a specific tool, name it in the prompt: `Use the supabase list_tables tool to list the tables in the public schema. Do not modify anything.`
+
+</details>
 
 ## Part 3 — Add the dashboard instruction
 
@@ -133,7 +183,9 @@ generated document in this project:
    no CSV/resources/ after the learning exercise; validate schemas
    and tables before use; never embed credentials or a live DB
    connection; stop and report if Supabase is unavailable instead of
-   falling back to CSV, sample, or invented data.
+   falling back to CSV, sample, or invented data; embed the validated
+   data so the dashboard opens directly from disk, and never start a
+   local web server (for example python -m http.server).
 
 2. Privacy and GDPR: never expose first/last name, email, date of
    birth, postal code, or other identifying fields anywhere (charts,
@@ -157,17 +209,35 @@ generated document in this project:
 3. Preserve the generated YAML front matter.
 4. Do not copy its content into `README.md` or `AGENTS.md`. Copilot applies the instruction automatically to every file that matches its `applyTo` pattern, so `AGENTS.md` keeps the general project rules and the instruction keeps the dashboard-specific ones.
 
+<details>
+<summary><strong>Codex</strong></summary>
+
+Codex has no `/create-instructions` command and does not read `.github/instructions/`. Keep the same file as the single source of truth and point to it from `AGENTS.md`, which Codex always reads:
+
+1. Send the request above, replacing the `/create-instructions` line with: `Create .github/instructions/dashboard.instructions.md with YAML front matter (name, description, applyTo) and the following content.`
+2. Then send: `Add one line to AGENTS.md telling agents to read and follow .github/instructions/dashboard.instructions.md before any dashboard, KPI, data, or Confluence work. Do not copy its rules.`
+
+</details>
+
 ### Validation checklist
 
 - `.github/instructions/dashboard.instructions.md` exists.
 - Its generated YAML front matter is valid and preserved.
 - Its `applyTo` pattern covers the intended dashboard, analysis, and documentation files.
-- Its current requirements cover the configured Supabase data-source rules, privacy constraints, data-quality gate, and Confluence publishing constraints.
+- Its current requirements cover the configured Supabase data-source rules (including opening the dashboard from disk without a local server), privacy constraints, data-quality gate, and Confluence publishing constraints.
 - `AGENTS.md` does not duplicate the instruction's rules.
 
 ## Part 4 — Generate the plan
 
 1. Select **Plan** mode. Plan mode cannot call MCP servers, so the prompt asks the plan to defer every schema-dependent decision to a discovery phase at the start of the implementation.
+
+<details>
+<summary><strong>Codex</strong></summary>
+
+Codex has no Plan mode in the composer. Start the prompt below with `Plan only. Do not modify files or call MCP tools yet.` so it behaves like Plan mode, and reject any approval request it raises.
+
+</details>
+
 2. Send:
 
 ```text
@@ -204,7 +274,7 @@ Generate an interactive HTML sales dashboard for the business, reading data from
 
 ## Dashboard Technical Requirements
 
-The output must be a **single self-contained HTML file**.
+The output must be a **single self-contained HTML file** with the validated data embedded, so it opens directly from disk. Do not start a local web server to serve or preview it.
 
 ### Interactive Filters
 
@@ -289,7 +359,7 @@ Check that:
 Implement the approved plan.
 ```
 
-Note: in plan mode you can click on `Start Implementation` instead. Because the reviewed plan already begins with the discovery phase, the agent follows the same order; check that its first actions are Supabase queries, not file edits.
+Note: in plan mode you can click on `Start Implementation` instead. Because the reviewed plan already begins with the discovery phase, the agent follows the same order; check that its first actions are Supabase queries, not file edits. With Codex, send the same prompt in the same conversation; it asks for approval before each MCP tool call.
 
 4. If the agent does not know the creator's name, provide it when requested. Do not allow it to invent the value.
 5. Review queries, quality results, and tool-use requests before approving changes.
@@ -298,7 +368,7 @@ Note: in plan mode you can click on `Start Implementation` instead. Because the 
 
 ## Part 7 — Validate the implementation
 
-Open `{name}.html` in the browser the way the agent indicates and check that:
+Open `{name}.html` directly in the browser (double-click it or drag it into a browser window; do not start a local server) and check that:
 
 - the five KPIs and five charts display without errors;
 - all filters update KPIs and charts simultaneously;
@@ -326,7 +396,7 @@ Check that:
 - the dashboard uses only anonymized user attributes;
 - the code explains why first and last names are excluded;
 - the Confluence page is under the required parent and has the required title;
-- the dashboard opens in the browser and produces no console errors.
+- the dashboard opens directly from disk, without a local server, and produces no console errors.
 
 ---
 

@@ -46,7 +46,7 @@ powershell -ExecutionPolicy Bypass -File "$HOME\Downloads\setup.ps1"
 
 Add `--check` (Bash) or `-Check` (PowerShell) to only verify without installing. The run must end with every check `OK`.
 
-Then open VS Code, sign in to GitHub Copilot, and check that you can send a message in the chat.
+Then open VS Code, sign in to GitHub Copilot, and check that you can send a message in the chat. If you follow the Codex path, also sign in to the Codex extension.
 
 ### 2. Prepare your working folder
 
@@ -69,7 +69,7 @@ You can also create the folder from your file explorer and open it with **File �
 ### Ready checklist
 
 - [ ] The setup script ends with every check `OK`.
-- [ ] GitHub Copilot chat answers in VS Code.
+- [ ] GitHub Copilot chat answers in VS Code (or Codex, if you follow the Codex path).
 - [ ] An empty project folder is open in VS Code.
 
 > [!WARNING]
@@ -77,7 +77,7 @@ You can also create the folder from your file explorer and open it with **File �
 
 ## During the Course
 
-Work through the exercises in order, following the instructor. Each one builds on the files created by the previous step.
+Work through the exercises in order, following the instructor. Each one builds on the files created by the previous step. Every exercise shows the GitHub Copilot steps; where Codex works differently, expand the collapsible **Codex** block.
 
 1. [Exercise 1 — Create the First Dashboard](docs/exercises/exercise-01-dashboard.md) — prompt-only generation, then generation from real CSV data.
 2. [Exercise 2 — From Prompt to AGENTS.md](docs/exercises/exercise-02-agents-md.md) — create `AGENTS.md`.

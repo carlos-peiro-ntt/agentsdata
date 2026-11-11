@@ -9,7 +9,8 @@ context: |
   Never display or expose first name, last name, email, date of birth,
   postal code, or any field identifying a natural person.
   Keep the dashboard a single self-contained HTML file with no new external
-  dependencies unless explicitly approved.
+  dependencies unless explicitly approved. It must open directly from disk;
+  never start a local web server to serve or preview it.
 
 # Per-artifact rules (optional)
 # Add custom rules for specific artifacts.

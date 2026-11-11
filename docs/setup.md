@@ -13,7 +13,7 @@ Before the workshop you need:
 - Internet access;
 - permission to install applications;
 - a GitHub account;
-- access to GitHub Copilot or the development agent used in the workshop.
+- access to GitHub Copilot, or a ChatGPT account with access to Codex if you follow the Codex path.
 
 The Supabase and Confluence tokens are shared during the course; you do not need them for this setup. Tokens are secrets. Do not paste them into chat, store them in project files, or include them in commits or screenshots.
 
@@ -22,7 +22,7 @@ The Supabase and Confluence tokens are shared during the course; you do not need
 
 ### Quick setup (recommended)
 
-The setup scripts install any missing prerequisite (Git, VS Code, Node.js, uv/uvx, OpenSpec, and the GitHub Copilot extensions) and then verify everything. Download the one for your system from your browser:
+The setup scripts install any missing prerequisite (Git, VS Code, Node.js, uv/uvx, OpenSpec, the GitHub Copilot extensions, and the Codex extension) and then verify everything. Download the one for your system from your browser:
 
 - macOS, Linux, or WSL: [setup.sh](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup.sh)
 - Windows: [setup.ps1](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup.ps1)
@@ -45,7 +45,7 @@ macOS requires [Homebrew](https://brew.sh/). On Linux the script uses `apt` and 
 powershell -ExecutionPolicy Bypass -File "$HOME\Downloads\setup.ps1"
 ```
 
-Requires `winget`. Python is not installed by the script: install **Python 3.12** from Microsoft Store (see [0.5](#05-install-python)). Node.js installation may require an administrator PowerShell.
+Requires `winget`. Node.js installation may require an administrator PowerShell.
 
 To only verify, without installing anything:
 
@@ -57,7 +57,7 @@ bash ~/Downloads/setup.sh --check
 powershell -ExecutionPolicy Bypass -File "$HOME\Downloads\setup.ps1" -Check
 ```
 
-The script ends with an OK/FAIL summary and exits with an error if any check fails. Close and reopen the terminal after a first install. Signing in to GitHub Copilot (step 6 in [0.9](#09-install-vs-code-extensions)) and handling tokens remain manual.
+The script ends with an OK/FAIL summary and exits with an error if any check fails. Close and reopen the terminal after a first install. Signing in to GitHub Copilot and Codex (steps 4 and 7 in [0.9](#09-install-vs-code-extensions)) and handling tokens remain manual.
 
 If the script fails or you prefer to install each tool yourself, follow the manual steps below.
 
@@ -156,28 +156,9 @@ Restart the terminal and check on any system:
 code --version
 ```
 
-### 0.5 Install Python
+### 0.5 Python (not required)
 
-Python will be used to serve the dashboard locally.
-
-**Windows — Microsoft Store**
-
-Open **Microsoft Store**, search for **Python 3.12**, and install it from there.
-
-**macOS — Terminal**
-
-```bash
-brew install python@3.12
-python3 --version
-```
-
-**Linux or WSL — Bash**
-
-```bash
-sudo apt update
-sudo apt install -y python3 python3-pip
-python3 --version
-```
+You do not need to install Python. `uv` (step [0.7](#07-install-uv-and-uvx)) downloads its own Python when it runs the Confluence MCP, and the dashboard is opened directly as a file, without a local web server.
 
 ### 0.6 Install Node.js, npm, and npx
 
@@ -269,6 +250,14 @@ If `uvx` is not found, load the updated environment:
 source $HOME/.local/bin/env
 ```
 
+`uvx` caches the first `mcp-atlassian` version it downloads. To update it to the latest release, run once:
+
+```bash
+uvx --refresh mcp-atlassian --help
+```
+
+> **Why stdio and not an HTTP connection to Confluence?** Atlassian's hosted remote MCP only supports Confluence Cloud; the workshop Confluence is on-premises (Data Center), so each participant runs `mcp-atlassian` locally and the agent talks to it through stdin/stdout (**stdio**). `mcp-atlassian` can also run as a **streamable-http** server (`--transport streamable-http`), which agents reach through a URL; that only pays off if a team hosts one shared instance inside the corporate network.
+
 ### 0.8 Install OpenSpec
 
 OpenSpec will be used for Specification-Driven Development in Exercises 4 and 5. The commands set the public npm registry explicitly, so they also work if your npm is configured with a private or corporate registry.
@@ -301,10 +290,13 @@ openspec --version
 
 1. Open Visual Studio Code.
 2. Press `Ctrl+Shift+X` on Windows/Linux or `⇧⌘X` on macOS.
-3. Search for and install **GitHub Copilot**.
+3. Search for and install **GitHub Copilot** (recent VS Code versions already include it).
 4. Sign in with your GitHub account.
-5. Optionally, install **Codex – OpenAI's coding agent**.
-6. Open chat and check that you can send messages.
+5. Open chat and check that you can send messages.
+6. Search for and install **Codex – OpenAI's coding agent** (`openai.chatgpt`).
+7. Open the Codex panel from the Activity Bar, sign in with your ChatGPT account, and check that you can send a message.
+
+The exercises show the GitHub Copilot steps by default; when Codex differs, a collapsible **Codex** block explains the alternative.
 
 ### 0.10 Final check
 
@@ -313,7 +305,6 @@ openspec --version
 ```powershell
 git --version
 code --version
-python --version
 node --version
 npx --version
 uvx --version
@@ -325,7 +316,6 @@ openspec --version
 ```bash
 git --version
 code --version
-python3 --version
 node --version
 npx --version
 uvx --version

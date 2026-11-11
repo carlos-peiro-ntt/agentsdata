@@ -8,6 +8,7 @@ param(
 $ErrorActionPreference = 'Continue'
 
 $Extensions = @('GitHub.copilot', 'GitHub.copilot-chat')
+$CodexExtension = 'openai.chatgpt'
 $MinNodeMajor = 20
 
 function Write-Info($msg) { Write-Host "==> $msg" -ForegroundColor Cyan }
@@ -54,16 +55,6 @@ function Install-Tools {
     if (-not (Test-Cmd 'git')) { Install-Winget 'Git.Git' }
     if (-not (Test-Cmd 'code')) { Install-Winget 'Microsoft.VisualStudioCode' }
 
-    # Without Python, 'python' may resolve to the Microsoft Store alias stub, which exits non-zero.
-    $pythonOk = $false
-    if (Test-Cmd 'python') {
-        python --version *> $null
-        $pythonOk = ($LASTEXITCODE -eq 0)
-    }
-    if (-not $pythonOk) {
-        Write-Warn 'Python not found. Install "Python 3.12" from Microsoft Store, then run this script again.'
-    }
-
     if (-not (Test-Cmd 'node')) {
         if (-not (Test-Admin)) {
             Write-Warn 'Node.js installation may require an administrator PowerShell.'
@@ -88,11 +79,15 @@ function Install-Tools {
         }
     }
 
-    if (Test-CopilotBuiltin) {
-        Write-Info 'GitHub Copilot is built into this VS Code version'
-    } elseif (Test-Cmd 'code') {
+    if (Test-Cmd 'code') {
+        $wanted = @($CodexExtension)
+        if (Test-CopilotBuiltin) {
+            Write-Info 'GitHub Copilot is built into this VS Code version'
+        } else {
+            $wanted += $Extensions
+        }
         $installed = @(code --list-extensions 2>$null)
-        foreach ($ext in $Extensions) {
+        foreach ($ext in $wanted) {
             if ($installed -notcontains $ext) {
                 Write-Info "Installing VS Code extension $ext"
                 code --install-extension $ext
@@ -128,7 +123,6 @@ function Invoke-Verify {
     Write-Info 'Verifying installation'
     Test-Tool 'git' 'git' @('--version')
     Test-Tool 'code' 'code' @('--version')
-    Test-Tool 'python' 'python' @('--version')
     Test-Tool 'node' 'node' @('--version')
     if (Test-Cmd 'node') {
         $major = [int](node -p "process.versions.node.split('.')[0]")
@@ -142,11 +136,15 @@ function Invoke-Verify {
     Test-Tool 'mcp-atlassian' 'uvx' @('mcp-atlassian', '--help')
     Test-Tool 'openspec' 'openspec' @('--version')
 
-    if (Test-CopilotBuiltin) {
-        Add-Result 'OK' 'GitHub Copilot' 'built into VS Code'
-    } elseif (Test-Cmd 'code') {
+    if (Test-Cmd 'code') {
+        $wanted = @($CodexExtension)
+        if (Test-CopilotBuiltin) {
+            Add-Result 'OK' 'GitHub Copilot' 'built into VS Code'
+        } else {
+            $wanted += $Extensions
+        }
         $installed = @(code --list-extensions 2>$null)
-        foreach ($ext in $Extensions) {
+        foreach ($ext in $wanted) {
             if ($installed -contains $ext) { Add-Result 'OK' $ext 'installed' }
             else { Add-Result 'FAIL' $ext 'not installed' }
         }

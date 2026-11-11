@@ -10,6 +10,26 @@ Compare a dashboard generated without data, where the agent has to invent the va
 
 1. Open the VS Code chat.
 2. Select **Ask** mode.
+
+<details>
+<summary><strong>Codex</strong></summary>
+
+Codex has no **Ask** mode; its composer only shows a permissions selector (**Ask for approval**). Make it read-only through its project configuration instead:
+
+1. Create `.codex/config.toml` in the project folder with:
+
+   ```toml
+   sandbox_mode = "read-only"
+   approval_policy = "on-request"
+   ```
+
+2. Start a new Codex conversation so it loads the file. Codex can now read the project but must ask before writing a file or running a command.
+3. Codex only loads project configuration for trusted projects. If it ignores the file, add the same two lines to `~/.codex/config.toml` and remember to change them in Exercise 2.
+
+Alternative: run this exercise in ChatGPT (web or desktop app). In Part 2, upload the CSV files to the conversation.
+
+</details>
+
 3. Send:
 
 ```text
@@ -24,7 +44,7 @@ Generate an HTML sales dashboard for business users.
 
 - Ask is still an agent-based mode, but it has more restricted actions.
 - Without data, generation is fast, but values and KPIs may be fictional.
-- Codex and OpenCode do not always expose a mode called **Ask**. In that case, explicitly request: `Analyze and propose a solution without modifying files`.
+- Codex has no mode called **Ask**: a `read-only` sandbox gives the same restriction (see the **Codex** block above).
 
 ## Part 2 — Generation with CSV data
 
@@ -39,10 +59,11 @@ Generate an HTML sales dashboard for business users.
 
 ```text
 Generate an HTML sales dashboard for business users using the CSV files in the `resources` folder.
+Embed the data in a single self-contained HTML file that opens directly from disk. Do not start a local web server.
 ```
 
-4. Review which files the agent wants to read and modify, and accept the changes after checking that it uses the CSV files.
-5. Open the dashboard in the browser the way the agent indicates.
+4. Review which files the agent wants to read and modify, and accept the changes after checking that it uses the CSV files. With Codex in `read-only`, this is the approval request to write the file.
+5. Open the generated HTML file directly in the browser (double-click it or drag it into a browser window). If the agent offers to start a local server (for example `python -m http.server`), decline.
 
 ### Discussion points
 
