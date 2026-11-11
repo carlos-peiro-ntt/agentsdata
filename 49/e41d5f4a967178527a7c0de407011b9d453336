@@ -1,0 +1,35 @@
+part-1/AGENTS.md
+  s_3d66d13dfafd54::t_699d17ebbb9424 1-30
+docs/part-1/exercise-01-dashboard.md
+  s_3d66d13dfafd54::t_52d94644fa05fe 1-85
+docs/part-1/exercise-02-agents-md.md
+  s_3d66d13dfafd54::t_c55af9f6ad3f8f 1-111
+docs/part-1/exercise-03-skills-mcp-instructions.md
+  s_3d66d13dfafd54::t_59b1b061d5b995 1-403
+docs/part-1/exercise-04-openspec-propose-apply.md
+  s_3d66d13dfafd54::t_028dfa5bee9a9e 43,51
+docs/part-1/setup.md
+  s_3d66d13dfafd54::t_3928aa7cd38c18 1-352
+part-1/.github/instructions/dashboard.instructions.md
+  s_3d66d13dfafd54::t_261109a054cbd8 1-46
+scripts/setup.ps1
+  s_3d66d13dfafd54::t_54e7fc825c1259 158
+scripts/setup.sh
+  s_3d66d13dfafd54::t_ed0a9eeab5de47 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "49e41d5f4a967178527a7c0de407011b9d453336",
+  "prompts": {},
+  "sessions": {
+    "s_3d66d13dfafd54": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "8eaa1397-5525-4aac-a7ea-e84d801f82c4",
+        "model": "copilot/claude-opus-5.5"
+      },
+      "human_author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}
