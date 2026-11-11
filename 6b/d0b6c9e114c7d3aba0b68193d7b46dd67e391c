@@ -1,0 +1,28 @@
+README.md
+  h_5668b745a35fae 25,27-30,32,72,102,104
+docs/part-1/exercise-01-dashboard.md
+  h_5668b745a35fae 23,26-28,48,59-71
+docs/part-1/exercise-02-agents-md.md
+  h_5668b745a35fae 71,73,75,83-90
+docs/part-1/exercise-03-skills-mcp-instructions.md
+  h_5668b745a35fae 77-106,124,144,153,156,244-284,286,292-294,296
+docs/part-1/exercise-04-openspec-propose-apply.md
+  h_5668b745a35fae 149,163
+docs/part-1/setup.md
+  h_5668b745a35fae 25,27-30,32,62,106,134,136,138,171,236,264,276,300
+scripts/setup-secrets.ps1
+  h_5668b745a35fae 1-37
+scripts/setup-secrets.sh
+  h_5668b745a35fae 1-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "6bd0b6c9e114c7d3aba0b68193d7b46dd67e391c",
+  "prompts": {},
+  "humans": {
+    "h_5668b745a35fae": {
+      "author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}
