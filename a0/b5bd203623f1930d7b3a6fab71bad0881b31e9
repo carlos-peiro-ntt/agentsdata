@@ -1,0 +1,38 @@
+.codex/config.toml
+  h_5668b745a35fae 1-13
+.github/instructions/dashboard.instructions.md
+  h_5668b745a35fae 18
+AGENTS.md
+  h_5668b745a35fae 16,18
+README.md
+  h_5668b745a35fae 49,72,80
+docs/exercises/exercise-01-dashboard.md
+  h_5668b745a35fae 13-32,47,62,65-66
+docs/exercises/exercise-02-agents-md.md
+  h_5668b745a35fae 19-33,68,87,95
+docs/exercises/exercise-03-skills-mcp-instructions.md
+  h_5668b745a35fae 21,54,97-118,129-156,186-188,212-221,227,233-240,277,362,371,399
+docs/exercises/exercise-04-openspec-propose-apply.md
+  h_5668b745a35fae 71-92
+docs/exercises/exercise-05-verify-harness-archive.md
+  h_5668b745a35fae 44
+docs/setup.md
+  h_5668b745a35fae 16,25,48,60,159,161,253-260,293,295-299
+openspec/config.yaml
+  h_5668b745a35fae 12-13
+scripts/setup.ps1
+  h_5668b745a35fae 11,82-88,90,139-145,147
+scripts/setup.sh
+  h_5668b745a35fae 16,113,116-117,120,159,162-163,166
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "a0b5bd203623f1930d7b3a6fab71bad0881b31e9",
+  "prompts": {},
+  "humans": {
+    "h_5668b745a35fae": {
+      "author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}
