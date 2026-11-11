@@ -155,7 +155,7 @@ function Invoke-Verify {
     $Results | Format-Table -AutoSize | Out-String | Write-Host
 
     if ($Results.Status -contains 'FAIL') {
-        Write-Warn 'Some checks failed. Fix them (see https://github.com/carlos-peiro-ntt/agentsdata/blob/main/docs/setup.md) and run: powershell -ExecutionPolicy Bypass -File setup.ps1 -Check'
+        Write-Warn 'Some checks failed. Fix them (see https://github.com/carlos-peiro-ntt/agentsdata/blob/main/docs/part-1/setup.md) and run: powershell -ExecutionPolicy Bypass -File setup.ps1 -Check'
         exit 1
     }
     Write-Info 'All checks passed. Restart your terminal if any tool was just installed.'

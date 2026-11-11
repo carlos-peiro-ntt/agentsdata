@@ -349,4 +349,4 @@ You can also create the folder from your file explorer and open it with **File �
 
 ---
 
-Continue with [Exercise 1 — Create the First Dashboard](exercises/exercise-01-dashboard.md) only when the course starts.
+Continue with [Exercise 1 — Create the First Dashboard](part-1/exercise-01-dashboard.md) only when the course starts.

@@ -18,7 +18,7 @@ The goal is to start from zero and iterate on a simple business dashboard to und
 Complete these steps on your own before the live session. They only install tools and prepare an empty folder; the exercises themselves are done together during the course.
 
 > [!IMPORTANT]
-> **Do not clone, fork, or download this repository.** Its files are the final snapshot of the workshop, published only so you can compare your result after the course. Everything you need is in this guide and in the release downloads.
+> **Do not clone, fork, or download this repository.** The `part-1/` folder is the final snapshot of the Part 1 project folder, published only so you can compare your result after the course. Everything you need is in this guide and in the release downloads.
 
 ### 1. Install the prerequisites
 
@@ -29,7 +29,7 @@ Download the setup script for your system from your browser:
 | macOS, Linux, or WSL | [setup.sh](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup.sh) |
 | Windows | [setup.ps1](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup.ps1) |
 
-Run it from your Downloads folder. It installs any missing prerequisite and verifies everything; see [Setup and Workshop Preparation](docs/setup.md) for details and manual steps.
+Run it from your Downloads folder. It installs any missing prerequisite and verifies everything; see [Setup and Workshop Preparation](docs/part-1/setup.md) for details and manual steps.
 
 ```bash
 # macOS or Linux
@@ -77,13 +77,32 @@ You can also create the folder from your file explorer and open it with **File �
 
 ## During the Course
 
+### Part 1 — From Prompt to Specification-Driven Development
+
 Work through the exercises in order, following the instructor. Each one builds on the files created by the previous step. Every exercise shows the GitHub Copilot steps; where Codex works differently, expand the collapsible **Codex** block.
 
-1. [Exercise 1 — Create the First Dashboard](docs/exercises/exercise-01-dashboard.md) — prompt-only generation, then generation from real CSV data.
-2. [Exercise 2 — From Prompt to AGENTS.md](docs/exercises/exercise-02-agents-md.md) — create `AGENTS.md`.
-3. [Exercise 3 — Skills, MCP, Instructions, Planning, and Implementation](docs/exercises/exercise-03-skills-mcp-instructions.md) — install skills, configure MCP servers, add the dashboard instruction, plan and implement the Supabase-backed dashboard.
-4. [Exercise 4 — Propose and Apply a Change with OpenSpec](docs/exercises/exercise-04-openspec-propose-apply.md) — initialize [OpenSpec](https://github.com/Fission-AI/OpenSpec), turn an idea into a reviewed change under `openspec/changes/`, and implement it with `/opsx-apply`.
-5. [Exercise 5 — Verify, Test, and Archive](docs/exercises/exercise-05-verify-harness-archive.md) — verify the implemented change, validate it with `evals/eval.js`, then archive it.
+1. [Exercise 1 — Create the First Dashboard](docs/part-1/exercise-01-dashboard.md) — prompt-only generation, then generation from real CSV data.
+2. [Exercise 2 — From Prompt to AGENTS.md](docs/part-1/exercise-02-agents-md.md) — create `AGENTS.md`.
+3. [Exercise 3 — Skills, MCP, Instructions, Planning, and Implementation](docs/part-1/exercise-03-skills-mcp-instructions.md) — install skills, configure MCP servers, add the dashboard instruction, plan and implement the Supabase-backed dashboard.
+4. [Exercise 4 — Propose and Apply a Change with OpenSpec](docs/part-1/exercise-04-openspec-propose-apply.md) — initialize [OpenSpec](https://github.com/Fission-AI/OpenSpec), turn an idea into a reviewed change under `openspec/changes/`, and implement it with `/opsx-apply`.
+5. [Exercise 5 — Verify, Test, and Archive](docs/part-1/exercise-05-verify-harness-archive.md) — verify the implemented change, validate it with `evals/eval.js`, then archive it.
+
+### Part 2
+
+Coming soon.
+
+## Repository Layout
+
+```text
+README.md          course index (this file)
+docs/
+  part-1/          Part 1 setup guide and exercise guides
+  part-2/          Part 2 guides (coming soon)
+scripts/           Part 1 setup scripts, published as release downloads
+part-1/            final state of the Part 1 project folder; open it as its own VS Code workspace
+```
+
+Each `part-N/` folder is a complete project folder: its `AGENTS.md`, `.github/`, `.agents/`, `.codex/`, `.mcp.json`, and `openspec/` are only picked up when that folder is opened as the workspace root (`code part-1`).
 
 ## Data Progression
 

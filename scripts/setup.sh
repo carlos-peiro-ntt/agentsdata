@@ -3,7 +3,7 @@
 # Usage: bash setup.sh [--check]
 set -uo pipefail
 
-GUIDE_URL="https://github.com/carlos-peiro-ntt/agentsdata/blob/main/docs/setup.md"
+GUIDE_URL="https://github.com/carlos-peiro-ntt/agentsdata/blob/main/docs/part-1/setup.md"
 CHECK_ONLY=0
 case "${1:-}" in
   --check) CHECK_ONLY=1 ;;

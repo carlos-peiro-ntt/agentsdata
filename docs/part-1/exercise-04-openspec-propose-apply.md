@@ -40,7 +40,7 @@ OpenSpec's own [loop](https://openspec.dev/docs/quickstart#the-loop-at-a-glance)
 
 ## Part 0 — Validate OpenSpec and initialize the project (one time)
 
-OpenSpec is a CLI that generates and manages the spec artifacts for you, instead of writing a single spec file by hand. It should already be installed from [Setup and Workshop Preparation](../setup.md).
+OpenSpec is a CLI that generates and manages the spec artifacts for you, instead of writing a single spec file by hand. It should already be installed from [Setup and Workshop Preparation](setup.md).
 
 Confirm it:
 
@@ -48,7 +48,7 @@ Confirm it:
 openspec --version
 ```
 
-If that command fails, go back to [Setup and Workshop Preparation](../setup.md) and install it before continuing.
+If that command fails, go back to [Setup and Workshop Preparation](setup.md) and install it before continuing.
 
 From the project folder, initialize it for GitHub Copilot:
 
