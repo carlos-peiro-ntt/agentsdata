@@ -13,12 +13,15 @@ When working on this project:
 - Clearly identify the data source (files or tables) used for each metric.
 - Prefer simple, business-readable dashboards with interactive filtering.
 - Keep the current standalone HTML architecture unless a different technical approach is explicitly requested.
+- The dashboard must open directly from disk with its data embedded. Do not start a local web server (for example `python -m http.server`) to serve or preview it.
 - Avoid introducing external dependencies unless explicitly approved.
+- Read and follow `.github/instructions/dashboard.instructions.md` before any dashboard, KPI, data, or Confluence work.
 
-## Business KPIs
+## Business Metrics & KPI Context
 
-When relevant, prioritize metrics such as:
+The dashboard represents commercial performance for a retail business.
 
+The KPI layer should cover:
 - Revenue
 - Margin %
 - Average Ticket
@@ -26,3 +29,11 @@ When relevant, prioritize metrics such as:
 - Sales by Category
 - Conversion
 - Units Sold
+
+These metrics are business requirements, not merely visual suggestions.
+When improving the dashboard, review whether the KPI layer includes the
+relevant metrics, presents them clearly, and keeps them consistent with the
+available data source.
+
+Do not invent values. Use the repository’s current data access mechanism,
+whether local files, APIs, MCP tools, or another configured source.

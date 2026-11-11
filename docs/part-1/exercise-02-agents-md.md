@@ -16,6 +16,21 @@ Common names by tool:
 ## Part 1 — Create `AGENTS.md`
 
 1. Switch to **Agent** mode.
+
+<details>
+<summary><strong>Codex</strong></summary>
+
+Allow Codex to write in the project. In `.codex/config.toml` (or `~/.codex/config.toml` if you used it in Exercise 1), change the sandbox and start a new Codex conversation:
+
+```toml
+sandbox_mode = "workspace-write"
+approval_policy = "on-request"
+```
+
+If `/init` does not appear when you type `/` in the Codex composer, send instead: `Create an AGENTS.md for this project describing its structure, conventions, and how to work in it.`
+
+</details>
+
 2. Run:
 
 ```text
@@ -50,12 +65,14 @@ When working on this project:
 - Clearly identify the data source (files or tables) used for each metric.
 - Prefer simple, business-readable dashboards with interactive filtering.
 - Keep the current standalone HTML architecture unless a different technical approach is explicitly requested.
+- The dashboard must open directly from disk with its data embedded. Do not start a local web server (for example `python -m http.server`) to serve or preview it.
 - Avoid introducing external dependencies unless explicitly approved.
 
-## Business KPIs
+## Business Metrics & KPI Context
 
-When relevant, prioritize metrics such as:
+The dashboard represents commercial performance for a retail business.
 
+The KPI layer should cover:
 - Revenue
 - Margin %
 - Average Ticket
@@ -63,12 +80,20 @@ When relevant, prioritize metrics such as:
 - Sales by Category
 - Conversion
 - Units Sold
+
+These metrics are business requirements, not merely visual suggestions.
+When improving the dashboard, review whether the KPI layer includes the
+relevant metrics, presents them clearly, and keeps them consistent with the
+available data source.
+
+Do not invent values. Use the repository’s current data access mechanism,
+whether local files, APIs, MCP tools, or another configured source.
 ```
 
 ## Part 3 — Improve the dashboard
 
 1. Save `AGENTS.md`.
-2. Keep **Agent** mode selected.
+2. Keep **Agent** mode selected (Codex: keep `workspace-write`).
 3. Send:
 
 ```text
@@ -76,7 +101,7 @@ Improve this dashboard.
 ```
 
 4. Check whether the agent automatically applies the `AGENTS.md` rules.
-5. Reopen the dashboard and compare the result with the previous exercise.
+5. Reopen the dashboard directly from disk and compare the result with the previous exercise.
 
 ## Exercise validation
 

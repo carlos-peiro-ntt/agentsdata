@@ -41,7 +41,7 @@ openspec config profile
 openspec update
 ```
 
-In `openspec config profile`, select the workflows to install and make sure `verify` is checked alongside the existing ones (`propose`, `explore`, `apply`, `update`, `sync`, `archive`), then confirm. Restart VS Code if `/opsx-verify` doesn't show up right away.
+In `openspec config profile`, select the workflows to install and make sure `verify` is checked alongside the existing ones (`propose`, `explore`, `apply`, `update`, `sync`, `archive`), then confirm. Restart VS Code if `/opsx-verify` doesn't show up right away. With Codex, the same commands add the `$openspec-verify-change` skill; use the Codex names from [Exercise 4](exercise-04-openspec-propose-apply.md#part-0--validate-openspec-and-initialize-the-project-one-time) throughout this exercise.
 
 Then, in Copilot Chat:
 

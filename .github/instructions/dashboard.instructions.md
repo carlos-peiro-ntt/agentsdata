@@ -15,6 +15,7 @@ These rules are mandatory for every dashboard, analysis, and generated document 
 - Inspect and validate the Supabase schemas and tables before downloading data, calculating KPIs, or embedding a validated snapshot in the self-contained HTML dashboard.
 - Never include Supabase credentials or a runtime database connection in the generated HTML.
 - If the Supabase MCP is unavailable or the required data cannot be retrieved, stop and report the limitation. Do not fall back to CSV files, sample data, or invented values.
+- Embed the validated data so the dashboard opens directly from disk. Never start a local web server (for example `python -m http.server`) to serve or preview it.
 
 ## Privacy and GDPR
 

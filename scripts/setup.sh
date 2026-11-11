@@ -3,7 +3,7 @@
 # Usage: bash setup.sh [--check]
 set -uo pipefail
 
-GUIDE_URL="https://github.com/carlos-peiro-ntt/agentsdata/blob/main/docs/setup.md"
+GUIDE_URL="https://github.com/carlos-peiro-ntt/agentsdata/blob/main/docs/part-1/setup.md"
 CHECK_ONLY=0
 case "${1:-}" in
   --check) CHECK_ONLY=1 ;;
@@ -13,6 +13,7 @@ case "${1:-}" in
 esac
 
 EXTENSIONS=(GitHub.copilot GitHub.copilot-chat)
+CODEX_EXTENSION=openai.chatgpt
 MIN_NODE_MAJOR=20
 
 info() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
@@ -64,9 +65,7 @@ install_uv() {
 
 install_macos() {
   has brew || die "Homebrew is required. Install it from https://brew.sh/ and run this script again."
-  has git     || brew_install git
   has code    || brew_install --cask visual-studio-code
-  has python3 || brew_install python@3.12
   has node    || brew_install node
   has uvx     || brew_install uv
   has openspec || brew_install openspec
@@ -74,9 +73,7 @@ install_macos() {
 
 install_linux() {
   has apt-get || die "Only Debian/Ubuntu (apt) is supported. Follow the manual steps in $GUIDE_URL"
-  has git     || apt_install git
   has curl    || apt_install curl
-  has python3 || apt_install python3 python3-pip
   has node    || apt_install nodejs npm
   has npm     || apt_install npm
   if ! has code; then
@@ -111,13 +108,14 @@ copilot_builtin() {
 
 install_extensions() {
   has code || { warn "Skipping VS Code extensions: 'code' is not on PATH."; return; }
+  local installed ext exts=("$CODEX_EXTENSION")
   if copilot_builtin; then
     info "GitHub Copilot is built into this VS Code version"
-    return
+  else
+    exts+=("${EXTENSIONS[@]}")
   fi
-  local installed ext
   installed="$(code --list-extensions 2>/dev/null)"
-  for ext in "${EXTENSIONS[@]}"; do
+  for ext in "${exts[@]}"; do
     if ! grep -qix "$ext" <<<"$installed"; then
       info "Installing VS Code extension $ext"
       code --install-extension "$ext" || warn "Failed to install $ext"
@@ -156,13 +154,14 @@ check_extensions() {
     record FAIL "VS Code extensions" "'code' not available"
     return
   fi
+  local installed ext exts=("$CODEX_EXTENSION")
   if copilot_builtin; then
     record OK "GitHub Copilot" "built into VS Code"
-    return
+  else
+    exts+=("${EXTENSIONS[@]}")
   fi
-  local installed ext
   installed="$(code --list-extensions 2>/dev/null)"
-  for ext in "${EXTENSIONS[@]}"; do
+  for ext in "${exts[@]}"; do
     if grep -qix "$ext" <<<"$installed"; then
       record OK "$ext" "installed"
     else
@@ -174,9 +173,7 @@ check_extensions() {
 verify() {
   load_uv_env
   info "Verifying installation"
-  check_cmd git      git --version
   check_cmd code     code --version
-  check_cmd python3  python3 --version
   check_cmd node     node --version
   check_node_version
   check_cmd npm      npm --version
