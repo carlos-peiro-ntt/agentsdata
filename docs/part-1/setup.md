@@ -22,12 +22,14 @@ The Supabase and Confluence tokens are shared during the course; you do not need
 
 ### Quick setup (recommended)
 
-The setup scripts install any missing prerequisite (Git, VS Code, Node.js, uv/uvx, OpenSpec, the GitHub Copilot extensions, and the Codex extension) and then verify everything. Download the one for your system from your browser:
+The setup scripts install any missing prerequisite (VS Code, Node.js, uv/uvx, OpenSpec, the GitHub Copilot extensions, and the Codex extension) and then verify everything. Download the scripts for your system from your browser:
 
-- macOS, Linux, or WSL: [setup.sh](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup.sh)
-- Windows: [setup.ps1](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup.ps1)
+| System | Setup script | Secrets script (used in Exercise 3) |
+| --- | --- | --- |
+| macOS, Linux, or WSL | [setup.sh](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup.sh) | [setup-secrets.sh](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup-secrets.sh) |
+| Windows | [setup.ps1](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup.ps1) | [setup-secrets.ps1](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup-secrets.ps1) |
 
-Run it from your Downloads folder; do not move it into your project folder.
+Run the setup script from your Downloads folder and keep the secrets script there too; do not move either into your project folder.
 
 **macOS, Linux (Debian/Ubuntu), or WSL — Bash**
 
@@ -57,7 +59,7 @@ bash ~/Downloads/setup.sh --check
 powershell -ExecutionPolicy Bypass -File "$HOME\Downloads\setup.ps1" -Check
 ```
 
-The script ends with an OK/FAIL summary and exits with an error if any check fails. Close and reopen the terminal after a first install. Signing in to GitHub Copilot and Codex (steps 4 and 7 in [0.9](#09-install-vs-code-extensions)) and handling tokens remain manual.
+The script ends with an OK/FAIL summary and exits with an error if any check fails. Close and reopen the terminal after a first install. Signing in to GitHub Copilot and Codex (steps 4 and 7 in [0.8](#08-install-vs-code-extensions)) and handling tokens remain manual.
 
 If the script fails or you prefer to install each tool yourself, follow the manual steps below.
 
@@ -101,34 +103,7 @@ uname -a
 cat /etc/os-release
 ```
 
-### 0.3 Install Git
-
-**Windows — PowerShell**
-
-```powershell
-winget install --id Git.Git -e --source winget
-```
-
-**macOS — Terminal**
-
-```bash
-brew install git
-```
-
-**Linux or WSL — Bash**
-
-```bash
-sudo apt update
-sudo apt install -y git
-```
-
-Close and reopen the terminal. Check the installation on any system:
-
-```bash
-git --version
-```
-
-### 0.4 Install Visual Studio Code
+### 0.3 Install Visual Studio Code
 
 **Windows — PowerShell**
 
@@ -156,11 +131,11 @@ Restart the terminal and check on any system:
 code --version
 ```
 
-### 0.5 Python (not required)
+### 0.4 Python (not required)
 
-You do not need to install Python. `uv` (step [0.7](#07-install-uv-and-uvx)) downloads its own Python when it runs the Confluence MCP, and the dashboard is opened directly as a file, without a local web server.
+You do not need to install Python. `uv` (step [0.6](#06-install-uv-and-uvx)) downloads its own Python when it runs the Confluence MCP, and the dashboard is opened directly as a file, without a local web server.
 
-### 0.6 Install Node.js, npm, and npx
+### 0.5 Install Node.js, npm, and npx
 
 `npx` will be used to install skills.
 
@@ -193,7 +168,7 @@ npm --version
 npx --version
 ```
 
-### 0.7 Install uv and uvx
+### 0.6 Install uv and uvx
 
 `uvx` will be used to run the Confluence MCP. `uvx` is included with `uv`.
 
@@ -258,7 +233,7 @@ uvx --refresh mcp-atlassian --help
 
 > **Why stdio and not an HTTP connection to Confluence?** Atlassian's hosted remote MCP only supports Confluence Cloud; the workshop Confluence is on-premises (Data Center), so each participant runs `mcp-atlassian` locally and the agent talks to it through stdin/stdout (**stdio**). `mcp-atlassian` can also run as a **streamable-http** server (`--transport streamable-http`), which agents reach through a URL; that only pays off if a team hosts one shared instance inside the corporate network.
 
-### 0.8 Install OpenSpec
+### 0.7 Install OpenSpec
 
 OpenSpec will be used for Specification-Driven Development in Exercises 4 and 5. The commands set the public npm registry explicitly, so they also work if your npm is configured with a private or corporate registry.
 
@@ -286,7 +261,7 @@ Check the installation on any system:
 openspec --version
 ```
 
-### 0.9 Install VS Code extensions
+### 0.8 Install VS Code extensions
 
 1. Open Visual Studio Code.
 2. Press `Ctrl+Shift+X` on Windows/Linux or `⇧⌘X` on macOS.
@@ -298,12 +273,11 @@ openspec --version
 
 The exercises show the GitHub Copilot steps by default; when Codex differs, a collapsible **Codex** block explains the alternative.
 
-### 0.10 Final check
+### 0.9 Final check
 
 **Windows — PowerShell**
 
 ```powershell
-git --version
 code --version
 node --version
 npx --version
@@ -314,7 +288,6 @@ openspec --version
 **macOS, Linux, or WSL — Bash/Zsh**
 
 ```bash
-git --version
 code --version
 node --version
 npx --version
@@ -324,7 +297,7 @@ openspec --version
 
 Do not continue until all commands respond without errors.
 
-### 0.11 Prepare your project folder
+### 0.10 Prepare your project folder
 
 Create an empty folder for the workshop and open it in VS Code. Every exercise happens inside this folder; it does not need Git.
 

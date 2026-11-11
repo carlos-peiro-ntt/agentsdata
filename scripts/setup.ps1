@@ -52,7 +52,6 @@ function Install-Tools {
         exit 1
     }
 
-    if (-not (Test-Cmd 'git')) { Install-Winget 'Git.Git' }
     if (-not (Test-Cmd 'code')) { Install-Winget 'Microsoft.VisualStudioCode' }
 
     if (-not (Test-Cmd 'node')) {
@@ -121,7 +120,6 @@ function Test-Tool($name, $exe, [string[]]$arguments) {
 function Invoke-Verify {
     Update-SessionPath
     Write-Info 'Verifying installation'
-    Test-Tool 'git' 'git' @('--version')
     Test-Tool 'code' 'code' @('--version')
     Test-Tool 'node' 'node' @('--version')
     if (Test-Cmd 'node') {

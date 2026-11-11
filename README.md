@@ -22,14 +22,14 @@ Complete these steps on your own before the live session. They only install tool
 
 ### 1. Install the prerequisites
 
-Download the setup script for your system from your browser:
+Download the scripts for your system from your browser, with one click each:
 
-| System | Download |
-| --- | --- |
-| macOS, Linux, or WSL | [setup.sh](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup.sh) |
-| Windows | [setup.ps1](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup.ps1) |
+| System | Setup script | Secrets script (used in Exercise 3) |
+| --- | --- | --- |
+| macOS, Linux, or WSL | [setup.sh](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup.sh) | [setup-secrets.sh](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup-secrets.sh) |
+| Windows | [setup.ps1](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup.ps1) | [setup-secrets.ps1](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup-secrets.ps1) |
 
-Run it from your Downloads folder. It installs any missing prerequisite and verifies everything; see [Setup and Workshop Preparation](docs/part-1/setup.md) for details and manual steps.
+Keep both files in your Downloads folder; you will need the secrets script again in Exercise 3. Run the setup script from there. It installs any missing prerequisite and verifies everything; see [Setup and Workshop Preparation](docs/part-1/setup.md) for details and manual steps.
 
 ```bash
 # macOS or Linux
@@ -69,6 +69,7 @@ You can also create the folder from your file explorer and open it with **File â
 ### Ready checklist
 
 - [ ] The setup script ends with every check `OK`.
+- [ ] `setup-secrets` is saved in your Downloads folder.
 - [ ] GitHub Copilot chat answers in VS Code (or Codex, if you follow the Codex path).
 - [ ] An empty project folder is open in VS Code.
 
@@ -98,8 +99,9 @@ README.md          course index (this file)
 docs/
   part-1/          Part 1 setup guide and exercise guides
   part-2/          Part 2 guides (coming soon)
-scripts/           Part 1 setup scripts, published as release downloads
+scripts/           Part 1 setup and secrets scripts, published as release downloads
 part-1/            final state of the Part 1 project folder; open it as its own VS Code workspace
+part-2/            final state of the Part 2 project folder; open it as its own VS Code workspace
 ```
 
 Each `part-N/` folder is a complete project folder: its `AGENTS.md`, `.github/`, `.agents/`, `.codex/`, `.mcp.json`, and `openspec/` are only picked up when that folder is opened as the workspace root (`code part-1`).

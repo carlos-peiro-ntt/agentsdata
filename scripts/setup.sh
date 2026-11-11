@@ -65,7 +65,6 @@ install_uv() {
 
 install_macos() {
   has brew || die "Homebrew is required. Install it from https://brew.sh/ and run this script again."
-  has git     || brew_install git
   has code    || brew_install --cask visual-studio-code
   has node    || brew_install node
   has uvx     || brew_install uv
@@ -74,7 +73,6 @@ install_macos() {
 
 install_linux() {
   has apt-get || die "Only Debian/Ubuntu (apt) is supported. Follow the manual steps in $GUIDE_URL"
-  has git     || apt_install git
   has curl    || apt_install curl
   has node    || apt_install nodejs npm
   has npm     || apt_install npm
@@ -175,7 +173,6 @@ check_extensions() {
 verify() {
   load_uv_env
   info "Verifying installation"
-  check_cmd git      git --version
   check_cmd code     code --version
   check_cmd node     node --version
   check_node_version

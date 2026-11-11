@@ -74,7 +74,36 @@ Replace the whole content of `.mcp.json` with:
 
 The workspace `.mcp.json` format does not prompt for secrets. Each `${NAME}` reference is replaced at startup with the environment variable `NAME` of the process that runs VS Code, so the tokens stay out of the file and out of Git.
 
-Fully quit VS Code first (`Cmd+Q` on macOS; close every window on Windows), because it only reads variables when it starts. Then provide the tokens shared by the instructor and start VS Code from that same terminal.
+Fully quit VS Code first (`Cmd+Q` on macOS; close every window on Windows), because it only reads variables when it starts. Then run the secrets script from your Downloads folder, passing your project folder. If you do not have it, download it from your browser: [setup-secrets.sh](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup-secrets.sh) (macOS, Linux, WSL) or [setup-secrets.ps1](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup-secrets.ps1) (Windows).
+
+The script asks for the tokens shared by the instructor (the input is hidden) and opens VS Code in your project folder with the tokens in its environment. The project folder is the one from [Prepare your project folder](setup.md#010-prepare-your-project-folder), `agentsdata-workshop` in your home folder; if you named it differently, use your own path.
+
+macOS/Linux:
+
+```bash
+bash ~/Downloads/setup-secrets.sh ~/agentsdata-workshop
+```
+
+WSL (the browser saves files to the Windows Downloads folder):
+
+```bash
+bash /mnt/c/Users/<windows-user>/Downloads/setup-secrets.sh ~/agentsdata-workshop
+```
+
+Windows PowerShell:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File "$HOME\Downloads\setup-secrets.ps1" -ProjectDir "$HOME\agentsdata-workshop"
+```
+
+If VS Code is still running, the script stops and asks you to quit it first.
+
+The tokens are not saved anywhere: they exist only in that VS Code process. When you quit VS Code they are gone, so run the script again every time you reopen it. To rotate a token, quit VS Code and run the script again.
+
+<details>
+<summary>Manual alternative (without the script)</summary>
+
+Provide the tokens in a terminal and start VS Code from that same terminal.
 
 macOS/Linux:
 
@@ -92,7 +121,7 @@ $env:CONFLUENCE_PERSONAL_TOKEN = Read-Host "Confluence token"
 code .
 ```
 
-To rotate or clear a token, set or unset the variable and restart VS Code.
+</details>
 
 <details>
 <summary><strong>Codex</strong></summary>
@@ -112,7 +141,7 @@ url = "https://mcp.supabase.com/mcp?project_ref=tnzlxngahrlnnmusxqpf&read_only=t
 bearer_token_env_var = "SUPABASE_ACCESS_TOKEN"
 ```
 
-`env_vars` and `bearer_token_env_var` take the token from the environment of the process that runs VS Code, so export the tokens and start VS Code from the terminal exactly as above. Codex starts both servers when a new conversation begins; there is no **MCP: List Servers** step.
+`env_vars` and `bearer_token_env_var` take the token from the environment of the process that runs VS Code, so run the secrets script (or export the tokens and start VS Code) exactly as above. Codex starts both servers when a new conversation begins; there is no **MCP: List Servers** step.
 
 </details>
 
@@ -121,10 +150,10 @@ Start the servers:
 1. Open the Command Palette and run **MCP: List Servers**.
 2. Start `confluence` and `supabase`.
 
-> A server showing as **Running** does not mean its token is valid. Both servers only check the token when a tool is called, so a wrong or missing variable shows up as a `401` error on the first tool call. If that happens, fix the variable, fully quit VS Code, and reopen it from the terminal where you exported it.
+> A server showing as **Running** does not mean its token is valid. Both servers only check the token when a tool is called, so a wrong or missing variable shows up as a `401` error on the first tool call. If that happens, fix the variable, fully quit VS Code, and run the secrets script again.
 3. Do not write real tokens in `.mcp.json`.
 
-> **Troubleshooting (Windows):** if the `confluence` server fails to start, `uvx` is likely missing or not on `PATH`. Repeat [Install uv and uvx](setup.md#07-install-uv-and-uvx), then close and reopen VS Code before starting the server again.
+> **Troubleshooting (Windows):** if the `confluence` server fails to start, `uvx` is likely missing or not on `PATH`. Repeat [Install uv and uvx](setup.md#06-install-uv-and-uvx), then close and reopen VS Code before starting the server again.
 
 ### Inspect the MCP tools
 
@@ -212,20 +241,59 @@ generated document in this project:
 <details>
 <summary><strong>Codex</strong></summary>
 
-Codex has no `/create-instructions` command and does not read `.github/instructions/`. Keep the same file as the single source of truth and point to it from `AGENTS.md`, which Codex always reads:
+Codex has no `/create-instructions` command, does not read `.github/instructions/`, and has no `applyTo` scoping: it only loads `AGENTS.md` files. So with Codex, skip the steps above and add the rules as a final section of `AGENTS.md`, without creating any instruction file.
 
-1. Send the request above, replacing the `/create-instructions` line with: `Create .github/instructions/dashboard.instructions.md with YAML front matter (name, description, applyTo) and the following content.`
-2. Then send: `Add one line to AGENTS.md telling agents to read and follow .github/instructions/dashboard.instructions.md before any dashboard, KPI, data, or Confluence work. Do not copy its rules.`
+Edit `AGENTS.md` and add the following block at the end, without changing the existing sections:
+
+```markdown
+## Dashboard Privacy and Data Governance
+
+These rules are mandatory for every dashboard, analysis, and generated document in this project.
+
+### Dashboard Data Source
+
+- Do not use the `resources/` directory or any CSV file as a data source after the initial CSV learning exercise.
+- Retrieve all data required by the dashboard from the configured Supabase MCP in read-only mode.
+- Inspect and validate the Supabase schemas and tables before downloading data, calculating KPIs, or embedding a validated snapshot in the self-contained HTML dashboard.
+- Never include Supabase credentials or a runtime database connection in the generated HTML.
+- If the Supabase MCP is unavailable or the required data cannot be retrieved, stop and report the limitation. Do not fall back to CSV files, sample data, or invented values.
+- Embed the validated data so the dashboard opens directly from disk. Never start a local web server (for example `python -m http.server`) to serve or preview it.
+
+### Privacy and GDPR
+
+- Never display or expose first name, last name, email address, date of birth, postal code, or any field that can identify a natural person.
+- This prohibition applies to charts, KPIs, tooltips, labels, legends, filters, tables, embedded HTML or JavaScript data, source-code examples, and Confluence documentation.
+- User-profile analysis may use only anonymized attributes such as `segmento_cliente`, `genero`, and `comunidad_autonoma`.
+- Document in the dashboard source code why first and last names are intentionally excluded from the analysis.
+
+### Data-Quality Gate
+
+- Validate every required source table separately before generating dashboard or documentation output.
+- Record a clear `PASS` or `FAIL` result for every table.
+- Check join cardinality by comparing row counts before and after each join.
+- Abort generation if a join unexpectedly increases the row count or duplicates sales records.
+- Report failed checks and limitations instead of producing potentially misleading KPIs.
+
+### Confluence Publishing
+
+- Always create dashboard documentation as a child page of Confluence page ID `1430576442`, using space key `IADEIADATAENGINEERS`.
+- Use exactly this title pattern: `{creator name} - Informe ventas`.
+- Never create the report at the Confluence root or under another parent page.
+```
+
+From here on, wherever this guide mentions `.github/instructions/dashboard.instructions.md`, read it as the **Dashboard Privacy and Data Governance** section of `AGENTS.md`.
+
+Check that Codex follows it. Start a new conversation and send `Summarize the dashboard rules you must follow`; it must list the four areas. Then send `Add a table with customer emails to the dashboard`; it must refuse.
 
 </details>
 
 ### Validation checklist
 
-- `.github/instructions/dashboard.instructions.md` exists.
-- Its generated YAML front matter is valid and preserved.
-- Its `applyTo` pattern covers the intended dashboard, analysis, and documentation files.
+- `.github/instructions/dashboard.instructions.md` exists (Codex: `AGENTS.md` has the **Dashboard Privacy and Data Governance** section and no instruction file was created).
+- Its generated YAML front matter is valid and preserved (Codex: not applicable).
+- Its `applyTo` pattern covers the intended dashboard, analysis, and documentation files (Codex: not applicable; `AGENTS.md` always applies).
 - Its current requirements cover the configured Supabase data-source rules (including opening the dashboard from disk without a local server), privacy constraints, data-quality gate, and Confluence publishing constraints.
-- `AGENTS.md` does not duplicate the instruction's rules.
+- `AGENTS.md` does not duplicate the instruction's rules (Codex: the section lives in `AGENTS.md` by design).
 
 ## Part 4 — Generate the plan
 
