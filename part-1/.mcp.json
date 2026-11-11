@@ -5,6 +5,8 @@
 			"command": "uvx",
 			"args": [
 				"mcp-atlassian"
+				"--python",
+				"3.12"
 			],
 			"env": {
 				"UV_DEFAULT_INDEX": "https://pypi.org/simple",

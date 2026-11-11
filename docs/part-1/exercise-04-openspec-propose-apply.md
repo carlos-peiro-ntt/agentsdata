@@ -40,7 +40,7 @@ OpenSpec's own [loop](https://openspec.dev/docs/quickstart#the-loop-at-a-glance)
 
 ## Part 0 — Validate OpenSpec and initialize the project (one time)
 
-OpenSpec is a CLI that generates and manages the spec artifacts for you, instead of writing a single spec file by hand. It should already be installed from [Setup and Workshop Preparation](../setup.md).
+OpenSpec is a CLI that generates and manages the spec artifacts for you, instead of writing a single spec file by hand. It should already be installed from [Setup and Workshop Preparation](setup.md).
 
 Confirm it:
 
@@ -48,7 +48,7 @@ Confirm it:
 openspec --version
 ```
 
-If that command fails, go back to [Setup and Workshop Preparation](../setup.md) and install it before continuing.
+If that command fails, go back to [Setup and Workshop Preparation](setup.md) and install it before continuing.
 
 From the project folder, initialize it for GitHub Copilot:
 
@@ -146,7 +146,7 @@ Read the three generated files, in this order, and correct what's wrong — eith
   - percentage change, or `N/A` when previous is zero — this behavior typically needs two scenarios under the same requirement: the normal calculation and the zero-previous edge case;
 - `tasks.md`: do the tasks cover the specs above, and nothing more?
 
-Reject and ask the agent to fix the plan if you find invented fields, a missing `previous = 0` edge case, scope creep beyond the Total Sales card, or any conflict with `AGENTS.md` / `.github/instructions/dashboard.instructions.md`.
+Reject and ask the agent to fix the plan if you find invented fields, a missing `previous = 0` edge case, scope creep beyond the Total Sales card, or any conflict with `AGENTS.md` / `.github/instructions/dashboard.instructions.md` (Codex: the Dashboard Privacy and Data Governance section of `AGENTS.md`).
 
 There is no separate "Approved" field to flip: a plan counts as approved once you stop correcting it and are ready to move to implementation.
 
@@ -160,7 +160,7 @@ In Copilot Chat:
 
 The agent works through `openspec/changes/total-sales-mom-comparison/tasks.md`, checking off each task as it lands. Confirm it also:
 
-- follows `AGENTS.md` and `.github/instructions/dashboard.instructions.md`;
+- follows `AGENTS.md` and `.github/instructions/dashboard.instructions.md` (Codex: `AGENTS.md` only);
 - implements only the tasks in the reviewed change, in the existing Total Sales card;
 - uses stable DOM identifiers for the four displayed values;
 - preserves the self-contained dashboard.

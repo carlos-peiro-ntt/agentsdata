@@ -52,7 +52,6 @@ function Install-Tools {
         exit 1
     }
 
-    if (-not (Test-Cmd 'git')) { Install-Winget 'Git.Git' }
     if (-not (Test-Cmd 'code')) { Install-Winget 'Microsoft.VisualStudioCode' }
 
     if (-not (Test-Cmd 'node')) {
@@ -121,7 +120,6 @@ function Test-Tool($name, $exe, [string[]]$arguments) {
 function Invoke-Verify {
     Update-SessionPath
     Write-Info 'Verifying installation'
-    Test-Tool 'git' 'git' @('--version')
     Test-Tool 'code' 'code' @('--version')
     Test-Tool 'node' 'node' @('--version')
     if (Test-Cmd 'node') {
@@ -155,7 +153,7 @@ function Invoke-Verify {
     $Results | Format-Table -AutoSize | Out-String | Write-Host
 
     if ($Results.Status -contains 'FAIL') {
-        Write-Warn 'Some checks failed. Fix them (see https://github.com/carlos-peiro-ntt/agentsdata/blob/main/docs/setup.md) and run: powershell -ExecutionPolicy Bypass -File setup.ps1 -Check'
+        Write-Warn 'Some checks failed. Fix them (see https://github.com/carlos-peiro-ntt/agentsdata/blob/main/docs/part-1/setup.md) and run: powershell -ExecutionPolicy Bypass -File setup.ps1 -Check'
         exit 1
     }
     Write-Info 'All checks passed. Restart your terminal if any tool was just installed.'

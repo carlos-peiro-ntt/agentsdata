@@ -1,6 +1,6 @@
 # Exercise 1 — Create the First Dashboard
 
-[← Back to README](../../README.md) · [← Setup](../setup.md)
+[← Back to README](../../README.md) · [← Setup](setup.md)
 
 ## Objective
 
@@ -20,11 +20,12 @@ Codex has no **Ask** mode; its composer only shows a permissions selector (**Ask
 
    ```toml
    sandbox_mode = "read-only"
-   approval_policy = "on-request"
+   approval_policy = "never"
    ```
 
-2. Start a new Codex conversation so it loads the file. Codex can now read the project but must ask before writing a file or running a command.
-3. Codex only loads project configuration for trusted projects. If it ignores the file, add the same two lines to `~/.codex/config.toml` and remember to change them in Exercise 2.
+2. Start a new Codex conversation so it loads the file. Codex can now read the project but cannot write files, run commands, or ask to do so.
+3. Codex only loads project configuration for trusted projects. If it ignores the file, add the same two lines to `~/.codex/config.toml` and remember to change them in Part 2 and Exercise 2.
+4. In step 3, add this line to the prompt; without it Codex only reports that it cannot write the file: `Return the complete HTML in your reply. Do not create or modify files.`
 
 Alternative: run this exercise in ChatGPT (web or desktop app). In Part 2, upload the CSV files to the conversation.
 
@@ -44,7 +45,7 @@ Generate an HTML sales dashboard for business users.
 
 - Ask is still an agent-based mode, but it has more restricted actions.
 - Without data, generation is fast, but values and KPIs may be fictional.
-- Codex has no mode called **Ask**: a `read-only` sandbox gives the same restriction (see the **Codex** block above).
+- Codex has no mode called **Ask**: a `read-only` sandbox plus an explicit "reply in chat" instruction gives the same result (see the **Codex** block above).
 
 ## Part 2 — Generation with CSV data
 
@@ -55,6 +56,19 @@ Generate an HTML sales dashboard for business users.
 
    Check that `resources/` contains the seven CSV files directly, without a nested folder.
 2. Decide which KPIs, colors, and layout you want. Choose your own; do not copy a colleague's.
+
+<details>
+<summary><strong>Codex</strong></summary>
+
+So Codex can request approval to write the dashboard, change `approval_policy` in `.codex/config.toml` and start a new Codex conversation. Send the prompt below without the extra line from Part 1.
+
+```toml
+sandbox_mode = "read-only"
+approval_policy = "on-request"
+```
+
+</details>
+
 3. Send the prompt, replacing the placeholders with your choices:
 
 ```text
