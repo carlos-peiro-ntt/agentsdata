@@ -8,6 +8,12 @@ env = { UV_DEFAULT_INDEX = "https://pypi.org/simple", CONFLUENCE_URL = "https://
 env_vars = ["CONFLUENCE_PERSONAL_TOKEN"]
 startup_timeout_sec = 60
 
+[mcp_servers.confluence.tools.confluence_create_page]
+approval_mode = "approve"
+
 [mcp_servers.supabase]
 url = "https://mcp.supabase.com/mcp?project_ref=tnzlxngahrlnnmusxqpf&read_only=true&features=database"
 bearer_token_env_var = "SUPABASE_ACCESS_TOKEN"
+
+[mcp_servers.supabase.tools.execute_sql]
+approval_mode = "approve"
