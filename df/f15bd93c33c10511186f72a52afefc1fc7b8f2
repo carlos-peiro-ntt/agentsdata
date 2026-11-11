@@ -1,0 +1,34 @@
+part-1/.agents/skills/.openspec-target
+  h_5668b745a35fae 1
+part-1/.agents/skills/openspec-apply-change/SKILL.md
+  h_5668b745a35fae 1-206
+part-1/.agents/skills/openspec-archive-change/SKILL.md
+  h_5668b745a35fae 1-221
+part-1/.agents/skills/openspec-explore/SKILL.md
+  h_5668b745a35fae 1-11,13,15,17,19,21,23,25,27-28,30,32,34,36-41,43,45,47,49,51-54,56,58,60-65,67,69,71,73-77,79-83,85-89,91,93-106,109-110,112-115,117,119,121,123-127,130-133,135-139,141,143-145,147,149,151,153-154,156,158-161,163,165,167,169-172,174-176,178,180,182,184-191,193-196,198,200,202,204-209,211,213,215-217,219,221-222,224-233,235-236,238-267,269-272,274,276,278,280,282-284,286-288,290,292,294,296-298,300-303,305-308,310,312,315,317,319,321-324,326,328-329,331,333,335-340,342,346-356
+part-1/.agents/skills/openspec-propose/SKILL.md
+  h_5668b745a35fae 1-175
+part-1/.agents/skills/openspec-sync-specs/SKILL.md
+  h_5668b745a35fae 1-290
+part-1/.agents/skills/openspec-update-change/SKILL.md
+  h_5668b745a35fae 1-109
+part-1/.agents/skills/openspec-verify-change/SKILL.md
+  h_5668b745a35fae 1-223
+part-1/.codex/config.toml
+  h_5668b745a35fae 11-13,17-19
+part-1/.mcp.json
+  h_5668b745a35fae 8-9
+part-1/AGENTS.md
+  h_5668b745a35fae 20,22,24,31-39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "dff15bd93c33c10511186f72a52afefc1fc7b8f2",
+  "prompts": {},
+  "humans": {
+    "h_5668b745a35fae": {
+      "author": "Carlos Peiro Gonzalez <cpeirogo@emeal.nttdata.com>"
+    }
+  }
+}
