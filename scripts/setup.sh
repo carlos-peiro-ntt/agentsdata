@@ -5,16 +5,25 @@ set -uo pipefail
 
 GUIDE_URL="https://github.com/carlos-peiro-ntt/agentsdata/blob/main/docs/part-1/setup.md"
 CHECK_ONLY=0
-case "${1:-}" in
-  --check) CHECK_ONLY=1 ;;
-  "") ;;
-  -h|--help) echo "Usage: bash setup.sh [--check]"; exit 0 ;;
-  *) echo "Unknown option: $1" >&2; echo "Usage: bash setup.sh [--check]" >&2; exit 2 ;;
-esac
+PROJECT_DIR="$HOME/agentsdata-workshop"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --check) CHECK_ONLY=1 ;;
+    --project-dir)
+      [[ $# -ge 2 ]] || { echo "--project-dir requires a path" >&2; exit 2; }
+      PROJECT_DIR="$2"; shift ;;
+    -h|--help) echo "Usage: bash setup.sh [--check] [--project-dir /path/to/folder]"; exit 0 ;;
+    *) echo "Unknown option: $1" >&2; echo "Usage: bash setup.sh [--check] [--project-dir /path/to/folder]" >&2; exit 2 ;;
+  esac
+  shift
+done
 
 EXTENSIONS=(GitHub.copilot GitHub.copilot-chat)
 CODEX_EXTENSION=openai.chatgpt
-MIN_NODE_MAJOR=20
+MIN_NODE_MAJOR=22
+MIN_NODE_MINOR=20
+PYTHON_VERSION="3.12"
+MCP_ATLASSIAN_VERSION="0.24.8"
 
 info() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33mWARN:\033[0m %s\n' "$*" >&2; }
@@ -67,14 +76,15 @@ install_macos() {
   has brew || die "Homebrew is required. Install it from https://brew.sh/ and run this script again."
   has code    || brew_install --cask visual-studio-code
   has node    || brew_install node
+  has git     || brew_install git
   has uvx     || brew_install uv
-  has openspec || brew_install openspec
 }
 
 install_linux() {
   has apt-get || die "Only Debian/Ubuntu (apt) is supported. Follow the manual steps in $GUIDE_URL"
   has curl    || apt_install curl
   has node    || apt_install nodejs npm
+  has git     || apt_install git
   has npm     || apt_install npm
   if ! has code; then
     if [[ "$OS" == wsl ]]; then
@@ -87,10 +97,6 @@ install_linux() {
     fi
   fi
   has uvx || install_uv
-  if ! has openspec; then
-    info "Installing OpenSpec (npm)"
-    sudo npm install -g @fission-ai/openspec@latest --registry=https://registry.npmjs.org/ || warn "OpenSpec installation failed"
-  fi
 }
 
 # Recent VS Code versions bundle Copilot as a built-in extension that --list-extensions does not report.
@@ -142,11 +148,36 @@ check_cmd() {
 
 check_node_version() {
   has node || return
-  local major
+  local major minor
   major="$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null)"
-  if [[ -n "$major" && "$major" -lt $MIN_NODE_MAJOR ]]; then
-    record WARN "node >= $MIN_NODE_MAJOR" "found $(node --version); OpenSpec may need a newer Node.js"
+  minor="$(node -p 'process.versions.node.split(".")[1]' 2>/dev/null)"
+  if [[ -n "$major" && -n "$minor" ]] && {
+    [[ "$major" -lt $MIN_NODE_MAJOR ]] ||
+    [[ "$major" -eq $MIN_NODE_MAJOR && "$minor" -lt $MIN_NODE_MINOR ]];
+  }; then
+    record FAIL "node >= ${MIN_NODE_MAJOR}.${MIN_NODE_MINOR}" "found $(node --version); update Node manually"
+  else
+    record OK "node >= ${MIN_NODE_MAJOR}.${MIN_NODE_MINOR}" "$(node --version)"
   fi
+}
+
+prepare_project() {
+  mkdir -p "$PROJECT_DIR" || die "Cannot create project folder: $PROJECT_DIR"
+  cat > "$PROJECT_DIR/package.json" <<'EOF'
+{
+  "name": "agentsdata-workshop",
+  "private": true,
+  "engines": {
+    "node": ">=22.20.0"
+  },
+  "dependencies": {
+    "@fission-ai/openspec": "2.1.1",
+    "skills": "1.9.0"
+  }
+}
+EOF
+  info "Installing workshop dependencies in $PROJECT_DIR"
+  (cd "$PROJECT_DIR" && npm install --registry=https://registry.npmjs.org/) || die "Workshop npm dependencies failed"
 }
 
 check_extensions() {
@@ -176,11 +207,27 @@ verify() {
   check_cmd code     code --version
   check_cmd node     node --version
   check_node_version
+  check_cmd git      git --version
   check_cmd npm      npm --version
   check_cmd npx      npx --version
   check_cmd uvx      uvx --version
-  check_cmd mcp-atlassian uvx mcp-atlassian --help
-  check_cmd openspec openspec --version
+  if has uv; then
+    uv python install "$PYTHON_VERSION" >/dev/null 2>&1 || record FAIL "python $PYTHON_VERSION" "uv could not install Python"
+    if uv python find "$PYTHON_VERSION" >/dev/null 2>&1; then
+      record OK "python $PYTHON_VERSION" "$(uv python find "$PYTHON_VERSION")"
+    fi
+  else
+    record FAIL "python $PYTHON_VERSION" "uv not available"
+  fi
+  check_cmd mcp-atlassian uvx --python "$PYTHON_VERSION" "mcp-atlassian==$MCP_ATLASSIAN_VERSION" --help
+  if [[ -f "$PROJECT_DIR/package.json" ]]; then
+    local openspec_version
+    openspec_version="$(cd "$PROJECT_DIR" && npm exec -- openspec --version 2>/dev/null)" || openspec_version=""
+    if [[ -n "$openspec_version" ]]; then record OK "openspec (local)" "$openspec_version"; else record FAIL "openspec (local)" "not available"; fi
+    if [[ -x "$PROJECT_DIR/node_modules/.bin/skills" ]]; then record OK "skills (local)" "1.9.0"; else record FAIL "skills (local)" "not available"; fi
+  else
+    record WARN "workshop dependencies" "run setup once to create $PROJECT_DIR"
+  fi
   check_extensions
 
   echo
@@ -198,5 +245,6 @@ if [[ $CHECK_ONLY -eq 0 ]]; then
   if [[ "$OS" == macos ]]; then install_macos; else install_linux; fi
   load_uv_env
   install_extensions
+  prepare_project
 fi
 verify

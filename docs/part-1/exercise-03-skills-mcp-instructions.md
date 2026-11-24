@@ -11,8 +11,11 @@ Add specialized knowledge, connect external sources, and complete the dashboard'
 Open a terminal in VS Code (**Terminal → New Terminal**); it starts at the project folder. Run:
 
 ```bash
-npx --registry=https://registry.npmjs.org/ skills add https://github.com/anthropics/skills --skill frontend-design
-npx --registry=https://registry.npmjs.org/ skills add https://github.com/wshobson/agents --skill kpi-dashboard-design
+npm exec -- skills add https://github.com/anthropics/skills --skill frontend-design
+npm exec -- skills add https://github.com/wshobson/agents --skill kpi-dashboard-design
+
+On Windows PowerShell, use `npm.cmd exec --` instead of `npm exec --` if npm's `.ps1` shim is blocked.
+
 ```
 
 When the installer asks:
@@ -51,7 +54,9 @@ Replace the whole content of `.mcp.json` with:
 			"type": "stdio",
 			"command": "uvx",
 			"args": [
-				"mcp-atlassian"
+				"--python",
+				"3.12",
+				"mcp-atlassian==0.24.8"
 			],
 			"env": {
 				"UV_DEFAULT_INDEX": "https://pypi.org/simple",
@@ -131,7 +136,7 @@ Codex does not read `.mcp.json`. Skip the **MCP: Add Server...** steps and appen
 ```toml
 [mcp_servers.confluence]
 command = "uvx"
-args = ["mcp-atlassian"]
+args = ["--python", "3.12", "mcp-atlassian==0.24.8"]
 env = { UV_DEFAULT_INDEX = "https://pypi.org/simple", CONFLUENCE_URL = "https://umane.emeal.nttdata.com/confluence" }
 env_vars = ["CONFLUENCE_PERSONAL_TOKEN"]
 startup_timeout_sec = 60
