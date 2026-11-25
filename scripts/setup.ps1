@@ -14,6 +14,9 @@ $MinNodeMajor = 22
 $MinNodeMinor = 20
 $McpAtlassianVersion = '0.24.8'
 $PythonVersion = '3.12'
+# Must match the release that publishes this script and the npm manifests.
+$WorkshopRelease = 'workshop-v1'
+$ReleaseUrl = "https://github.com/carlos-peiro-ntt/agentsdata/releases/download/$WorkshopRelease"
 
 function Write-Info($msg) { Write-Host "==> $msg" -ForegroundColor Cyan }
 function Write-Warn($msg) { Write-Host "WARN: $msg" -ForegroundColor Yellow }
@@ -77,7 +80,7 @@ function Install-Tools {
 
 
     if (Test-Cmd 'code') {
-        $wanted = @($CodexExtension)
+        $wanted = @()
         if (Test-CopilotBuiltin) {
             Write-Info 'GitHub Copilot is built into this VS Code version'
         } else {
@@ -117,23 +120,14 @@ function Test-Tool($name, $exe, [string[]]$arguments) {
 
 function Install-ProjectDependencies {
     New-Item -ItemType Directory -Force $ProjectDir | Out-Null
-    $package = @'
-{
-  "name": "agentsdata-workshop",
-  "private": true,
-  "engines": {
-    "node": ">=22.20.0"
-  },
-  "dependencies": {
-    "@fission-ai/openspec": "2.1.1",
-    "skills": "1.9.0"
-  }
-}
-'@
-    Set-Content -Path (Join-Path $ProjectDir 'package.json') -Value $package -Encoding utf8
+    Write-Info "Downloading pinned npm manifests ($WorkshopRelease)"
+    foreach ($file in @('package.json', 'package-lock.json')) {
+        try { Invoke-WebRequest -Uri "$ReleaseUrl/$file" -OutFile (Join-Path $ProjectDir $file) -UseBasicParsing }
+        catch { Write-Error "Could not download $ReleaseUrl/$file"; exit 1 }
+    }
     Write-Info "Installing workshop dependencies in $ProjectDir"
     Push-Location $ProjectDir
-    npm.cmd install --registry=https://registry.npmjs.org/
+    npm.cmd ci --registry=https://registry.npmjs.org/
     $code = $LASTEXITCODE
     Pop-Location
     if ($code -ne 0) { Write-Error 'Workshop npm dependencies failed'; exit 1 }
@@ -193,17 +187,16 @@ function Invoke-Verify {
     }
 
     if (Test-Cmd 'code') {
-        $wanted = @($CodexExtension)
+        $installed = @(code --list-extensions 2>$null)
         if (Test-CopilotBuiltin) {
             Add-Result 'OK' 'GitHub Copilot' 'built into VS Code'
+        } elseif ($installed -contains 'GitHub.copilot-chat' -or $installed -contains 'GitHub.copilot') {
+            Add-Result 'OK' 'GitHub Copilot' 'installed'
         } else {
-            $wanted += $Extensions
+            Add-Result 'FAIL' 'GitHub Copilot' 'not installed'
         }
-        $installed = @(code --list-extensions 2>$null)
-        foreach ($ext in $wanted) {
-            if ($installed -contains $ext) { Add-Result 'OK' $ext 'installed' }
-            else { Add-Result 'FAIL' $ext 'not installed' }
-        }
+        if ($installed -contains $CodexExtension) { Add-Result 'OK' $CodexExtension 'installed' }
+        else { Add-Result 'WARN' $CodexExtension 'optional extension; not installed' }
     } else {
         Add-Result 'FAIL' 'VS Code extensions' "'code' not available"
     }
