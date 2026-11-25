@@ -46,7 +46,7 @@ powershell -ExecutionPolicy Bypass -File "$HOME\Downloads\setup.ps1"
 
 Add `--check` (Bash) or `-Check` (PowerShell) to only verify without installing. The run must end with every check `OK`.
 
-Then open VS Code, sign in to GitHub Copilot, and check that you can send a message in the chat. If you follow the Codex path, also sign in to the Codex extension.
+Then open VS Code, sign in to GitHub Copilot, and check that you can send a message in the chat. Codex is optional: the setup detects whether it is already installed and does not fail if it is absent.
 
 ### 2. Prepare your working folder
 
@@ -70,7 +70,7 @@ You can also create the folder from your file explorer and open it with **File â
 
 - [ ] The setup script ends with every check `OK`.
 - [ ] `setup-secrets` is saved in your Downloads folder.
-- [ ] GitHub Copilot chat answers in VS Code (or Codex, if you follow the Codex path).
+- [ ] GitHub Copilot chat answers in VS Code. Codex is optional.
 - [ ] An empty project folder is open in VS Code.
 
 > [!WARNING]

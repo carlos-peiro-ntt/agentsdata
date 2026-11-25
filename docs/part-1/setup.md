@@ -22,7 +22,7 @@ The Supabase and Confluence tokens are shared during the course; you do not need
 
 ### Quick setup (recommended)
 
-The setup scripts install any missing prerequisite (VS Code, Node.js, Git, uv/uvx, the GitHub Copilot extensions, and the Codex extension), create the workshop project folder, and install the pinned OpenSpec and skills packages locally. They never replace an existing Node.js installation. Download the scripts for your system from your browser:
+The setup scripts install the core prerequisites (VS Code, Node.js, Git, uv/uvx, and GitHub Copilot), create the workshop project folder, and install the pinned OpenSpec and skills packages locally. The Codex extension is optional. They never replace an existing Node.js installation. Download the scripts for your system from your browser:
 
 | System | Setup script | Secrets script (used in Exercise 3) |
 | --- | --- | --- |
@@ -59,7 +59,7 @@ bash ~/Downloads/setup.sh --check
 powershell -ExecutionPolicy Bypass -File "$HOME\Downloads\setup.ps1" -Check
 ```
 
-The script ends with an OK/FAIL summary and exits with an error if any check fails. Close and reopen the terminal after a first install. Signing in to GitHub Copilot or Codex remains a manual step.
+The script ends with an OK/FAIL summary and exits with an error if any check fails. Close and reopen the terminal after a first install. GitHub Copilot is the default agent; sign in manually. Codex is optional: the setup detects whether it is already installed and reports it as `WARN` instead of `FAIL` when absent.
 
 If the script reports a failure, do not run the tools manually in advance. Reopen the terminal, apply the relevant troubleshooting step below, and rerun the script.
 
@@ -67,11 +67,11 @@ If the script reports a failure, do not run the tools manually in advance. Reope
 
 The script installs or verifies the workshop prerequisites, creates `~/agentsdata-workshop`, writes its pinned `package.json`, and installs OpenSpec and the skills CLI locally:
 
-- VS Code and the GitHub Copilot/Codex extensions;
+- VS Code and the GitHub Copilot extension; Codex is optional;
 - Node.js `22.20.0` or newer and npm;
 - Git;
 - `uv` and `uvx` with Python `3.12`;
-- the pinned project-local npm dependencies.
+- the pinned project-local npm dependencies, installed from the shared lockfile.
 
 The dashboard is opened directly as a file; it does not require a local web server.
 

@@ -24,6 +24,9 @@ MIN_NODE_MAJOR=22
 MIN_NODE_MINOR=20
 PYTHON_VERSION="3.12"
 MCP_ATLASSIAN_VERSION="0.24.8"
+# Must match the release that publishes this script and the npm manifests.
+WORKSHOP_RELEASE="workshop-v1"
+RELEASE_URL="https://github.com/carlos-peiro-ntt/agentsdata/releases/download/$WORKSHOP_RELEASE"
 
 info() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33mWARN:\033[0m %s\n' "$*" >&2; }
@@ -114,7 +117,7 @@ copilot_builtin() {
 
 install_extensions() {
   has code || { warn "Skipping VS Code extensions: 'code' is not on PATH."; return; }
-  local installed ext exts=("$CODEX_EXTENSION")
+  local installed ext exts=()
   if copilot_builtin; then
     info "GitHub Copilot is built into this VS Code version"
   else
@@ -163,21 +166,13 @@ check_node_version() {
 
 prepare_project() {
   mkdir -p "$PROJECT_DIR" || die "Cannot create project folder: $PROJECT_DIR"
-  cat > "$PROJECT_DIR/package.json" <<'EOF'
-{
-  "name": "agentsdata-workshop",
-  "private": true,
-  "engines": {
-    "node": ">=22.20.0"
-  },
-  "dependencies": {
-    "@fission-ai/openspec": "2.1.1",
-    "skills": "1.9.0"
-  }
-}
-EOF
+  local file
+  info "Downloading pinned npm manifests ($WORKSHOP_RELEASE)"
+  for file in package.json package-lock.json; do
+    curl -fsSL "$RELEASE_URL/$file" -o "$PROJECT_DIR/$file" || die "Could not download $RELEASE_URL/$file"
+  done
   info "Installing workshop dependencies in $PROJECT_DIR"
-  (cd "$PROJECT_DIR" && npm install --registry=https://registry.npmjs.org/) || die "Workshop npm dependencies failed"
+  (cd "$PROJECT_DIR" && npm ci --registry=https://registry.npmjs.org/) || die "Workshop npm dependencies failed"
 }
 
 check_extensions() {
@@ -185,20 +180,24 @@ check_extensions() {
     record FAIL "VS Code extensions" "'code' not available"
     return
   fi
-  local installed ext exts=("$CODEX_EXTENSION")
+  local installed
   if copilot_builtin; then
     record OK "GitHub Copilot" "built into VS Code"
   else
-    exts+=("${EXTENSIONS[@]}")
+    installed="$(code --list-extensions 2>/dev/null)"
+    local installed_ext
+    local copilot_ok=0
+    for installed_ext in "${EXTENSIONS[@]}"; do
+      if grep -qix "$installed_ext" <<<"$installed"; then copilot_ok=1; fi
+    done
+    if [[ $copilot_ok -eq 1 ]]; then record OK "GitHub Copilot" "installed"; else record FAIL "GitHub Copilot" "not installed"; fi
   fi
   installed="$(code --list-extensions 2>/dev/null)"
-  for ext in "${exts[@]}"; do
-    if grep -qix "$ext" <<<"$installed"; then
-      record OK "$ext" "installed"
-    else
-      record FAIL "$ext" "not installed"
-    fi
-  done
+  if grep -qix "$CODEX_EXTENSION" <<<"$installed"; then
+    record OK "$CODEX_EXTENSION" "installed"
+  else
+    record WARN "$CODEX_EXTENSION" "optional extension; not installed"
+  fi
 }
 
 verify() {
