@@ -4,9 +4,9 @@
 			"type": "stdio",
 			"command": "uvx",
 			"args": [
-				"mcp-atlassian==0.24.8",
 				"--python",
-				"3.12"
+				"3.12",
+				"mcp-atlassian==0.24.8"
 			],
 			"env": {
 				"UV_DEFAULT_INDEX": "https://pypi.org/simple",

@@ -29,7 +29,7 @@ Download the scripts for your system from your browser, with one click each:
 | macOS, Linux, or WSL | [setup.sh](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup.sh) | [setup-secrets.sh](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup-secrets.sh) |
 | Windows | [setup.ps1](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup.ps1) | [setup-secrets.ps1](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup-secrets.ps1) |
 
-Keep both files in your Downloads folder; you will need the secrets script again in Exercise 3. Run the setup script from there. It installs missing system prerequisites, creates the project-local npm environment with pinned OpenSpec and skills packages, pins Python 3.12 for the Confluence MCP, and verifies everything; see [Setup and Workshop Preparation](docs/part-1/setup.md) for details and manual steps.
+Keep both files in your Downloads folder; you will need the secrets script again in Exercise 3. The setup installs missing system prerequisites and creates `~/agentsdata-workshop` (Windows: `$HOME\agentsdata-workshop`), including its project-local `node_modules` with pinned OpenSpec and skills packages. It also prepares Python 3.12 for the Confluence MCP and verifies the setup; see [Setup and Workshop Preparation](docs/part-1/setup.md) for troubleshooting.
 
 ```bash
 # macOS or Linux
@@ -39,42 +39,72 @@ bash ~/Downloads/setup.sh
 bash /mnt/c/Users/<windows-user>/Downloads/setup.sh
 ```
 
-```powershell
-# Windows
-powershell -ExecutionPolicy Bypass -File "$HOME\Downloads\setup.ps1"
+### Windows 10/11 — step by step
+
+1. Before installing, request local administrator rights through [Local Admin Rights Request — Employee Center](https://help.nttltd.global.ntt/esc?id=sc_cat_item&sys_id=2288d30d97447ed0495cb077f053af25). Wait for approval; elevation may be required if Node.js needs to be installed.
+2. Download `setup.ps1` and `setup-secrets.ps1` using the links in the table and keep them in `Downloads`. Do not download or clone this repository.
+3. Open **PowerShell** or **Windows Terminal** as administrator using your company's approved elevation process.
+4. Run setup from PowerShell:
+
+    ```powershell
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$HOME\Downloads\setup.ps1"
+    ```
+
+5. Wait for the final summary. Required checks must show `OK`; Codex may show `WARN` because it is optional. If setup just installed tools, close and reopen the terminal.
+6. Open the folder created by setup:
+
+    ```powershell
+    code "$HOME\agentsdata-workshop"
+    ```
+
+7. If PowerShell later blocks npm's shim, run workshop tools from the integrated terminal using `npm.cmd`, for example `npm.cmd exec -- openspec --version`.
+
+The setup is a PowerShell script (`.ps1`); there is no `setup.cmd`.
+
+To verify without installing, add `--check` (Bash) or `-Check` (Windows):
+
+```cmd
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$HOME\Downloads\setup.ps1" -Check
 ```
 
-Add `--check` (Bash) or `-Check` (PowerShell) to only verify without installing. The run must end with every check `OK`.
+Required checks must end with `OK`; Codex may show `WARN` when it is not installed because it is optional.
 
 Then open VS Code, sign in to GitHub Copilot, and check that you can send a message in the chat. Codex is optional: the setup detects whether it is already installed and does not fail if it is absent.
 
-### 2. Prepare your working folder
+### 2. Open your working folder
 
-Create an empty folder for the workshop and open it in VS Code. On Windows, use `npm.cmd exec --` for workshop tool commands if PowerShell blocks npm's `.ps1` shim. Every exercise happens inside this folder; it does not need Git or any file from this repository.
+The setup script already created the project folder and installed dependencies there. Open that same folder in VS Code; do not create a second empty folder. `node_modules` is inside it. On Windows, use `npm.cmd exec --` for workshop tool commands if PowerShell blocks npm's `.ps1` shim. Every exercise happens inside this folder; it does not need Git or any file from this repository.
 
 ```bash
 # macOS, Linux, or WSL
-mkdir -p ~/agentsdata-workshop
 code ~/agentsdata-workshop
 ```
 
 ```powershell
-# Windows
-New-Item -ItemType Directory -Force "$HOME\agentsdata-workshop"
 code "$HOME\agentsdata-workshop"
 ```
 
-You can also create the folder from your file explorer and open it with **File → Open Folder** in VS Code. From now on, "project folder" refers to this folder.
+You can also open it with **File → Open Folder** in VS Code. From now on, "project folder" refers to `agentsdata-workshop`.
+
+Before the course, the folder contains the pinned npm manifests and dependencies. Exercise files such as `AGENTS.md`, `dashboard.html`, `resources/`, `.mcp.json`, and `openspec/` are created during the workshop, not by setup.
 
 ### Ready checklist
 
 - [ ] The setup script ends with every check `OK`.
 - [ ] `setup-secrets` is saved in your Downloads folder.
 - [ ] GitHub Copilot chat answers in VS Code. Codex is optional.
-- [ ] An empty project folder is open in VS Code.
+- [ ] `agentsdata-workshop` is open in VS Code and contains the setup files and `node_modules`.
 
 > [!WARNING]
 > **Stop here.** Do not start the exercises in advance: they are done step by step during the live course, where the sample data is introduced and the tokens are shared.
+
+After completing the **Before the Course** steps, the open project folder should look like this:
+
+<!-- markdownlint-disable MD033 -->
+<p align="center">
+  <img src="docs/part-1/images/agentsdir.png" width="420" alt="VS Code Explorer showing agentsdata-workshop with node_modules, package-lock.json, and package.json">
+</p>
+<!-- markdownlint-enable MD033 -->
 
 ## During the Course
 

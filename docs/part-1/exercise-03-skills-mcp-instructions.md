@@ -11,8 +11,8 @@ Add specialized knowledge, connect external sources, and complete the dashboard'
 Open a terminal in VS Code (**Terminal → New Terminal**); it starts at the project folder. Run:
 
 ```bash
-npm exec -- skills add https://github.com/anthropics/skills --skill frontend-design
-npm exec -- skills add https://github.com/wshobson/agents --skill kpi-dashboard-design
+npm exec -- skills add anthropics/skills --skill frontend-design
+npm exec -- skills add wshobson/agents --skill kpi-dashboard-design
 ```
 
 On Windows PowerShell, use `npm.cmd exec --` instead of `npm exec --` if npm's `.ps1` shim is blocked.
