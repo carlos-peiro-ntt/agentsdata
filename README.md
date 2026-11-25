@@ -99,7 +99,7 @@ README.md          course index (this file)
 docs/
   part-1/          Part 1 setup guide and exercise guides
   part-2/          Part 2 guides (coming soon)
-scripts/           Part 1 setup and secrets scripts, published as release downloads
+scripts/           Part 1 setup and secrets scripts, published as release downloads (maintainer guide: scripts/README.md)
 part-1/            final state of the Part 1 project folder; open it as its own VS Code workspace
 part-2/            final state of the Part 2 project folder; open it as its own VS Code workspace
 ```
