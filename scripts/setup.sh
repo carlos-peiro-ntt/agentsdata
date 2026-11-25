@@ -117,14 +117,13 @@ copilot_builtin() {
 
 install_extensions() {
   has code || { warn "Skipping VS Code extensions: 'code' is not on PATH."; return; }
-  local installed ext exts=()
   if copilot_builtin; then
     info "GitHub Copilot is built into this VS Code version"
-  else
-    exts+=("${EXTENSIONS[@]}")
+    return
   fi
+  local installed ext
   installed="$(code --list-extensions 2>/dev/null)"
-  for ext in "${exts[@]}"; do
+  for ext in "${EXTENSIONS[@]}"; do
     if ! grep -qix "$ext" <<<"$installed"; then
       info "Installing VS Code extension $ext"
       code --install-extension "$ext" || warn "Failed to install $ext"
