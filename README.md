@@ -50,7 +50,7 @@ Then open VS Code, sign in to GitHub Copilot, and check that you can send a mess
 
 ### 2. Prepare your working folder
 
-Create an empty folder for the workshop and open it in VS Code. On Windows, use `npm.cmd` and `npx.cmd` for workshop commands if PowerShell blocks npm's `.ps1` shims. Every exercise happens inside this folder; it does not need Git or any file from this repository.
+Create an empty folder for the workshop and open it in VS Code. On Windows, use `npm.cmd exec --` for workshop tool commands if PowerShell blocks npm's `.ps1` shim. Every exercise happens inside this folder; it does not need Git or any file from this repository.
 
 ```bash
 # macOS, Linux, or WSL

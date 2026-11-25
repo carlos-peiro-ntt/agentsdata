@@ -13,10 +13,9 @@ Open a terminal in VS Code (**Terminal → New Terminal**); it starts at the pro
 ```bash
 npm exec -- skills add https://github.com/anthropics/skills --skill frontend-design
 npm exec -- skills add https://github.com/wshobson/agents --skill kpi-dashboard-design
+```
 
 On Windows PowerShell, use `npm.cmd exec --` instead of `npm exec --` if npm's `.ps1` shim is blocked.
-
-```
 
 When the installer asks:
 

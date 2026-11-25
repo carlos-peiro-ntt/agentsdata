@@ -156,7 +156,6 @@ function Invoke-Verify {
     }
     Test-Tool 'git' 'git' @('--version')
     Test-Tool 'npm' 'npm.cmd' @('--version')
-    Test-Tool 'npx' 'npx.cmd' @('--version')
     Test-Tool 'uvx' 'uvx' @('--version')
     if (Test-Cmd 'uv') {
         $pythonOutput = @(& uv python install $PythonVersion 2>&1)

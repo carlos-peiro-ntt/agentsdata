@@ -209,7 +209,6 @@ verify() {
   check_node_version
   check_cmd git      git --version
   check_cmd npm      npm --version
-  check_cmd npx      npx --version
   check_cmd uvx      uvx --version
   if has uv; then
     uv python install "$PYTHON_VERSION" >/dev/null 2>&1 || record FAIL "python $PYTHON_VERSION" "uv could not install Python"
