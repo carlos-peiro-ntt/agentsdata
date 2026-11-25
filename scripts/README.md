@@ -73,6 +73,33 @@ gh release upload workshop-v1 scripts/setup.sh --clobber
 
 Never replace `package.json` or `package-lock.json` in an existing release; publish a new release instead.
 
+## Secrets scripts
+
+`setup-secrets.sh` / `setup-secrets.ps1` are used in Exercise 3. They are independent from the setup scripts and from the pinned versions. Each run:
+
+1. checks that `code` is on `PATH` and that the project folder exists;
+2. aborts if VS Code is already running, because a running instance keeps its old environment and would ignore the tokens;
+3. prompts for the Supabase and Confluence tokens with hidden input (never in shell history, files, or arguments);
+4. exports them as `SUPABASE_ACCESS_TOKEN` and `CONFLUENCE_PERSONAL_TOKEN` only in that process and opens VS Code on the project folder.
+
+VS Code inherits the variables, and the MCP configuration references them (`${NAME}` in `.mcp.json`, `env_vars` / `bearer_token_env_var` in `.codex/config.toml`). Nothing is stored: participants run the script again every time they reopen VS Code, or to rotate a token.
+
+Rotating the tokens shared in the course needs no change in the repository. Update the scripts only if a variable, server, or endpoint changes, and keep these locations in sync:
+
+| Change | Update |
+| --- | --- |
+| Token variable name, or a new token | both secrets scripts; `.mcp.json` and Codex `config.toml` blocks in `docs/part-1/exercise-03-skills-mcp-instructions.md` (including the manual alternative); `part-1/.mcp.json`; `part-1/.codex/config.toml` |
+| Confluence URL or Supabase `project_ref` | the same documentation blocks and `part-1/` files; the scripts do not contain URLs |
+
+The process check is platform-specific: `setup-secrets.sh` looks for the macOS app path or a `code` process; `setup-secrets.ps1` looks for a `Code` process. Keep it if you edit the scripts.
+
+Secrets scripts can be fixed in an existing release like any script (`gh release upload workshop-v1 scripts/setup-secrets.sh --clobber`). To test one, copy `part-1/.mcp.json` into the test folder, quit VS Code, run the script, enter dummy values, and check that VS Code opens and that an MCP tool call fails with `401` (the dummy token reached the server):
+
+```bash
+cp part-1/.mcp.json /tmp/agentsdata-test/
+/bin/bash scripts/setup-secrets.sh /tmp/agentsdata-test
+```
+
 ## Testing a release
 
 Run the published script against a throwaway folder. On macOS, use `/bin/bash` (Bash 3.2), the version participants have:
