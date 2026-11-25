@@ -22,7 +22,7 @@ The Supabase and Confluence tokens are shared during the course; you do not need
 
 ### Quick setup (recommended)
 
-The setup scripts install any missing prerequisite (VS Code, Node.js, uv/uvx, OpenSpec, the GitHub Copilot extensions, and the Codex extension) and then verify everything. Download the scripts for your system from your browser:
+The setup scripts install any missing prerequisite (VS Code, Node.js, Git, uv/uvx, the GitHub Copilot extensions, and the Codex extension), create the workshop project folder, and install the pinned OpenSpec and skills packages locally. They never replace an existing Node.js installation. Download the scripts for your system from your browser:
 
 | System | Setup script | Secrets script (used in Exercise 3) |
 | --- | --- | --- |
@@ -59,263 +59,129 @@ bash ~/Downloads/setup.sh --check
 powershell -ExecutionPolicy Bypass -File "$HOME\Downloads\setup.ps1" -Check
 ```
 
-The script ends with an OK/FAIL summary and exits with an error if any check fails. Close and reopen the terminal after a first install. Signing in to GitHub Copilot and Codex (steps 4 and 7 in [0.8](#08-install-vs-code-extensions)) and handling tokens remain manual.
+The script ends with an OK/FAIL summary and exits with an error if any check fails. Close and reopen the terminal after a first install. Signing in to GitHub Copilot or Codex remains a manual step.
 
-If the script fails or you prefer to install each tool yourself, follow the manual steps below.
+If the script reports a failure, do not run the tools manually in advance. Reopen the terminal, apply the relevant troubleshooting step below, and rerun the script.
 
-### 0.2 Open a terminal
+### 0.2 What the script prepares
 
-#### Windows — PowerShell
+The script installs or verifies the workshop prerequisites, creates `~/agentsdata-workshop`, writes its pinned `package.json`, and installs OpenSpec and the skills CLI locally:
 
-Open **Start**, search for **PowerShell**, and run:
+- VS Code and the GitHub Copilot/Codex extensions;
+- Node.js `22.20.0` or newer and npm;
+- Git;
+- `uv` and `uvx` with Python `3.12`;
+- the pinned project-local npm dependencies.
+
+The dashboard is opened directly as a file; it does not require a local web server.
+
+### 0.3 Verify the setup
+
+Close and reopen the terminal after the first installation. The script should end with every check marked `OK`.
+
+For a new installation or reinstall:
+
+```bash
+bash ~/Downloads/setup.sh
+```
 
 ```powershell
-winget --version
+powershell -ExecutionPolicy Bypass -File "$HOME\Downloads\setup.ps1"
 ```
 
-If `winget` is unavailable, install or update **App Installer** from Microsoft Store.
+To verify an existing installation without changing it:
 
-If you want to work with WSL, open PowerShell as administrator and install Ubuntu:
+```bash
+bash ~/Downloads/setup.sh --check
+```
 
 ```powershell
-wsl --install
-wsl --status
+powershell -ExecutionPolicy Bypass -File "$HOME\Downloads\setup.ps1" -Check
 ```
 
-Restart Windows when requested and open **Ubuntu** from Start.
+npm executes the project-local tools through `npm exec`; OpenSpec and the skills CLI are not installed globally.
 
-#### macOS — Terminal
+### 0.4 Sign in and open the project
 
-Open **Terminal** and check that Homebrew is installed:
+Open VS Code and sign in to the agent you will use:
+
+- GitHub Copilot: open chat and send a test message;
+- Codex: open the Codex panel, sign in with ChatGPT, and send a test message.
+
+Open the workshop folder created by the script:
 
 ```bash
-brew --version
-```
-
-If it is unavailable, install it by following the instructions at [brew.sh](https://brew.sh/).
-
-#### Linux or WSL — Bash
-
-Open a terminal and check the system:
-
-```bash
-uname -a
-cat /etc/os-release
-```
-
-### 0.3 Install Visual Studio Code
-
-**Windows — PowerShell**
-
-```powershell
-winget install --id Microsoft.VisualStudioCode -e
-```
-
-**macOS — Terminal**
-
-```bash
-brew install --cask visual-studio-code
-```
-
-**Linux — Ubuntu/Debian**
-
-```bash
-sudo snap install --classic code
-```
-
-In **WSL**, install VS Code on Windows and add Microsoft's **WSL** extension; do not install a second copy inside the distribution.
-
-Restart the terminal and check on any system:
-
-```bash
-code --version
-```
-
-### 0.4 Python (not required)
-
-You do not need to install Python. `uv` (step [0.6](#06-install-uv-and-uvx)) downloads its own Python when it runs the Confluence MCP, and the dashboard is opened directly as a file, without a local web server.
-
-### 0.5 Install Node.js, npm, and npx
-
-`npx` will be used to install skills.
-
-**Windows — PowerShell**
-
-Administrator permissions are required for this installation. Open PowerShell as administrator before running:
-
-```powershell
-winget install --id OpenJS.NodeJS.LTS -e
-```
-
-**macOS — Terminal**
-
-```bash
-brew install node
-```
-
-**Linux or WSL — Bash**
-
-```bash
-sudo apt update
-sudo apt install -y nodejs npm
-```
-
-Restart the terminal and validate on any system:
-
-```bash
-node --version
-npm --version
-npx --version
-```
-
-### 0.6 Install uv and uvx
-
-`uvx` will be used to run the Confluence MCP. `uvx` is included with `uv`.
-
-**Windows — PowerShell**
-
-Run:
-
-```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
-
-Close and reopen the terminal, then check:
-
-```powershell
-uvx --version
-uvx mcp-atlassian --help
-```
-
-If `uvx` is not found, add it to the current session's `PATH`:
-
-```powershell
-$env:Path = "$HOME\.local\bin;$env:Path"
-```
-
-**macOS — Terminal**
-
-```bash
-brew install uv
-```
-
-Then check:
-
-```bash
-uvx --version
-uvx mcp-atlassian --help
-```
-
-**Linux or WSL — Bash**
-
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-Close and reopen the terminal, then check:
-
-```bash
-uvx --version
-uvx mcp-atlassian --help
-```
-
-If `uvx` is not found, load the updated environment:
-
-```bash
-source $HOME/.local/bin/env
-```
-
-`uvx` caches the first `mcp-atlassian` version it downloads. To update it to the latest release, run once:
-
-```bash
-uvx --refresh mcp-atlassian --help
-```
-
-> **Why stdio and not an HTTP connection to Confluence?** Atlassian's hosted remote MCP only supports Confluence Cloud; the workshop Confluence is on-premises (Data Center), so each participant runs `mcp-atlassian` locally and the agent talks to it through stdin/stdout (**stdio**). `mcp-atlassian` can also run as a **streamable-http** server (`--transport streamable-http`), which agents reach through a URL; that only pays off if a team hosts one shared instance inside the corporate network.
-
-### 0.7 Install OpenSpec
-
-OpenSpec will be used for Specification-Driven Development in Exercises 4 and 5. The commands set the public npm registry explicitly, so they also work if your npm is configured with a private or corporate registry.
-
-**Windows — PowerShell**
-
-```powershell
-npm install -g @fission-ai/openspec@latest --registry=https://registry.npmjs.org/
-```
-
-**macOS — Terminal**
-
-```bash
-brew install openspec
-```
-
-**Linux or WSL — Bash**
-
-```bash
-npm install -g @fission-ai/openspec@latest --registry=https://registry.npmjs.org/
-```
-
-Check the installation on any system:
-
-```bash
-openspec --version
-```
-
-### 0.8 Install VS Code extensions
-
-1. Open Visual Studio Code.
-2. Press `Ctrl+Shift+X` on Windows/Linux or `⇧⌘X` on macOS.
-3. Search for and install **GitHub Copilot** (recent VS Code versions already include it).
-4. Sign in with your GitHub account.
-5. Open chat and check that you can send messages.
-6. Search for and install **Codex – OpenAI's coding agent** (`openai.chatgpt`).
-7. Open the Codex panel from the Activity Bar, sign in with your ChatGPT account, and check that you can send a message.
-
-The exercises show the GitHub Copilot steps by default; when Codex differs, a collapsible **Codex** block explains the alternative.
-
-### 0.9 Final check
-
-**Windows — PowerShell**
-
-```powershell
-code --version
-node --version
-npx --version
-uvx --version
-openspec --version
-```
-
-**macOS, Linux, or WSL — Bash/Zsh**
-
-```bash
-code --version
-node --version
-npx --version
-uvx --version
-openspec --version
-```
-
-Do not continue until all commands respond without errors.
-
-### 0.10 Prepare your project folder
-
-Create an empty folder for the workshop and open it in VS Code. Every exercise happens inside this folder; it does not need Git.
-
-**Windows — PowerShell**
-
-```powershell
-New-Item -ItemType Directory -Force "$HOME\agentsdata-workshop"
-code "$HOME\agentsdata-workshop"
-```
-
-**macOS, Linux, or WSL — Bash/Zsh**
-
-```bash
-mkdir -p ~/agentsdata-workshop
 code ~/agentsdata-workshop
 ```
 
-You can also create the folder from your file explorer and open it with **File → Open Folder** in VS Code. The guide calls it the "project folder".
+```powershell
+code "$HOME\agentsdata-workshop"
+```
+
+Every exercise happens inside this folder. It does not need Git or files from this repository.
+
+### Troubleshooting
+
+#### Windows: uvx/PyYAML reports missing Microsoft C++ Build Tools
+
+If `uvx --python 3.12 mcp-atlassian==0.24.8 --help` reports `Microsoft Visual C++ 14.0 or greater is required` or fails while compiling PyYAML, install Microsoft C++ Build Tools manually. This is a Windows fallback; the setup script does not install them automatically.
+
+Open PowerShell as administrator and run:
+
+```powershell
+winget install --exact --id Microsoft.VisualStudio.2022.BuildTools `
+  --source winget `
+  --override "--wait --passive --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended" `
+  --accept-package-agreements `
+  --accept-source-agreements
+```
+
+Alternatively, open Visual Studio Installer, select **Build Tools for Visual Studio 2022**, and include **Desktop development with C++** and the **Windows SDK**.
+
+Close all PowerShell windows and fully quit VS Code. Reopen VS Code or a terminal, then verify:
+
+```powershell
+uv python find 3.12
+uvx --python 3.12 mcp-atlassian==0.24.8 --help
+powershell -ExecutionPolicy Bypass -File "$HOME\Downloads\setup.ps1" -Check
+```
+
+#### Windows: npm is blocked in PowerShell
+
+npm creates both `.ps1` and `.cmd` shims. If PowerShell says an npm shim cannot be loaded because scripts are disabled, use the `.cmd` shim explicitly:
+
+```powershell
+npm.cmd --version
+npm.cmd exec -- openspec --version
+npm.cmd exec -- skills --help
+```
+
+From `agentsdata-workshop`, direct local shims are also supported:
+
+```powershell
+& ".\node_modules\.bin\openspec.cmd" --version
+& ".\node_modules\.bin\skills.cmd" --help
+```
+
+`npm.cmd exec` resolves project-local tools and does not require `node_modules\.bin` to be added to `PATH`. Check resolution with:
+
+```powershell
+Get-Command npm.cmd
+Get-Command openspec -All
+npm prefix
+Test-Path ".\node_modules\.bin\openspec.cmd"
+```
+
+#### Windows: uvx is not found
+
+Close and reopen the terminal, or load the uv path in the current session:
+
+```powershell
+$env:Path = "$HOME\.local\bin;$env:Path"
+uvx --python 3.12 mcp-atlassian==0.24.8 --help
+```
+
+If the command still fails, fully restart VS Code and rerun the setup script.
 
 > [!WARNING]
 > **Stop here.** Your preparation is complete. Do not start the exercises in advance: they are done step by step during the live course, where the sample data is introduced and the tokens are shared.

@@ -36,7 +36,7 @@ Archive (specs become living documentation)
 
 > In this exercise, work through a reviewed, correct OpenSpec change and implement it. Verification, the test, evals, and archiving are added in the next exercise.
 
-OpenSpec's own [loop](https://openspec.dev/docs/quickstart#the-loop-at-a-glance) starts with `/opsx-explore`, a thinking-only mode that investigates the codebase and sharpens a fuzzy idea before proposing anything. This exercise skips it on purpose: the idea in Part 1 is already fully scoped (exact formulas, exact edge case) so every learner proposes the same change and gets a comparable result. Use `/opsx-explore` in your own work whenever the idea is still fuzzy — OpenSpec's own guidance is to go straight to `/opsx-propose` when you already know what you want to build, which is the case here.
+OpenSpec's own [loop](https://openspec.dev/docs/quickstart#the-loop-at-a-glance) starts with `/openspec-explore`, a thinking-only mode that investigates the codebase and sharpens a fuzzy idea before proposing anything. This exercise skips it on purpose: the idea in Part 1 is already fully scoped (exact formulas, exact edge case) so every learner proposes the same change and gets a comparable result. Use `/openspec-explore` in your own work whenever the idea is still fuzzy — OpenSpec's own guidance is to go straight to `/openspec-propose` when you already know what you want to build, which is the case here.
 
 ## Part 0 — Validate OpenSpec and initialize the project (one time)
 
@@ -45,15 +45,18 @@ OpenSpec is a CLI that generates and manages the spec artifacts for you, instead
 Confirm it:
 
 ```bash
-openspec --version
+npm exec -- openspec --version
 ```
 
-If that command fails, go back to [Setup and Workshop Preparation](setup.md) and install it before continuing.
+On Windows PowerShell, use `npm.cmd exec -- openspec --version` if the npm `.ps1` shim is blocked.
+
+
+If that command fails, go back to [Setup and Workshop Preparation](setup.md) and prepare the project-local dependencies before continuing.
 
 From the project folder, initialize it for GitHub Copilot:
 
 ```bash
-openspec init --tools github-copilot
+npm exec -- openspec init --tools github-copilot
 ```
 
 This creates:
@@ -66,7 +69,7 @@ openspec/
     └── archive/    # completed changes land here
 ```
 
-It also adds `.github/prompts/opsx-*.prompt.md`, so VS Code Copilot Chat shows new commands: `/opsx-propose`, `/opsx-apply`, `/opsx-archive`, and others. Restart VS Code if they don't appear right away.
+With OpenSpec 2.1.1, VS Code Copilot Chat shows the 2.x workflows as `/openspec-propose`, `/openspec-apply-change`, `/openspec-verify-change`, and `/openspec-archive-change`. OpenSpec installs these workflows as skills rather than relying on the legacy `.github/prompts/opsx-*.prompt.md` layout. Restart VS Code if they don't appear right away.
 
 <details>
 <summary><strong>Codex</strong></summary>
@@ -74,19 +77,21 @@ It also adds `.github/prompts/opsx-*.prompt.md`, so VS Code Copilot Chat shows n
 Initialize for Codex instead:
 
 ```bash
-openspec init --tools codex
+npm exec -- openspec init --tools codex
 ```
+
+Windows PowerShell: use `npm.cmd exec -- openspec init --tools codex`.
 
 Codex gets no slash commands; OpenSpec installs its workflows as skills in `.agents/skills/openspec-*/`, next to the skills from Exercise 3. Invoke them with `$` followed by the skill name, and start a new Codex conversation if they don't appear:
 
 | Copilot | Codex |
 | --- | --- |
-| `/opsx-propose` | `$openspec-propose` |
-| `/opsx-apply` | `$openspec-apply-change` |
-| `/opsx-verify` | `$openspec-verify-change` |
-| `/opsx-archive` | `$openspec-archive-change` |
+| `/openspec-propose` | `$openspec-propose` |
+| `/openspec-apply-change` | `$openspec-apply-change` |
+| `/openspec-verify-change` | `$openspec-verify-change` |
+| `/openspec-archive-change` | `$openspec-archive-change` |
 
-The rest of this exercise and the next one use the Copilot names; replace them with the Codex ones. To use both agents in the same folder, run `openspec init --tools github-copilot,codex`.
+The rest of this exercise and the next one use the Copilot names; replace them with the Codex ones. To use both agents in the same folder, run `npm exec -- openspec init --tools github-copilot,codex`.
 
 </details>
 
@@ -105,7 +110,7 @@ For the result to be reproducible with historical data, in this exercise **curre
 In Copilot Chat, run:
 
 ```text
-/opsx-propose
+/openspec-propose
 
 As a sales manager, I want Total Sales to compare current-month sales with
 previous-month sales and show the change in euros and percentage terms.
@@ -155,7 +160,7 @@ There is no separate "Approved" field to flip: a plan counts as approved once yo
 In Copilot Chat:
 
 ```text
-/opsx-apply <specification-name>
+/openspec-apply-change <specification-name>
 ```
 
 The agent works through `openspec/changes/total-sales-mom-comparison/tasks.md`, checking off each task as it lands. Confirm it also:
@@ -165,7 +170,7 @@ The agent works through `openspec/changes/total-sales-mom-comparison/tasks.md`, 
 - uses stable DOM identifiers for the four displayed values;
 - preserves the self-contained dashboard.
 
-If a session is interrupted or runs out of context, re-run `/opsx-apply` — it resumes at the first unchecked task.
+If a session is interrupted or runs out of context, re-run `/openspec-apply-change` — it resumes at the first unchecked task.
 
 ## Exercise result
 

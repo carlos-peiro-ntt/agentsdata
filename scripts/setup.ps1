@@ -2,14 +2,18 @@
 # Usage: powershell -ExecutionPolicy Bypass -File setup.ps1 [-Check]
 [CmdletBinding()]
 param(
-    [switch]$Check
+    [switch]$Check,
+    [string]$ProjectDir = "$HOME\agentsdata-workshop"
 )
 
 $ErrorActionPreference = 'Continue'
 
 $Extensions = @('GitHub.copilot', 'GitHub.copilot-chat')
 $CodexExtension = 'openai.chatgpt'
-$MinNodeMajor = 20
+$MinNodeMajor = 22
+$MinNodeMinor = 20
+$McpAtlassianVersion = '0.24.8'
+$PythonVersion = '3.12'
 
 function Write-Info($msg) { Write-Host "==> $msg" -ForegroundColor Cyan }
 function Write-Warn($msg) { Write-Host "WARN: $msg" -ForegroundColor Yellow }
@@ -61,22 +65,16 @@ function Install-Tools {
         Install-Winget 'OpenJS.NodeJS.LTS'
     }
 
+    if (-not (Test-Cmd 'git')) {
+        Install-Winget 'Git.Git'
+    }
+
     if (-not (Test-Cmd 'uvx')) {
         Write-Info 'Installing uv'
         powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
         Update-SessionPath
     }
 
-    if (-not (Test-Cmd 'openspec')) {
-        if (Test-Cmd 'npm') {
-            Write-Info 'Installing OpenSpec (npm)'
-            npm install -g '@fission-ai/openspec@latest' --registry=https://registry.npmjs.org/
-            if ($LASTEXITCODE -ne 0) { Write-Warn 'OpenSpec installation failed' }
-            Update-SessionPath
-        } else {
-            Write-Warn 'Skipping OpenSpec: npm is not available.'
-        }
-    }
 
     if (Test-Cmd 'code') {
         $wanted = @($CodexExtension)
@@ -117,22 +115,82 @@ function Test-Tool($name, $exe, [string[]]$arguments) {
     }
 }
 
+function Install-ProjectDependencies {
+    New-Item -ItemType Directory -Force $ProjectDir | Out-Null
+    $package = @'
+{
+  "name": "agentsdata-workshop",
+  "private": true,
+  "engines": {
+    "node": ">=22.20.0"
+  },
+  "dependencies": {
+    "@fission-ai/openspec": "2.1.1",
+    "skills": "1.9.0"
+  }
+}
+'@
+    Set-Content -Path (Join-Path $ProjectDir 'package.json') -Value $package -Encoding utf8
+    Write-Info "Installing workshop dependencies in $ProjectDir"
+    Push-Location $ProjectDir
+    npm.cmd install --registry=https://registry.npmjs.org/
+    $code = $LASTEXITCODE
+    Pop-Location
+    if ($code -ne 0) { Write-Error 'Workshop npm dependencies failed'; exit 1 }
+}
+
 function Invoke-Verify {
     Update-SessionPath
     Write-Info 'Verifying installation'
     Test-Tool 'code' 'code' @('--version')
     Test-Tool 'node' 'node' @('--version')
     if (Test-Cmd 'node') {
-        $major = [int](node -p "process.versions.node.split('.')[0]")
-        if ($major -lt $MinNodeMajor) {
-            Add-Result 'WARN' "node >= $MinNodeMajor" "found $(node --version); OpenSpec may need a newer Node.js"
+        $parts = @(node -p "process.versions.node" ).Split('.')
+        $major = [int]$parts[0]
+        $minor = [int]$parts[1]
+        if ($major -lt $MinNodeMajor -or ($major -eq $MinNodeMajor -and $minor -lt $MinNodeMinor)) {
+            Add-Result 'FAIL' "node >= $MinNodeMajor.$MinNodeMinor" "found $(node --version); update Node manually"
+        } else {
+            Add-Result 'OK' "node >= $MinNodeMajor.$MinNodeMinor" "$(node --version)"
         }
     }
-    Test-Tool 'npm' 'npm' @('--version')
-    Test-Tool 'npx' 'npx' @('--version')
+    Test-Tool 'git' 'git' @('--version')
+    Test-Tool 'npm' 'npm.cmd' @('--version')
     Test-Tool 'uvx' 'uvx' @('--version')
-    Test-Tool 'mcp-atlassian' 'uvx' @('mcp-atlassian', '--help')
-    Test-Tool 'openspec' 'openspec' @('--version')
+    if (Test-Cmd 'uv') {
+        $pythonOutput = @(& uv python install $PythonVersion 2>&1)
+        if ($LASTEXITCODE -eq 0) {
+            $pythonPath = @(& uv python find $PythonVersion 2>$null)[0]
+            if ($pythonPath) { Add-Result 'OK' "python $PythonVersion" $pythonPath } else { Add-Result 'FAIL' "python $PythonVersion" 'uv could not resolve Python' }
+        } else {
+            Add-Result 'FAIL' "python $PythonVersion" 'uv could not install Python'
+        }
+    } else {
+        Add-Result 'FAIL' "python $PythonVersion" 'uv not available'
+    }
+    if (Test-Cmd 'uvx') {
+        $mcpOutput = @(& uvx --python $PythonVersion "mcp-atlassian==$McpAtlassianVersion" --help 2>&1 | Out-String)
+        if ($LASTEXITCODE -eq 0) {
+            Add-Result 'OK' 'mcp-atlassian' 'installed and working'
+        } elseif ($mcpOutput -match 'Microsoft Visual C\+\+ 14\.0|PyYAML|pyyaml') {
+            Add-Result 'FAIL' 'mcp-atlassian' 'PyYAML/MSVC build failed; install C++ Build Tools and rerun setup'
+        } else {
+            Add-Result 'FAIL' 'mcp-atlassian' 'uvx package check failed'
+        }
+    } else {
+        Add-Result 'FAIL' 'mcp-atlassian' 'uvx not found'
+    }
+    if (Test-Path (Join-Path $ProjectDir 'package.json')) {
+        Push-Location $ProjectDir
+        $openspec = @(& npm.cmd exec -- openspec --version 2>$null)[0]
+        $openspecOk = $LASTEXITCODE -eq 0
+        Pop-Location
+        if ($openspecOk -and $openspec) { Add-Result 'OK' 'openspec (local)' $openspec } else { Add-Result 'FAIL' 'openspec (local)' 'not available' }
+        $skillsBin = Join-Path $ProjectDir 'node_modules\.bin\skills.cmd'
+        if (Test-Path $skillsBin) { Add-Result 'OK' 'skills (local)' '1.9.0' } else { Add-Result 'FAIL' 'skills (local)' 'not available' }
+    } else {
+        Add-Result 'WARN' 'workshop dependencies' "run setup once to create $ProjectDir"
+    }
 
     if (Test-Cmd 'code') {
         $wanted = @($CodexExtension)
@@ -160,5 +218,8 @@ function Invoke-Verify {
 }
 
 Write-Info 'Detected OS: windows'
-if (-not $Check) { Install-Tools }
+if (-not $Check) {
+    Install-Tools
+    Install-ProjectDependencies
+}
 Invoke-Verify

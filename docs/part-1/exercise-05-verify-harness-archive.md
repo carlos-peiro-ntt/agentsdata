@@ -9,7 +9,7 @@ Verify the OpenSpec change implemented in Exercise 4 against the spec's scenario
 The complete flow is:
 
 ```text
-Implemented change (Exercise 4) → Verify (/opsx-verify) → Test
+Implemented change (Exercise 4) → Verify (/openspec-verify-change) → Test
                                                          ↓
                                 FAIL → Correction → Retry → PASS
                                                          ↓
@@ -37,16 +37,23 @@ Do not add more evals than scenarios, and do not drop any. This keeps the test a
 `verify` is an optional workflow, not installed by the default `openspec init`. Enable it once per machine with the interactive profile selector, then refresh the generated Copilot files:
 
 ```bash
-openspec config profile
-openspec update
+npm exec -- openspec config profile
+npm exec -- openspec update
 ```
 
-In `openspec config profile`, select the workflows to install and make sure `verify` is checked alongside the existing ones (`propose`, `explore`, `apply`, `update`, `sync`, `archive`), then confirm. Restart VS Code if `/opsx-verify` doesn't show up right away. With Codex, the same commands add the `$openspec-verify-change` skill; use the Codex names from [Exercise 4](exercise-04-openspec-propose-apply.md#part-0--validate-openspec-and-initialize-the-project-one-time) throughout this exercise.
+On Windows PowerShell, use `npm.cmd exec --` instead if the npm `.ps1` shim is blocked:
+
+```powershell
+npm.cmd exec -- openspec config profile
+npm.cmd exec -- openspec update
+```
+
+In `openspec config profile`, select the workflows to install and make sure `verify` is checked alongside the existing ones (`propose`, `explore`, `apply`, `update`, `sync`, `archive`), then confirm. Restart VS Code if `/openspec-verify-change` doesn't show up right away. With Codex, the same commands add the `$openspec-verify-change` skill; use the Codex names from [Exercise 4](exercise-04-openspec-propose-apply.md#part-0--validate-openspec-and-initialize-the-project-one-time) throughout this exercise.
 
 Then, in Copilot Chat:
 
 ```text
-/opsx-verify
+/openspec-verify-change
 ```
 
 The agent produces a report across three dimensions — **Completeness** (tasks and spec coverage), **Correctness** (requirement implementation mapping and scenario coverage), and **Coherence** (design adherence and code pattern consistency) — without touching the test or the dashboard.
@@ -118,10 +125,10 @@ To demonstrate the cycle during the course, if the first run returns `N/N PASS`,
 
 ## Part 6 — Re-verify against the spec
 
-Now that `evals/eval.js` exists and exercises all 5 scenarios, run `/opsx-verify` again:
+Now that `evals/eval.js` exists and exercises all 5 scenarios, run `/openspec-verify-change` again:
 
 ```text
-/opsx-verify <specification-name>
+/openspec-verify-change <specification-name>
 ```
 
 Compare this report to the one from Part 2: **Scenario Coverage** should no longer read "not covered" — `verify` now finds a test file exercising each scenario. This is the lab's payoff: the same command, run twice, shows the exact gap the test was built to close.
@@ -131,10 +138,10 @@ Compare this report to the one from Part 2: **Scenario Coverage** should no long
 Once the test is green and `tasks.md` is fully checked:
 
 ```text
-/opsx-archive <specification-name>
+/openspec-archive-change <specification-name>
 ```
 
-Expect two confirmation gates before anything moves — `/opsx-archive` never archives silently:
+Expect two confirmation gates before anything moves — `/openspec-archive-change` never archives silently:
 
 1. **Incomplete artifacts**: `design.md` reads `ready`, not `done` or `skipped` — this is the design artifact we deliberately left uncreated in Exercise 4. The agent warns about it and asks to continue; confirm, since nothing in this change needed a design decision.
 2. **Delta spec sync**: `openspec/specs/` is still empty, so the `total-sales-kpi` capability has no main spec yet. Since the delta only has `ADDED Requirements`, the agent offers **"Sync now (recommended)"** or **"Archive without syncing"**. Choose **Sync now** — this is what turns the four requirements into `openspec/specs/total-sales-kpi/spec.md`, the project's living specification. Skipping it would archive the change but leave `openspec/specs/` empty, losing the point of using OpenSpec over a disposable spec file.
@@ -149,7 +156,7 @@ Check that:
 - `openspec/specs/` now holds the Total Sales requirements as living documentation;
 - exactly one test row exists per scenario in the archived spec;
 - `node evals/eval.js` prints `N/N PASS`, and `evals/.eval-history.json` shows the retry if there was a failure;
-- the second `/opsx-verify` run no longer flags Scenario Coverage as not covered;
+- the second `/openspec-verify-change` run no longer flags Scenario Coverage as not covered;
 - the dashboard remains self-contained and works without the test.
 
 The final course chain is:

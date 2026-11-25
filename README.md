@@ -29,7 +29,7 @@ Download the scripts for your system from your browser, with one click each:
 | macOS, Linux, or WSL | [setup.sh](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup.sh) | [setup-secrets.sh](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup-secrets.sh) |
 | Windows | [setup.ps1](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup.ps1) | [setup-secrets.ps1](https://github.com/carlos-peiro-ntt/agentsdata/releases/latest/download/setup-secrets.ps1) |
 
-Keep both files in your Downloads folder; you will need the secrets script again in Exercise 3. Run the setup script from there. It installs any missing prerequisite and verifies everything; see [Setup and Workshop Preparation](docs/part-1/setup.md) for details and manual steps.
+Keep both files in your Downloads folder; you will need the secrets script again in Exercise 3. Run the setup script from there. It installs missing system prerequisites, creates the project-local npm environment with pinned OpenSpec and skills packages, pins Python 3.12 for the Confluence MCP, and verifies everything; see [Setup and Workshop Preparation](docs/part-1/setup.md) for details and manual steps.
 
 ```bash
 # macOS or Linux
@@ -50,7 +50,7 @@ Then open VS Code, sign in to GitHub Copilot, and check that you can send a mess
 
 ### 2. Prepare your working folder
 
-Create an empty folder for the workshop and open it in VS Code. Every exercise happens inside this folder; it does not need Git or any file from this repository.
+Create an empty folder for the workshop and open it in VS Code. On Windows, use `npm.cmd exec --` for workshop tool commands if PowerShell blocks npm's `.ps1` shim. Every exercise happens inside this folder; it does not need Git or any file from this repository.
 
 ```bash
 # macOS, Linux, or WSL
@@ -85,7 +85,7 @@ Work through the exercises in order, following the instructor. Each one builds o
 1. [Exercise 1 — Create the First Dashboard](docs/part-1/exercise-01-dashboard.md) — prompt-only generation, then generation from real CSV data.
 2. [Exercise 2 — From Prompt to AGENTS.md](docs/part-1/exercise-02-agents-md.md) — create `AGENTS.md`.
 3. [Exercise 3 — Skills, MCP, Instructions, Planning, and Implementation](docs/part-1/exercise-03-skills-mcp-instructions.md) — install skills, configure MCP servers, add the dashboard instruction, plan and implement the Supabase-backed dashboard.
-4. [Exercise 4 — Propose and Apply a Change with OpenSpec](docs/part-1/exercise-04-openspec-propose-apply.md) — initialize [OpenSpec](https://github.com/Fission-AI/OpenSpec), turn an idea into a reviewed change under `openspec/changes/`, and implement it with `/opsx-apply`.
+4. [Exercise 4 — Propose and Apply a Change with OpenSpec](docs/part-1/exercise-04-openspec-propose-apply.md) — initialize [OpenSpec](https://github.com/Fission-AI/OpenSpec), turn an idea into a reviewed change under `openspec/changes/`, and implement it with `/openspec-apply-change`.
 5. [Exercise 5 — Verify, Test, and Archive](docs/part-1/exercise-05-verify-harness-archive.md) — verify the implemented change, validate it with `evals/eval.js`, then archive it.
 
 ### Part 2
