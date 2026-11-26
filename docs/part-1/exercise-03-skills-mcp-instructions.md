@@ -10,12 +10,19 @@ Add specialized knowledge, connect external sources, and complete the dashboard'
 
 Open a terminal in VS Code (**Terminal → New Terminal**); it starts at the project folder. Run:
 
+macOS, Linux, or WSL:
+
 ```bash
 npm exec -- skills add anthropics/skills --skill frontend-design
 npm exec -- skills add wshobson/agents --skill kpi-dashboard-design
 ```
 
-On Windows PowerShell, use `npm.cmd exec --` instead of `npm exec --` if npm's `.ps1` shim is blocked.
+Windows PowerShell:
+
+```powershell
+npm.cmd exec -- skills add anthropics/skills --skill frontend-design
+npm.cmd exec -- skills add wshobson/agents --skill kpi-dashboard-design
+```
 
 When the installer asks:
 

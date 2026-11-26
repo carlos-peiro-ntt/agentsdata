@@ -44,19 +44,33 @@ OpenSpec is a CLI that generates and manages the spec artifacts for you, instead
 
 Confirm it:
 
+macOS, Linux, or WSL:
+
 ```bash
 npm exec -- openspec --version
 ```
 
-On Windows PowerShell, use `npm.cmd exec -- openspec --version` if the npm `.ps1` shim is blocked.
+Windows PowerShell:
+
+```powershell
+npm.cmd exec -- openspec --version
+```
 
 
 If that command fails, go back to [Setup and Workshop Preparation](setup.md) and prepare the project-local dependencies before continuing.
 
 From the project folder, initialize it for GitHub Copilot:
 
+macOS, Linux, or WSL:
+
 ```bash
 npm exec -- openspec init --tools github-copilot
+```
+
+Windows PowerShell:
+
+```powershell
+npm.cmd exec -- openspec init --tools github-copilot
 ```
 
 This creates:
@@ -76,11 +90,17 @@ With OpenSpec 2.1.1, VS Code Copilot Chat shows the 2.x workflows as `/openspec-
 
 Initialize for Codex instead:
 
+macOS, Linux, or WSL:
+
 ```bash
 npm exec -- openspec init --tools codex
 ```
 
-Windows PowerShell: use `npm.cmd exec -- openspec init --tools codex`.
+Windows PowerShell:
+
+```powershell
+npm.cmd exec -- openspec init --tools codex
+```
 
 Codex gets no slash commands; OpenSpec installs its workflows as skills in `.agents/skills/openspec-*/`, next to the skills from Exercise 3. Invoke them with `$` followed by the skill name, and start a new Codex conversation if they don't appear:
 
@@ -91,7 +111,11 @@ Codex gets no slash commands; OpenSpec installs its workflows as skills in `.age
 | `/openspec-verify-change` | `$openspec-verify-change` |
 | `/openspec-archive-change` | `$openspec-archive-change` |
 
-The rest of this exercise and the next one use the Copilot names; replace them with the Codex ones. To use both agents in the same folder, run `npm exec -- openspec init --tools github-copilot,codex`.
+The rest of this exercise and the next one use the Copilot names; replace them with the Codex ones. To use both agents in the same folder, run:
+
+macOS, Linux, or WSL: `npm exec -- openspec init --tools github-copilot,codex`.
+
+Windows PowerShell: `npm.cmd exec -- openspec init --tools github-copilot,codex`.
 
 </details>
 

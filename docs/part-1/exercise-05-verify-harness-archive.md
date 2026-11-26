@@ -34,14 +34,16 @@ Do not add more evals than scenarios, and do not drop any. This keeps the test a
 
 ## Part 2 — Verify against the spec
 
-`verify` is an optional workflow, not installed by the default `openspec init`. Enable it once per machine with the interactive profile selector, then refresh the generated Copilot files:
+`verify` is an optional workflow, not installed by the default `openspec init`. Enable it once per machine with the interactive profile selector, then refresh the generated Copilot files.
+
+macOS, Linux, or WSL:
 
 ```bash
 npm exec -- openspec config profile
 npm exec -- openspec update
 ```
 
-On Windows PowerShell, use `npm.cmd exec --` instead if the npm `.ps1` shim is blocked:
+Windows PowerShell:
 
 ```powershell
 npm.cmd exec -- openspec config profile
